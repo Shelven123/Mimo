@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -178,26 +179,39 @@ body {
     >
 
     <div>
-      <div id="hostName" class="host-name">
+
+      <div
+        id="hostName"
+        class="host-name"
+      >
         Loading...
       </div>
 
-      <div id="hostStatus" class="host-status">
+      <div
+        id="hostStatus"
+        class="host-status"
+      >
         Offline
       </div>
+
     </div>
 
   </div>
 
 </div>
 
-<div id="chatArea" class="chat-area">
 
-  <div id="emptyMessage" class="empty">
+<div
+  id="chatArea"
+  class="chat-area"
+>
+
+  <div class="empty">
     Loading conversation...
   </div>
 
 </div>
+
 
 <div class="input-area">
 
@@ -219,6 +233,7 @@ body {
 
 </div>
 
+
 <script>
 
 const SUPABASE_URL =
@@ -234,16 +249,27 @@ const supabaseClient =
   );
 
 
+/* =========================
+   URL
+========================= */
+
 const params =
-  new URLSearchParams(window.location.search);
+  new URLSearchParams(
+    window.location.search
+  );
 
 const hostId =
   params.get("host");
 
 
+/* =========================
+   VARIABLES
+========================= */
+
 let currentUser = null;
 let hostProfile = null;
 let conversationId = null;
+let realtimeChannel = null;
 
 
 /* =========================
@@ -254,24 +280,33 @@ async function init() {
 
   if (!hostId) {
 
-    showError("Host not found.");
+    showError(
+      "Host not found."
+    );
 
     return;
   }
 
 
   const {
-    data: { user },
-    error: userError
+    data: {
+      user
+    },
+    error
   } =
     await supabaseClient.auth.getUser();
 
 
-  if (userError) {
+  if (error) {
 
-    console.error(userError);
+    console.error(
+      "Auth error:",
+      error
+    );
 
-    showError("Unable to check login.");
+    showError(
+      "Unable to check login."
+    );
 
     return;
   }
@@ -322,16 +357,27 @@ async function loadHost() {
         online_status,
         role
       `)
-      .eq("id", hostId)
-      .eq("role", "host")
+      .eq(
+        "id",
+        hostId
+      )
+      .eq(
+        "role",
+        "host"
+      )
       .maybeSingle();
 
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Host error:",
+      error
+    );
 
-    showError("Unable to load host.");
+    showError(
+      "Unable to load host."
+    );
 
     return;
   }
@@ -339,13 +385,16 @@ async function loadHost() {
 
   if (!data) {
 
-    showError("Host not found.");
+    showError(
+      "Host not found."
+    );
 
     return;
   }
 
 
-  hostProfile = data;
+  hostProfile =
+    data;
 
 
   document.getElementById(
@@ -380,29 +429,30 @@ async function loadHost() {
 async function loadConversation() {
 
   /*
-    Because conversations already stores
-    user_one_id and user_two_id,
-    we can find the conversation directly.
+    First direction:
+    current user -> host
   */
 
-  const {
-    data,
-    error
-  } =
+  const first =
     await supabaseClient
       .from("conversations")
       .select("id")
-      .or(
-        `and(user_one_id.eq.${currentUser.id},user_two_id.eq.${hostId}),and(user_one_id.eq.${hostId},user_two_id.eq.${currentUser.id})`
+      .eq(
+        "user_one_id",
+        currentUser.id
       )
-      .maybeSingle();
+      .eq(
+        "user_two_id",
+        hostId
+      )
+      .limit(1);
 
 
-  if (error) {
+  if (first.error) {
 
     console.error(
-      "Conversation error:",
-      error
+      "Conversation query 1 error:",
+      first.error
     );
 
     showError(
@@ -413,12 +463,73 @@ async function loadConversation() {
   }
 
 
-  if (data) {
+  if (
+    first.data &&
+    first.data.length > 0
+  ) {
 
     conversationId =
-      data.id;
+      first.data[0].id;
 
-  } else {
+  }
+
+
+  /*
+    Second direction:
+    host -> current user
+  */
+
+  if (!conversationId) {
+
+    const second =
+      await supabaseClient
+        .from("conversations")
+        .select("id")
+        .eq(
+          "user_one_id",
+          hostId
+        )
+        .eq(
+          "user_two_id",
+          currentUser.id
+        )
+        .limit(1);
+
+
+    if (second.error) {
+
+      console.error(
+        "Conversation query 2 error:",
+        second.error
+      );
+
+      showError(
+        "Unable to load conversations."
+      );
+
+      return;
+    }
+
+
+    if (
+      second.data &&
+      second.data.length > 0
+    ) {
+
+      conversationId =
+        second.data[0].id;
+
+    }
+
+  }
+
+
+  /*
+    No conversation found:
+    create one.
+  */
+
+  if (!conversationId) {
 
     await createConversation();
 
@@ -433,7 +544,15 @@ async function loadConversation() {
 
   await ensureMembers();
 
+
+  if (!conversationId) {
+
+    return;
+  }
+
+
   await loadMessages();
+
 
   subscribeToMessages();
 
@@ -453,8 +572,11 @@ async function createConversation() {
     await supabaseClient
       .from("conversations")
       .insert({
-        user_one_id: currentUser.id,
-        user_two_id: hostId
+        user_one_id:
+          currentUser.id,
+
+        user_two_id:
+          hostId
       })
       .select("id")
       .single();
@@ -517,11 +639,13 @@ async function ensureMembers() {
 
   const existingIds =
     (data || []).map(
-      member => member.user_id
+      item =>
+        item.user_id
     );
 
 
-  const missingMembers = [];
+  const missingMembers =
+    [];
 
 
   if (
@@ -533,6 +657,7 @@ async function ensureMembers() {
     missingMembers.push({
       conversation_id:
         conversationId,
+
       user_id:
         currentUser.id
     });
@@ -549,6 +674,7 @@ async function ensureMembers() {
     missingMembers.push({
       conversation_id:
         conversationId,
+
       user_id:
         hostId
     });
@@ -585,6 +711,7 @@ async function ensureMembers() {
       "Unable to create chat members."
     );
 
+    return;
   }
 
 }
@@ -644,10 +771,12 @@ async function loadMessages() {
 
 
 /* =========================
-   RENDER
+   RENDER MESSAGES
 ========================= */
 
-function renderMessages(messages) {
+function renderMessages(
+  messages
+) {
 
   const area =
     document.getElementById(
@@ -658,13 +787,17 @@ function renderMessages(messages) {
   area.innerHTML = "";
 
 
-  if (!messages.length) {
+  if (
+    !messages ||
+    messages.length === 0
+  ) {
 
     area.innerHTML = `
       <div class="empty">
         Start a conversation with
         ${escapeHtml(
           hostProfile.display_name ||
+          hostProfile.username ||
           "this host"
         )}
         ❤️
@@ -772,6 +905,10 @@ async function sendMessage() {
 
   if (!conversationId) {
 
+    alert(
+      "Conversation is not ready yet."
+    );
+
     return;
   }
 
@@ -811,8 +948,10 @@ async function sendMessage() {
       .insert({
         conversation_id:
           conversationId,
+
         sender_id:
           currentUser.id,
+
         content:
           content
       })
@@ -848,7 +987,7 @@ async function sendMessage() {
   input.value = "";
 
 
-  const oldEmpty =
+  const empty =
     document
       .getElementById(
         "chatArea"
@@ -858,12 +997,16 @@ async function sendMessage() {
       );
 
 
-  if (oldEmpty) {
+  if (empty) {
 
-    oldEmpty.remove();
+    empty.remove();
 
   }
 
+
+  /*
+    Show our message immediately.
+  */
 
   addMessageToScreen(
     data
@@ -881,45 +1024,60 @@ async function sendMessage() {
 
 function subscribeToMessages() {
 
-  supabaseClient
-    .channel(
-      "messages-" +
-      conversationId
-    )
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "messages",
-        filter:
-          "conversation_id=eq." +
-          conversationId
-      },
-      payload => {
+  if (realtimeChannel) {
 
-        if (
-          payload.new.sender_id !==
-          currentUser.id
-        ) {
+    supabaseClient.removeChannel(
+      realtimeChannel
+    );
 
-          addMessageToScreen(
-            payload.new
-          );
+  }
 
-          scrollToBottom();
+
+  realtimeChannel =
+    supabaseClient
+      .channel(
+        "messages-" +
+        conversationId
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter:
+            "conversation_id=eq." +
+            conversationId
+        },
+        payload => {
+
+          /*
+            Do not duplicate
+            our own message.
+          */
+
+          if (
+            payload.new.sender_id !==
+            currentUser.id
+          ) {
+
+            addMessageToScreen(
+              payload.new
+            );
+
+            scrollToBottom();
+
+          }
 
         }
-
-      }
-    )
-    .subscribe();
+      )
+      .subscribe();
 
 }
 
 
 /* =========================
-   ENTER
+   ENTER KEY
 ========================= */
 
 document
@@ -1028,3 +1186,4 @@ init();
 
 </body>
 </html>
+```
