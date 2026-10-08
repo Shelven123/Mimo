@@ -693,6 +693,7 @@ const supabaseClient =
 
 let allHosts = [];
 let currentUser = null;
+let currentProfile = null;
 let followedHostIds = new Set();
 let currentFilter = "all";
 
@@ -715,6 +716,15 @@ async function loadCurrentUser() {
   }
 
   currentUser = data.user || null;
+
+  if (currentUser) {
+    const { data: profile } = await supabaseClient
+      .from("profiles")
+      .select("id, role")
+      .eq("id", currentUser.id)
+      .maybeSingle();
+    currentProfile = profile || null;
+  }
 }
 
 
@@ -956,6 +966,7 @@ function renderHosts(hosts) {
             </button>
 
 
+            ${currentProfile?.role === "user" ? `
             <button
               class="action call-action"
               onclick="callComingSoon('${host.id}')"
@@ -963,8 +974,10 @@ function renderHosts(hosts) {
               <span class="action-icon">📞</span>
               <span class="action-text">Call</span>
             </button>
+            ` : `<div class="action"></div>`}
 
 
+            ${currentProfile?.role === "user" ? `
             <button
               class="action video-action"
               onclick="videoComingSoon('${host.id}')"
@@ -972,6 +985,7 @@ function renderHosts(hosts) {
               <span class="action-icon">🎥</span>
               <span class="action-text">Video</span>
             </button>
+            ` : `<div class="action"></div>`}
 
 
             <button
@@ -1245,7 +1259,7 @@ let incomingCallRecord = null;
 let incomingCallChannel = null;
 
 async function startIncomingCallListener() {
-  if (!currentUser) return;
+  if (!currentUser || currentProfile?.role !== "host") return;
 
   const { data: existing } = await supabaseClient
     .from("calls")
