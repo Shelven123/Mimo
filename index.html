@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Mimo</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: #f7f7fb;
+      color: #222;
+      padding-bottom: 80px;
+    }
+
+    /* Header */
+    .header {
+      height: 64px;
+      background: white;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 25px;
+      font-weight: 800;
+      color: #ff4f81;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .search {
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      padding: 9px 15px;
+      width: 180px;
+      outline: none;
+    }
+
+    .diamond {
+      background: #fff0f5;
+      color: #ff4f81;
+      padding: 9px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+    }
+
+    /* Main */
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 25px 20px;
+    }
+
+    .welcome {
+      background: linear-gradient(135deg, #ff4f81, #ff7ba2);
+      color: white;
+      border-radius: 22px;
+      padding: 28px;
+      margin-bottom: 28px;
+    }
+
+    .welcome h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .welcome p {
+      opacity: 0.95;
+    }
+
+    .section-title {
+      font-size: 22px;
+      margin-bottom: 18px;
+    }
+
+    /* Host Grid */
+    .host-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .host-card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.06);
+    }
+
+    .host-image {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      background: #eee;
+    }
+
+    .host-info {
+      padding: 15px;
+    }
+
+    .host-name {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .online {
+      color: #21b66f;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .host-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      border: none;
+      cursor: pointer;
+      border-radius: 12px;
+      padding: 10px;
+      flex: 1;
+      font-weight: bold;
+    }
+
+    .chat-btn {
+      background: #ff4f81;
+      color: white;
+    }
+
+    .follow-btn {
+      background: #fff0f5;
+      color: #ff4f81;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background: white;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    .nav-inner {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .nav-item {
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: #777;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .nav-item span {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 3px;
+    }
+
+    .nav-item.active {
+      color: #ff4f81;
+      font-weight: bold;
+    }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      .host-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .search {
+        width: 130px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .header {
+        padding: 0 14px;
+      }
+
+      .logo {
+        font-size: 22px;
+      }
+
+      .search {
+        display: none;
+      }
+
+      .diamond {
+        font-size: 13px;
+        padding: 8px 10px;
+      }
+
+      .container {
+        padding: 18px 12px;
+      }
+
+      .welcome {
+        padding: 22px;
+        border-radius: 18px;
+      }
+
+      .welcome h1 {
+        font-size: 23px;
+      }
+
+      .host-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .host-image {
+        height: 190px;
+      }
+
+      .host-info {
+        padding: 12px;
+      }
+
+      .host-name {
+        font-size: 16px;
+      }
+
+      .btn {
+        font-size: 12px;
+        padding: 9px 5px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header class="header">
+
+    <div class="logo">
+      ❤️ Mimo
+    </div>
+
+    <div class="header-right">
+
+      <input
+        class="search"
+        type="text"
+        placeholder="Search hosts..."
+      >
+
+      <div class="diamond">
+        💎 1,000
+      </div>
+
+    </div>
+
+  </header>
+
+
+  <!-- Main -->
+  <main class="container">
+
+    <section class="welcome">
+      <h1>Welcome to Mimo ❤️</h1>
+      <p>Meet new people, chat, share moments and make connections.</p>
+    </section>
+
+
+    <h2 class="section-title">
+      ✨ Discover Hosts
+    </h2>
+
+
+    <div class="host-grid">
+
+
+      <!-- Host 1 -->
+      <div class="host-card">
+
+        <img
+          class="host-image"
+          src="https://i.pravatar.cc/500?img=47"
+          alt="Amy"
+        >
+
+        <div class="host-info">
+
+          <div class="host-name">
+            Amy
+          </div>
+
+          <div class="online">
+            🟢 Online
+          </div>
+
+          <div class="host-buttons">
+
+            <button
+              class="btn chat-btn"
+              onclick="chat('Amy')"
+            >
+              💬 Chat
+            </button>
+
+            <button
+              class="btn follow-btn"
+              onclick="follow('Amy')"
+            >
+              ❤️ Follow
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- Host 2 -->
+      <div class="host-card">
+
+        <img
+          class="host-image"
+          src="https://i.pravatar.cc/500?img=32"
+          alt="Meiling"
+        >
+
+        <div class="host-info">
+
+          <div class="host-name">
+            Meiling
+          </div>
+
+          <div class="online">
+            🟢 Online
+          </div>
+
+          <div class="host-buttons">
+
+            <button
+              class="btn chat-btn"
+              onclick="chat('Meiling')"
+            >
+              💬 Chat
+            </button>
+
+            <button
+              class="btn follow-btn"
+              onclick="follow('Meiling')"
+            >
+              ❤️ Follow
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- Host 3 -->
+      <div class="host-card">
+
+        <img
+          class="host-image"
+          src="https://i.pravatar.cc/500?img=44"
+          alt="Sophie"
+        >
+
+        <div class="host-info">
+
+          <div class="host-name">
+            Sophie
+          </div>
+
+          <div class="online">
+            🟢 Online
+          </div>
+
+          <div class="host-buttons">
+
+            <button
+              class="btn chat-btn"
+              onclick="chat('Sophie')"
+            >
+              💬 Chat
+            </button>
+
+            <button
+              class="btn follow-btn"
+              onclick="follow('Sophie')"
+            >
+              ❤️ Follow
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- Host 4 -->
+      <div class="host-card">
+
+        <img
+          class="host-image"
+          src="https://i.pravatar.cc/500?img=49"
+          alt="Emma"
+        >
+
+        <div class="host-info">
+
+          <div class="host-name">
+            Emma
+          </div>
+
+          <div class="online">
+            🟢 Online
+          </div>
+
+          <div class="host-buttons">
+
+            <button
+              class="btn chat-btn"
+              onclick="chat('Emma')"
+            >
+              💬 Chat
+            </button>
+
+            <button
+              class="btn follow-btn"
+              onclick="follow('Emma')"
+            >
+              ❤️ Follow
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+    </div>
+
+  </main>
+
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+
+    <div class="nav-inner">
+
+      <button class="nav-item active" onclick="home()">
+        <span>🏠</span>
+        Home
+      </button>
+
+      <button class="nav-item" onclick="plaza()">
+        <span>🌐</span>
+        Plaza
+      </button>
+
+      <button class="nav-item" onclick="messages()">
+        <span>💬</span>
+        Messages
+      </button>
+
+      <button class="nav-item" onclick="notifications()">
+        <span>🔔</span>
+        Notifications
+      </button>
+
+      <button class="nav-item" onclick="profile()">
+        <span>👤</span>
+        Me
+      </button>
+
+    </div>
+
+  </nav>
+
+
+  <script>
+
+    function chat(name) {
+      alert("Opening chat with " + name);
+    }
+
+    function follow(name) {
+      alert("You followed " + name);
+    }
+
+    function home() {
+      alert("Home");
+    }
+
+    function plaza() {
+      alert("Plaza");
+    }
+
+    function messages() {
+      alert("Messages");
+    }
+
+    function notifications() {
+      alert("Notifications");
+    }
+
+    function profile() {
+      alert("My Profile");
+    }
+
+  </script>
+
+</body>
+</html>
