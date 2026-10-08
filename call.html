@@ -242,6 +242,7 @@
       <img
   id="avatar"
   class="avatar"
+  src="https://zhhgiwqehwuwzxnqbnth.supabase.co/storage/v1/object/public/avatars/amy.jpg"
   alt="Profile"
 >
     </div>
@@ -307,7 +308,7 @@
 
       <button
         class="circle end"
-        onclick="endCall()"
+        onclick="forceEndCall()"
       >
         📞
       </button>
@@ -434,31 +435,16 @@ async function init() {
 
 
     const {
-      data: authData,
-      error: authError
-    } =
-      await supabaseClient.auth.getUser();
+      data: sessionData
+    } = await supabaseClient.auth.getSession();
 
+    currentUser = sessionData?.session?.user || null;
 
-    if (
-      authError ||
-      !authData.user
-    ) {
-
-      showError(
-        "Please login before making a call."
-      );
-
-      setStatus(
-        "Login required"
-      );
-
+    if (!currentUser) {
+      showError("Please login before making a call.");
+      setStatus("Login required");
       return;
     }
-
-
-    currentUser =
-      authData.user;
 
 
     if (existingCallId) {
@@ -1504,6 +1490,23 @@ function toggleSpeaker() {
 
 }
 
+
+
+function forceEndCall() {
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+  }
+  if (peerConnection) {
+    try { peerConnection.close(); } catch (e) {}
+  }
+  if (callId && currentUser) {
+    supabaseClient.from("calls").update({
+      status: "ended",
+      ended_at: new Date().toISOString()
+    }).eq("id", callId).then(() => {});
+  }
+  window.location.href = "index.html";
+}
 
 /* =========================
    END CALL
