@@ -314,7 +314,7 @@
 
       <button
         class="circle end"
-        onclick="window.location.href='index.html'"
+        onclick="endCall()"
       >
         📞
       </button>
@@ -382,6 +382,7 @@ const existingCallId =
 
 
 let currentUser = null;
+let currentProfile = null;
 let targetProfile = null;
 
 let callId =
@@ -452,6 +453,13 @@ async function init() {
       return;
     }
 
+    const { data: myProfile } = await supabaseClient
+      .from("profiles")
+      .select("id, role")
+      .eq("id", currentUser.id)
+      .maybeSingle();
+
+    currentProfile = myProfile || null;
 
     if (existingCallId) {
 
@@ -485,6 +493,24 @@ async function init() {
         return;
       }
 
+
+      if (currentProfile?.role !== "user") {
+        showError("Hosts cannot start voice calls.");
+        setStatus("Incoming calls only");
+        return;
+      }
+
+      const { data: calleeProfile } = await supabaseClient
+        .from("profiles")
+        .select("id, role")
+        .eq("id", targetUserId)
+        .maybeSingle();
+
+      if (calleeProfile?.role !== "host") {
+        showError("Voice calls can only be started with a host.");
+        setStatus("Unable to start call");
+        return;
+      }
 
       await loadTargetProfile(
         targetUserId
@@ -705,9 +731,16 @@ async function loadExistingCall() {
   );
 
 
-  await prepareMicrophone();
-
   await setupRealtime();
+
+  try {
+    await prepareMicrophone();
+  } catch (microphoneError) {
+    console.error(microphoneError);
+    showError("Please allow microphone access in your browser settings, then try the call again.");
+    setStatus("Microphone permission required");
+    return;
+  }
 
   await createPeerConnection();
 
@@ -786,10 +819,12 @@ async function prepareMicrophone() {
     await navigator
       .mediaDevices
       .getUserMedia({
-
-        audio: true,
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        },
         video: false
-
       });
 
 }
@@ -1290,13 +1325,11 @@ async function setupRealtime() {
           ) {
 
             if (!ended) {
-
               cleanupCall();
-
-              setStatus(
-                "Call ended"
-              );
-
+              setStatus("Call ended");
+              setTimeout(() => {
+                window.location.replace("index.html");
+              }, 500);
             }
 
           }
@@ -1498,22 +1531,6 @@ function toggleSpeaker() {
 
 
 
-function forceEndCall() {
-  if (localStream) {
-    localStream.getTracks().forEach(track => track.stop());
-  }
-  if (peerConnection) {
-    try { peerConnection.close(); } catch (e) {}
-  }
-  if (callId && currentUser) {
-    supabaseClient.from("calls").update({
-      status: "ended",
-      ended_at: new Date().toISOString()
-    }).eq("id", callId).then(() => {});
-  }
-  window.location.href = "index.html";
-}
-
 /* =========================
    END CALL
 ========================= */
@@ -1521,7 +1538,7 @@ function forceEndCall() {
 async function endCall() {
 
   if (ended) {
-    history.back();
+    window.location.replace("index.html");
     return;
   }
 
@@ -1586,7 +1603,7 @@ async function endCall() {
 
   setTimeout(
     () => {
-      history.back();
+      window.location.replace("index.html");
     },
     700
   );
@@ -1675,7 +1692,7 @@ function leavePage() {
 
   } else {
 
-    history.back();
+    window.location.replace("index.html");
 
   }
 
