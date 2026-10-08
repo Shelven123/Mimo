@@ -240,11 +240,10 @@
 
     <div class="avatar-wrap">
       <img
-        id="avatar"
-        class="avatar"
-        src="https://i.pravatar.cc/500"
-        alt="Profile"
-      >
+  id="avatar"
+  class="avatar"
+  alt="Profile"
+>
     </div>
 
     <div
@@ -567,11 +566,21 @@ async function loadTargetProfile(
       "Mimo User";
 
 
-  document
-    .getElementById("avatar")
-    .src =
-      data.avatar_url ||
-      "https://i.pravatar.cc/500";
+  const avatar =
+  document.getElementById("avatar");
+
+if (data.avatar_url) {
+  avatar.src = data.avatar_url;
+} else {
+  avatar.src =
+    "data:image/svg+xml;charset=UTF-8," +
+    encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="500" height="500">
+        <rect width="100%" height="100%" fill="#fff0f5"/>
+        <circle cx="250" cy="190" r="85" fill="#ffb3c8"/>
+        <circle cx="250" cy="420" r="150" fill="#ffb3c8"/>
+      </svg>
+    `);
 
 }
 
