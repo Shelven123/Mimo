@@ -397,6 +397,7 @@ let signalChannel = null;
 let callChannel = null;
 
 let timerInterval = null;
+let callStatusPoller = null;
 let connectedAt = null;
 
 let muted = false;
@@ -1238,7 +1239,31 @@ async function loadExistingSignals() {
    REALTIME
 ========================= */
 
+async function checkRemoteCallStatus() {
+  if (!callId || ended) return;
+
+  const { data, error } = await supabaseClient
+    .from("calls")
+    .select("status")
+    .eq("id", callId)
+    .maybeSingle();
+
+  if (error || !data) return;
+
+  if (data.status === "ended" || data.status === "declined" || data.status === "cancelled") {
+    cleanupCall();
+    setStatus("Call ended");
+    setTimeout(function () {
+      window.location.replace("index.html");
+    }, 350);
+  }
+}
+
 async function setupRealtime() {
+
+  if (!callStatusPoller) {
+    callStatusPoller = setInterval(checkRemoteCallStatus, 1200);
+  }
 
   signalChannel =
     supabaseClient
