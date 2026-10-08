@@ -1,10 +1,8 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Mimo</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -18,249 +16,475 @@
 
     body {
       font-family: Arial, sans-serif;
-      background: #f7f7f9;
+      background: #f8f8fb;
       color: #222;
-      padding-bottom: 75px;
+      padding-bottom: 82px;
     }
 
-    header {
-      background: white;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 18px;
-      border-bottom: 1px solid #eee;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .logo {
-      font-size: 23px;
-      font-weight: bold;
-      color: #ff4f81;
-    }
-
-    .diamond {
-      background: #fff0f5;
-      color: #ff4f81;
-      padding: 8px 12px;
-      border-radius: 20px;
-      font-weight: bold;
-    }
-
-    .container {
-      max-width: 1100px;
-      margin: auto;
-      padding: 20px 16px;
-    }
-
-    .welcome {
-      background: linear-gradient(135deg, #ff4f81, #ff7aa2);
-      color: white;
-      border-radius: 18px;
-      padding: 24px;
-      margin-bottom: 20px;
-    }
-
-    .welcome h1 {
-      font-size: 25px;
-      margin-bottom: 8px;
-    }
-
-    .welcome p {
-      opacity: .95;
-    }
-
-    .search {
-      width: 100%;
-      border: none;
-      background: white;
-      padding: 14px 16px;
-      border-radius: 14px;
-      font-size: 15px;
-      margin-bottom: 22px;
-      outline: none;
-      box-shadow: 0 2px 10px rgba(0,0,0,.04);
-    }
-
-    .section-title {
-      font-size: 21px;
-      font-weight: bold;
-      margin-bottom: 15px;
-    }
-
-    .hosts {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
-
-    .host-card {
-      background: white;
-      border-radius: 18px;
-      overflow: hidden;
-      box-shadow: 0 3px 12px rgba(0,0,0,.06);
-      cursor: pointer;
-      transition: transform .15s ease, box-shadow .15s ease;
-    }
-
-    .host-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(0,0,0,.10);
-    }
-
-    .host-image {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      display: block;
-    }
-
-    .host-info {
-      padding: 13px;
-    }
-
-    .host-name {
-      font-size: 17px;
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-
-    .host-bio {
-      font-size: 13px;
-      color: #777;
-      min-height: 36px;
-      line-height: 1.4;
-      margin-bottom: 10px;
-    }
-
-    .online,
-    .offline {
-      font-size: 12px;
-      margin-bottom: 11px;
-    }
-
-    .online {
-      color: #21b66f;
-    }
-
-    .offline {
-      color: #999;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 7px;
+    button, input {
+      font: inherit;
     }
 
     button {
       border: none;
       cursor: pointer;
-      border-radius: 10px;
-      padding: 9px;
-      font-weight: bold;
-      flex: 1;
     }
 
-    button:disabled {
-      opacity: .6;
-      cursor: default;
+    /* HEADER */
+
+    header {
+      height: 64px;
+      background: rgba(255,255,255,.96);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      border-bottom: 1px solid #f0f0f0;
+      position: sticky;
+      top: 0;
+      z-index: 30;
     }
 
-    .chat-btn {
+    .logo {
+      color: #ff4f81;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .diamond {
+      background: #fff0f5;
+      color: #ff4f81;
+      padding: 9px 13px;
+      border-radius: 22px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1050px;
+      margin: auto;
+      padding: 18px 16px 25px;
+    }
+
+    /* GREETING */
+
+    .hello {
+      margin-bottom: 16px;
+    }
+
+    .hello-small {
+      color: #999;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .hello-title {
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    /* SEARCH */
+
+    .search-box {
+      position: relative;
+      margin-bottom: 22px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 17px;
+    }
+
+    .search {
+      width: 100%;
+      border: 1px solid #eee;
+      background: white;
+      padding: 14px 16px 14px 45px;
+      border-radius: 16px;
+      outline: none;
+      font-size: 15px;
+      box-shadow: 0 3px 14px rgba(0,0,0,.035);
+    }
+
+    /* SECTION */
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 13px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .section-link {
+      color: #ff4f81;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* STORIES */
+
+    .story-section {
+      margin-bottom: 24px;
+    }
+
+    .stories {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      padding: 3px 1px 7px;
+      scrollbar-width: none;
+    }
+
+    .stories::-webkit-scrollbar {
+      display: none;
+    }
+
+    .story {
+      min-width: 68px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .story-ring {
+      width: 65px;
+      height: 65px;
+      margin: auto;
+      padding: 3px;
+      border-radius: 50%;
+      background: linear-gradient(135deg,#ff4f81,#ff9d5c);
+      position: relative;
+    }
+
+    .story-ring img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid white;
+      display: block;
+    }
+
+    .story-name {
+      font-size: 12px;
+      margin-top: 6px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .add-story-ring {
+      background: #f0f0f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .add-story-circle {
+      width: 59px;
+      height: 59px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 27px;
+      color: #ff4f81;
+    }
+
+    /* FILTERS */
+
+    .filters {
+      display: flex;
+      gap: 9px;
+      overflow-x: auto;
+      margin-bottom: 24px;
+      scrollbar-width: none;
+    }
+
+    .filters::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter {
+      white-space: nowrap;
+      padding: 10px 15px;
+      border-radius: 22px;
+      background: white;
+      color: #777;
+      border: 1px solid #eee;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .filter.active {
       background: #ff4f81;
+      color: white;
+      border-color: #ff4f81;
+    }
+
+    /* HOST GRID */
+
+    .hosts {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 17px;
+    }
+
+    .host-card {
+      position: relative;
+      background: white;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 5px 20px rgba(0,0,0,.07);
+      cursor: pointer;
+    }
+
+    .photo-wrap {
+      position: relative;
+      aspect-ratio: 4 / 5;
+      background: #eee;
+      overflow: hidden;
+    }
+
+    .host-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .3s ease;
+    }
+
+    .host-card:hover .host-image {
+      transform: scale(1.025);
+    }
+
+    .photo-gradient {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 48%;
+      background: linear-gradient(
+        transparent,
+        rgba(0,0,0,.67)
+      );
+      pointer-events: none;
+    }
+
+    .status {
+      position: absolute;
+      top: 13px;
+      left: 13px;
+      background: rgba(255,255,255,.93);
+      border-radius: 20px;
+      padding: 6px 9px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .status.online {
+      color: #13a866;
+    }
+
+    .status.offline {
+      color: #777;
+    }
+
+    .photo-info {
+      position: absolute;
+      left: 15px;
+      right: 15px;
+      bottom: 14px;
       color: white;
     }
 
-    .follow-btn {
+    .host-name {
+      font-size: 21px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .host-bio {
+      font-size: 12px;
+      opacity: .92;
+      line-height: 1.35;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    /* ACTIONS */
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 4px;
+      padding: 11px 7px 12px;
+    }
+
+    .action {
+      background: transparent;
+      padding: 4px 2px;
+      min-width: 0;
+      color: #777;
+    }
+
+    .action-icon {
+      width: 39px;
+      height: 39px;
+      margin: auto;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background: #f6f6f8;
+    }
+
+    .action-text {
+      display: block;
+      margin-top: 5px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .chat-action .action-icon {
       background: #fff0f5;
       color: #ff4f81;
     }
 
-    .follow-btn.following {
+    .call-action .action-icon {
+      background: #f0f8ff;
+    }
+
+    .video-action .action-icon {
+      background: #f3f0ff;
+    }
+
+    .follow-action .action-icon {
+      background: #fff0f5;
+      color: #ff4f81;
+    }
+
+    .follow-action.following .action-icon {
       background: #ff4f81;
       color: white;
     }
 
-    .empty {
-      background: white;
-      padding: 35px;
-      text-align: center;
-      border-radius: 15px;
-      color: #888;
-      grid-column: 1 / -1;
+    .follow-action.following {
+      color: #ff4f81;
     }
 
-    .loading {
-      background: white;
-      padding: 35px;
-      text-align: center;
-      border-radius: 15px;
-      color: #888;
-      grid-column: 1 / -1;
+    .action:disabled {
+      opacity: .6;
+      cursor: default;
     }
+
+    /* EMPTY */
+
+    .empty,
+    .loading {
+      grid-column: 1 / -1;
+      background: white;
+      padding: 40px 20px;
+      border-radius: 18px;
+      color: #999;
+      text-align: center;
+    }
+
+    /* NAV */
 
     .bottom-nav {
       position: fixed;
-      bottom: 0;
       left: 0;
       right: 0;
-      height: 68px;
-      background: white;
+      bottom: 0;
+      height: 70px;
+      background: rgba(255,255,255,.97);
       border-top: 1px solid #eee;
+      z-index: 50;
       display: flex;
       justify-content: center;
-      z-index: 20;
     }
 
     .nav-inner {
       width: 100%;
       max-width: 700px;
       display: flex;
-      justify-content: space-around;
       align-items: center;
+      justify-content: space-around;
     }
 
     .nav-item {
+      color: #999;
+      font-size: 11px;
       text-align: center;
-      font-size: 12px;
-      color: #777;
       cursor: pointer;
+      min-width: 55px;
+    }
+
+    .nav-icon {
+      display: block;
+      font-size: 21px;
+      margin-bottom: 3px;
     }
 
     .nav-item.active {
       color: #ff4f81;
-      font-weight: bold;
+      font-weight: 800;
     }
 
-    .nav-icon {
-      font-size: 21px;
-      display: block;
-      margin-bottom: 3px;
-    }
-
-    @media (max-width: 900px) {
+    @media (max-width: 800px) {
       .hosts {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2,1fr);
       }
     }
 
-    @media (max-width: 650px) {
-      .hosts {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 400px) {
-      .hosts {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-      }
-
+    @media (max-width: 520px) {
       .container {
-        padding: 14px 10px;
+        padding: 16px 11px 22px;
+      }
+
+      .hosts {
+        gap: 11px;
+      }
+
+      .host-card {
+        border-radius: 18px;
+      }
+
+      .photo-wrap {
+        aspect-ratio: 3 / 4;
+      }
+
+      .host-name {
+        font-size: 18px;
+      }
+
+      .actions {
+        padding-left: 3px;
+        padding-right: 3px;
+      }
+
+      .action-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 16px;
+      }
+
+      .action-text {
+        font-size: 9px;
       }
     }
   </style>
@@ -273,23 +497,86 @@
   <div class="diamond">💎 1,000</div>
 </header>
 
-<div class="container">
+<main class="container">
 
-  <div class="welcome">
-    <h1>Welcome to Mimo</h1>
-    <p>Meet new people, chat and make meaningful connections.</p>
+  <div class="hello">
+    <div class="hello-small">Discover someone new</div>
+    <div class="hello-title">Meet & Connect ✨</div>
   </div>
 
-  <input
-    id="searchInput"
-    class="search"
-    type="text"
-    placeholder="Search hosts..."
-    oninput="filterHosts()"
-  >
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
 
-  <div class="section-title">
-    Discover Hosts
+    <input
+      id="searchInput"
+      class="search"
+      type="text"
+      placeholder="Search people..."
+      oninput="filterHosts()"
+    >
+  </div>
+
+
+  <!-- STORIES -->
+
+  <section class="story-section">
+
+    <div class="section-head">
+      <div class="section-title">Stories</div>
+      <div class="section-link">See all</div>
+    </div>
+
+    <div id="storyList" class="stories">
+
+      <div class="story" onclick="storyComingSoon()">
+        <div class="story-ring add-story-ring">
+          <div class="add-story-circle">＋</div>
+        </div>
+        <div class="story-name">Your Story</div>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- FILTER -->
+
+  <div class="filters">
+
+    <button
+      class="filter active"
+      onclick="setFilter('all', this)"
+    >
+      ✨ Discover
+    </button>
+
+    <button
+      class="filter"
+      onclick="setFilter('popular', this)"
+    >
+      🔥 Popular
+    </button>
+
+    <button
+      class="filter"
+      onclick="setFilter('video', this)"
+    >
+      🎥 Video Call
+    </button>
+
+    <button
+      class="filter"
+      onclick="setFilter('online', this)"
+    >
+      🟢 Online
+    </button>
+
+  </div>
+
+
+  <div class="section-head">
+    <div class="section-title">Discover Hosts</div>
   </div>
 
   <div id="hostList" class="hosts">
@@ -298,9 +585,12 @@
     </div>
   </div>
 
-</div>
+</main>
 
-<div class="bottom-nav">
+
+<!-- BOTTOM NAV -->
+
+<nav class="bottom-nav">
 
   <div class="nav-inner">
 
@@ -343,7 +633,8 @@
 
   </div>
 
-</div>
+</nav>
+
 
 <script>
 
@@ -359,13 +650,15 @@ const supabaseClient =
     SUPABASE_KEY
   );
 
+
 let allHosts = [];
 let currentUser = null;
 let followedHostIds = new Set();
+let currentFilter = "all";
 
 
 /* =========================
-   LOAD CURRENT USER
+   CURRENT USER
 ========================= */
 
 async function loadCurrentUser() {
@@ -373,81 +666,49 @@ async function loadCurrentUser() {
   const {
     data,
     error
-  } =
-    await supabaseClient.auth.getUser();
+  } = await supabaseClient.auth.getUser();
 
   if (error) {
-
-    console.error(
-      "Auth error:",
-      error
-    );
-
+    console.error("Auth error:", error);
     currentUser = null;
-
     return;
   }
 
-  currentUser =
-    data.user || null;
-
+  currentUser = data.user || null;
 }
 
 
 /* =========================
-   LOAD FOLLOWING
+   FOLLOWING
 ========================= */
 
 async function loadFollowing() {
 
-  followedHostIds =
-    new Set();
+  followedHostIds = new Set();
 
-  if (!currentUser) {
-
-    return;
-  }
-
+  if (!currentUser) return;
 
   const {
     data,
     error
-  } =
-    await supabaseClient
-      .from("follows")
-      .select("following_id")
-      .eq(
-        "follower_id",
-        currentUser.id
-      );
-
+  } = await supabaseClient
+    .from("follows")
+    .select("following_id")
+    .eq("follower_id", currentUser.id);
 
   if (error) {
-
-    console.error(
-      "Following error:",
-      error
-    );
-
+    console.error("Following error:", error);
     return;
   }
 
-
-  (data || []).forEach(
-    item => {
-
-      followedHostIds.add(
-        item.following_id
-      );
-
-    }
-  );
-
+  (data || []).forEach(item => {
+    followedHostIds.add(item.following_id);
+  });
 }
 
 
 /* =========================
-   LOAD HOSTS
+   HOSTS
 ========================= */
 
 async function loadHosts() {
@@ -455,57 +716,110 @@ async function loadHosts() {
   const hostList =
     document.getElementById("hostList");
 
-  try {
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("profiles")
+    .select(`
+      id,
+      username,
+      display_name,
+      avatar_url,
+      bio,
+      role,
+      online_status
+    `)
+    .eq("role", "host")
+    .order("created_at", {
+      ascending: false
+    });
 
-    const { data, error } =
-      await supabaseClient
-        .from("profiles")
-        .select(`
-          id,
-          username,
-          display_name,
-          avatar_url,
-          bio,
-          role,
-          online_status
-        `)
-        .eq("role", "host")
-        .order("created_at", {
-          ascending: false
-        });
+  if (error) {
 
-    if (error) {
-
-      console.error(error);
-
-      hostList.innerHTML = `
-        <div class="empty">
-          Unable to load hosts.<br>
-          Please try again later.
-        </div>
-      `;
-
-      return;
-    }
-
-    allHosts =
-      data || [];
-
-    renderHosts(
-      allHosts
-    );
-
-  } catch (err) {
-
-    console.error(err);
+    console.error(error);
 
     hostList.innerHTML = `
       <div class="empty">
-        Something went wrong.
+        Unable to load hosts.
       </div>
     `;
 
+    return;
   }
+
+  allHosts = data || [];
+
+  renderStories();
+  applyFilters();
+}
+
+
+/* =========================
+   STORIES UI
+========================= */
+
+function renderStories() {
+
+  const storyList =
+    document.getElementById("storyList");
+
+  let html = `
+
+    <div
+      class="story"
+      onclick="storyComingSoon()"
+    >
+
+      <div class="story-ring add-story-ring">
+        <div class="add-story-circle">
+          ＋
+        </div>
+      </div>
+
+      <div class="story-name">
+        Your Story
+      </div>
+
+    </div>
+  `;
+
+  allHosts.slice(0, 8).forEach(host => {
+
+    const name =
+      host.display_name ||
+      host.username ||
+      "Host";
+
+    const avatar =
+      host.avatar_url ||
+      "https://i.pravatar.cc/500";
+
+    html += `
+
+      <div
+        class="story"
+        onclick="storyComingSoon()"
+      >
+
+        <div class="story-ring">
+
+          <img
+            src="${escapeHtml(avatar)}"
+            alt="${escapeHtml(name)}"
+          >
+
+        </div>
+
+        <div class="story-name">
+          ${escapeHtml(name)}
+        </div>
+
+      </div>
+    `;
+  });
+
+  storyList.innerHTML = html;
 }
 
 
@@ -522,12 +836,13 @@ function renderHosts(hosts) {
 
     hostList.innerHTML = `
       <div class="empty">
-        No hosts available yet.
+        No hosts found.
       </div>
     `;
 
     return;
   }
+
 
   hostList.innerHTML =
     hosts.map(host => {
@@ -545,64 +860,99 @@ function renderHosts(hosts) {
         host.bio ||
         "Nice to meet you ❤️";
 
-      const isOnline =
+      const online =
         host.online_status === "online";
 
       const following =
-        followedHostIds.has(
-          host.id
-        );
+        followedHostIds.has(host.id);
+
 
       return `
 
-        <div
-          class="host-card"
-          onclick="openProfile('${host.id}')"
-        >
+        <article class="host-card">
 
-          <img
-            class="host-image"
-            src="${escapeHtml(avatar)}"
-            alt="${escapeHtml(name)}"
+          <div
+            class="photo-wrap"
+            onclick="openProfile('${host.id}')"
           >
 
-          <div class="host-info">
+            <img
+              class="host-image"
+              src="${escapeHtml(avatar)}"
+              alt="${escapeHtml(name)}"
+            >
 
-            <div class="host-name">
-              ${escapeHtml(name)}
+            <div class="photo-gradient"></div>
+
+            <div
+              class="status ${online ? "online" : "offline"}"
+            >
+              ${online ? "● Online" : "○ Offline"}
             </div>
 
-            <div class="host-bio">
-              ${escapeHtml(bio)}
-            </div>
+            <div class="photo-info">
 
-            <div class="${isOnline ? "online" : "offline"}">
-              ${isOnline ? "🟢 Online" : "⚪ Offline"}
-            </div>
+              <div class="host-name">
+                ${escapeHtml(name)}
+              </div>
 
-            <div class="buttons">
-
-              <button
-                class="chat-btn"
-                onclick="event.stopPropagation(); chatWithHost('${host.id}')"
-              >
-                💬 Chat
-              </button>
-
-              <button
-                id="follow-${host.id}"
-                class="follow-btn ${following ? "following" : ""}"
-                onclick="event.stopPropagation(); followHost('${host.id}')"
-              >
-                ${following ? "❤️ Following" : "❤️ Follow"}
-              </button>
+              <div class="host-bio">
+                ${escapeHtml(bio)}
+              </div>
 
             </div>
 
           </div>
 
-        </div>
 
+          <div class="actions">
+
+            <button
+              class="action chat-action"
+              onclick="chatWithHost('${host.id}')"
+            >
+              <span class="action-icon">💬</span>
+              <span class="action-text">Chat</span>
+            </button>
+
+
+            <button
+              class="action call-action"
+              onclick="callComingSoon('${host.id}')"
+            >
+              <span class="action-icon">📞</span>
+              <span class="action-text">Call</span>
+            </button>
+
+
+            <button
+              class="action video-action"
+              onclick="videoComingSoon('${host.id}')"
+            >
+              <span class="action-icon">🎥</span>
+              <span class="action-text">Video</span>
+            </button>
+
+
+            <button
+              id="follow-${host.id}"
+              class="action follow-action ${following ? "following" : ""}"
+              onclick="followHost('${host.id}')"
+            >
+
+              <span class="action-icon">
+                ${following ? "♥" : "♡"}
+              </span>
+
+              <span class="action-text">
+                ${following ? "Following" : "Follow"}
+              </span>
+
+            </button>
+
+          </div>
+
+        </article>
       `;
 
     }).join("");
@@ -610,10 +960,31 @@ function renderHosts(hosts) {
 
 
 /* =========================
-   SEARCH
+   SEARCH + FILTER
 ========================= */
 
 function filterHosts() {
+  applyFilters();
+}
+
+
+function setFilter(filter, button) {
+
+  currentFilter = filter;
+
+  document
+    .querySelectorAll(".filter")
+    .forEach(item => {
+      item.classList.remove("active");
+    });
+
+  button.classList.add("active");
+
+  applyFilters();
+}
+
+
+function applyFilters() {
 
   const keyword =
     document
@@ -622,37 +993,41 @@ function filterHosts() {
       .toLowerCase()
       .trim();
 
-  const filtered =
+
+  let filtered =
     allHosts.filter(host => {
 
-      const name =
-        (host.display_name || "")
-          .toLowerCase();
+      const text = `
+        ${host.display_name || ""}
+        ${host.username || ""}
+        ${host.bio || ""}
+      `.toLowerCase();
 
-      const username =
-        (host.username || "")
-          .toLowerCase();
-
-      const bio =
-        (host.bio || "")
-          .toLowerCase();
-
-      return (
-        name.includes(keyword) ||
-        username.includes(keyword) ||
-        bio.includes(keyword)
-      );
-
+      return text.includes(keyword);
     });
 
-  renderHosts(
-    filtered
-  );
+
+  if (currentFilter === "online") {
+
+    filtered =
+      filtered.filter(host =>
+        host.online_status === "online"
+      );
+
+  }
+
+  /*
+    Popular 和 Video Call
+    等相关真实数据完成后再接筛选。
+    现在不会制造假的数据库状态。
+  */
+
+  renderHosts(filtered);
 }
 
 
 /* =========================
-   OPEN PROFILE
+   PROFILE
 ========================= */
 
 function openProfile(hostId) {
@@ -660,7 +1035,6 @@ function openProfile(hostId) {
   window.location.href =
     "profile.html?id=" +
     encodeURIComponent(hostId);
-
 }
 
 
@@ -673,7 +1047,6 @@ function chatWithHost(hostId) {
   window.location.href =
     "chat.html?host=" +
     encodeURIComponent(hostId);
-
 }
 
 
@@ -685,196 +1058,138 @@ async function followHost(hostId) {
 
   if (!currentUser) {
 
-    alert(
-      "Please login first."
-    );
+    alert("Please login first.");
 
     return;
   }
 
 
-  if (
-    currentUser.id === hostId
-  ) {
-
+  if (currentUser.id === hostId) {
     return;
   }
 
 
   const button =
     document.getElementById(
-      "follow-" +
-      hostId
+      "follow-" + hostId
     );
 
 
   if (button) {
-
-    button.disabled =
-      true;
-
+    button.disabled = true;
   }
 
 
   const currentlyFollowing =
-    followedHostIds.has(
-      hostId
-    );
+    followedHostIds.has(hostId);
 
-
-  /*
-    UNFOLLOW
-  */
 
   if (currentlyFollowing) {
 
     const {
       error
-    } =
-      await supabaseClient
-        .from("follows")
-        .delete()
-        .eq(
-          "follower_id",
-          currentUser.id
-        )
-        .eq(
-          "following_id",
-          hostId
-        );
+    } = await supabaseClient
+      .from("follows")
+      .delete()
+      .eq("follower_id", currentUser.id)
+      .eq("following_id", hostId);
 
 
     if (error) {
 
-      console.error(
-        "Unfollow error:",
-        error
-      );
+      console.error(error);
 
-      alert(
-        "Unable to unfollow."
-      );
+      alert("Unable to unfollow.");
 
       if (button) {
-
-        button.disabled =
-          false;
-
+        button.disabled = false;
       }
 
       return;
     }
 
 
-    followedHostIds.delete(
-      hostId
-    );
+    followedHostIds.delete(hostId);
 
-  }
-
-  /*
-    FOLLOW
-  */
-
-  else {
+  } else {
 
     const {
       error
-    } =
-    await supabaseClient
+    } = await supabaseClient
       .from("follows")
       .insert({
-        follower_id:
-          currentUser.id,
-
-        following_id:
-          hostId
+        follower_id: currentUser.id,
+        following_id: hostId
       });
 
 
     if (error) {
 
-      console.error(
-        "Follow error:",
-        error
-      );
+      console.error(error);
 
-      alert(
-        "Unable to follow this host."
-      );
+      alert("Unable to follow.");
 
       if (button) {
-
-        button.disabled =
-          false;
-
+        button.disabled = false;
       }
 
       return;
     }
 
 
-    followedHostIds.add(
-      hostId
-    );
-
+    followedHostIds.add(hostId);
   }
 
 
-  /*
-    Update button
-  */
-
-  if (button) {
-
-    const following =
-      followedHostIds.has(
-        hostId
-      );
-
-    button.className =
-      "follow-btn" +
-      (
-        following
-          ? " following"
-          : ""
-      );
-
-    button.textContent =
-      following
-        ? "❤️ Following"
-        : "❤️ Follow";
-
-    button.disabled =
-      false;
-
-  }
-
+  applyFilters();
 }
 
 
 /* =========================
-   NAVIGATION
+   FUTURE FEATURES
+========================= */
+
+function storyComingSoon() {
+
+  alert(
+    "Stories will be available soon."
+  );
+}
+
+
+function callComingSoon(hostId) {
+
+  alert(
+    "Voice Call will be connected next."
+  );
+}
+
+
+function videoComingSoon(hostId) {
+
+  alert(
+    "Video Call will be connected next."
+  );
+}
+
+
+/* =========================
+   NAV
 ========================= */
 
 function goTo(page) {
-
-  window.location.href =
-    page;
-
+  window.location.href = page;
 }
 
 
 /* =========================
-   HELPERS
+   SAFE TEXT
 ========================= */
 
 function escapeHtml(text) {
 
   const div =
-    document.createElement(
-      "div"
-    );
+    document.createElement("div");
 
   div.textContent =
     text == null
@@ -882,7 +1197,6 @@ function escapeHtml(text) {
       : String(text);
 
   return div.innerHTML;
-
 }
 
 
@@ -897,7 +1211,6 @@ async function init() {
   await loadFollowing();
 
   await loadHosts();
-
 }
 
 init();
@@ -906,4 +1219,3 @@ init();
 
 </body>
 </html>
-```
