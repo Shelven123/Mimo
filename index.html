@@ -164,6 +164,11 @@
       flex: 1;
     }
 
+    button:disabled {
+      opacity: .6;
+      cursor: default;
+    }
+
     .chat-btn {
       background: #ff4f81;
       color: white;
@@ -172,6 +177,11 @@
     .follow-btn {
       background: #fff0f5;
       color: #ff4f81;
+    }
+
+    .follow-btn.following {
+      background: #ff4f81;
+      color: white;
     }
 
     .empty {
@@ -350,6 +360,90 @@ const supabaseClient =
   );
 
 let allHosts = [];
+let currentUser = null;
+let followedHostIds = new Set();
+
+
+/* =========================
+   LOAD CURRENT USER
+========================= */
+
+async function loadCurrentUser() {
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth.getUser();
+
+  if (error) {
+
+    console.error(
+      "Auth error:",
+      error
+    );
+
+    currentUser = null;
+
+    return;
+  }
+
+  currentUser =
+    data.user || null;
+
+}
+
+
+/* =========================
+   LOAD FOLLOWING
+========================= */
+
+async function loadFollowing() {
+
+  followedHostIds =
+    new Set();
+
+  if (!currentUser) {
+
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("follows")
+      .select("following_id")
+      .eq(
+        "follower_id",
+        currentUser.id
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Following error:",
+      error
+    );
+
+    return;
+  }
+
+
+  (data || []).forEach(
+    item => {
+
+      followedHostIds.add(
+        item.following_id
+      );
+
+    }
+  );
+
+}
 
 
 /* =========================
@@ -394,9 +488,12 @@ async function loadHosts() {
       return;
     }
 
-    allHosts = data || [];
+    allHosts =
+      data || [];
 
-    renderHosts(allHosts);
+    renderHosts(
+      allHosts
+    );
 
   } catch (err) {
 
@@ -451,6 +548,11 @@ function renderHosts(hosts) {
       const isOnline =
         host.online_status === "online";
 
+      const following =
+        followedHostIds.has(
+          host.id
+        );
+
       return `
 
         <div
@@ -460,18 +562,18 @@ function renderHosts(hosts) {
 
           <img
             class="host-image"
-            src="${avatar}"
-            alt="${name}"
+            src="${escapeHtml(avatar)}"
+            alt="${escapeHtml(name)}"
           >
 
           <div class="host-info">
 
             <div class="host-name">
-              ${name}
+              ${escapeHtml(name)}
             </div>
 
             <div class="host-bio">
-              ${bio}
+              ${escapeHtml(bio)}
             </div>
 
             <div class="${isOnline ? "online" : "offline"}">
@@ -488,10 +590,11 @@ function renderHosts(hosts) {
               </button>
 
               <button
-                class="follow-btn"
+                id="follow-${host.id}"
+                class="follow-btn ${following ? "following" : ""}"
                 onclick="event.stopPropagation(); followHost('${host.id}')"
               >
-                ❤️ Follow
+                ${following ? "❤️ Following" : "❤️ Follow"}
               </button>
 
             </div>
@@ -542,7 +645,9 @@ function filterHosts() {
 
     });
 
-  renderHosts(filtered);
+  renderHosts(
+    filtered
+  );
 }
 
 
@@ -576,11 +681,174 @@ function chatWithHost(hostId) {
    FOLLOW
 ========================= */
 
-function followHost(hostId) {
+async function followHost(hostId) {
 
-  alert(
-    "Follow system will be connected next."
-  );
+  if (!currentUser) {
+
+    alert(
+      "Please login first."
+    );
+
+    return;
+  }
+
+
+  if (
+    currentUser.id === hostId
+  ) {
+
+    return;
+  }
+
+
+  const button =
+    document.getElementById(
+      "follow-" +
+      hostId
+    );
+
+
+  if (button) {
+
+    button.disabled =
+      true;
+
+  }
+
+
+  const currentlyFollowing =
+    followedHostIds.has(
+      hostId
+    );
+
+
+  /*
+    UNFOLLOW
+  */
+
+  if (currentlyFollowing) {
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .from("follows")
+        .delete()
+        .eq(
+          "follower_id",
+          currentUser.id
+        )
+        .eq(
+          "following_id",
+          hostId
+        );
+
+
+    if (error) {
+
+      console.error(
+        "Unfollow error:",
+        error
+      );
+
+      alert(
+        "Unable to unfollow."
+      );
+
+      if (button) {
+
+        button.disabled =
+          false;
+
+      }
+
+      return;
+    }
+
+
+    followedHostIds.delete(
+      hostId
+    );
+
+  }
+
+  /*
+    FOLLOW
+  */
+
+  else {
+
+    const {
+      error
+    } =
+    await supabaseClient
+      .from("follows")
+      .insert({
+        follower_id:
+          currentUser.id,
+
+        following_id:
+          hostId
+      });
+
+
+    if (error) {
+
+      console.error(
+        "Follow error:",
+        error
+      );
+
+      alert(
+        "Unable to follow this host."
+      );
+
+      if (button) {
+
+        button.disabled =
+          false;
+
+      }
+
+      return;
+    }
+
+
+    followedHostIds.add(
+      hostId
+    );
+
+  }
+
+
+  /*
+    Update button
+  */
+
+  if (button) {
+
+    const following =
+      followedHostIds.has(
+        hostId
+      );
+
+    button.className =
+      "follow-btn" +
+      (
+        following
+          ? " following"
+          : ""
+      );
+
+    button.textContent =
+      following
+        ? "❤️ Following"
+        : "❤️ Follow";
+
+    button.disabled =
+      false;
+
+  }
 
 }
 
@@ -591,7 +859,29 @@ function followHost(hostId) {
 
 function goTo(page) {
 
-  window.location.href = page;
+  window.location.href =
+    page;
+
+}
+
+
+/* =========================
+   HELPERS
+========================= */
+
+function escapeHtml(text) {
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.textContent =
+    text == null
+      ? ""
+      : String(text);
+
+  return div.innerHTML;
 
 }
 
@@ -600,7 +890,17 @@ function goTo(page) {
    START
 ========================= */
 
-loadHosts();
+async function init() {
+
+  await loadCurrentUser();
+
+  await loadFollowing();
+
+  await loadHosts();
+
+}
+
+init();
 
 </script>
 
