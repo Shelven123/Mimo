@@ -6,6 +6,12 @@
   <title>Mimo Voice Call</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    window.addEventListener("error", function(e) {
+      const box = document.getElementById("errorText");
+      if (box) box.textContent = "Page error: " + (e.message || "unknown error");
+    });
+  </script>
 
   <style>
     * {
@@ -308,7 +314,7 @@
 
       <button
         class="circle end"
-        onclick="forceEndCall()"
+        onclick="window.location.href='index.html'"
       >
         📞
       </button>
