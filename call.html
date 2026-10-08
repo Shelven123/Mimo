@@ -1240,7 +1240,7 @@ async function loadExistingSignals() {
 ========================= */
 
 async function checkRemoteCallStatus() {
-  if (!callId || ended) return;
+  if (!callId) return;
 
   const { data, error } = await supabaseClient
     .from("calls")
