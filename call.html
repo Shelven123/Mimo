@@ -596,10 +596,6 @@ async function startOutgoingCall() {
     "Requesting microphone..."
   );
 
-
-  await prepareMicrophone();
-
-
   const {
     data,
     error
@@ -643,12 +639,19 @@ async function startOutgoingCall() {
     "Calling..."
   );
 
-
   await setupRealtime();
 
-  await createPeerConnection();
-
-  await createOffer();
+  try {
+    await prepareMicrophone();
+    await createPeerConnection();
+    await createOffer();
+  } catch (microphoneError) {
+    console.error(microphoneError);
+    showError(
+      "Microphone is unavailable. You can still end this call."
+    );
+    setStatus("Microphone unavailable");
+  }
 
 }
 
@@ -1508,7 +1511,10 @@ function toggleSpeaker() {
 
 async function endCall() {
 
-  if (ended) return;
+  if (ended) {
+    history.back();
+    return;
+  }
 
   ended = true;
 
