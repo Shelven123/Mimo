@@ -889,7 +889,7 @@ async function createPeerConnection() {
       ) {
 
         await sendSignal(
-          "ice_candidate",
+          "ice-candidate",
           event.candidate.toJSON()
         );
 
@@ -1146,7 +1146,7 @@ async function handleSignal(
 
   else if (
     signal.signal_type ===
-    "ice_candidate"
+    "ice-candidate"
   ) {
 
     const candidate =
