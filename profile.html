@@ -1,0 +1,584 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Mimo - Host Profile</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f9;
+      color: #222;
+      padding-bottom: 30px;
+    }
+
+    .topbar {
+      height: 60px;
+      background: white;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .back {
+      border: none;
+      background: none;
+      font-size: 25px;
+      cursor: pointer;
+      padding: 5px 10px 5px 0;
+    }
+
+    .logo {
+      color: #ff4f81;
+      font-size: 21px;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 850px;
+      margin: auto;
+      padding: 20px 15px;
+    }
+
+    .profile-card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 3px 15px rgba(0,0,0,.06);
+    }
+
+    .profile-top {
+      text-align: center;
+      padding: 28px 20px 22px;
+    }
+
+    .avatar {
+      width: 125px;
+      height: 125px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #fff0f5;
+      margin-bottom: 12px;
+    }
+
+    .name {
+      font-size: 25px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .username {
+      color: #999;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .status {
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .online {
+      color: #21b66f;
+    }
+
+    .offline {
+      color: #999;
+    }
+
+    .bio {
+      color: #666;
+      line-height: 1.5;
+      margin: 10px auto 18px;
+      max-width: 600px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 9px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    .actions button {
+      flex: 1;
+      border: none;
+      padding: 12px 8px;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .primary {
+      background: #ff4f81;
+      color: white;
+    }
+
+    .secondary {
+      background: #fff0f5;
+      color: #ff4f81;
+    }
+
+    .info-section {
+      border-top: 1px solid #eee;
+      padding: 20px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .info-item {
+      background: #f8f8fa;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .label {
+      color: #999;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .value {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      background: #fff0f5;
+      color: #ff4f81;
+      padding: 7px 11px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+
+    .loading,
+    .error {
+      background: white;
+      padding: 40px 20px;
+      text-align: center;
+      border-radius: 18px;
+      color: #888;
+    }
+
+    .error {
+      color: #d9534f;
+    }
+
+    @media (max-width: 600px) {
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        flex-wrap: wrap;
+      }
+
+      .actions button {
+        min-width: 45%;
+      }
+
+      .avatar {
+        width: 110px;
+        height: 110px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <button class="back" onclick="goBack()">‹</button>
+  <div class="logo">❤️ Mimo</div>
+</div>
+
+<div class="container">
+
+  <div id="profileArea">
+    <div class="loading">
+      Loading profile...
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+  "https://zhhgiwqehwuwzxnqbnth.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ";
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+const params =
+  new URLSearchParams(window.location.search);
+
+const hostId =
+  params.get("id");
+
+async function loadProfile() {
+
+  const area =
+    document.getElementById("profileArea");
+
+  if (!hostId) {
+
+    area.innerHTML = `
+      <div class="error">
+        Host profile not found.
+      </div>
+    `;
+
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient
+      .from("profiles")
+      .select(`
+        id,
+        username,
+        display_name,
+        avatar_url,
+        bio,
+        role,
+        birthday,
+        region,
+        education,
+        occupation,
+        mbti,
+        zodiac,
+        personality,
+        appearance,
+        social_purpose,
+        topics,
+        interests,
+        online_status
+      `)
+      .eq("id", hostId)
+      .eq("role", "host")
+      .maybeSingle();
+
+  if (error) {
+
+    console.error(error);
+
+    area.innerHTML = `
+      <div class="error">
+        Unable to load this profile.
+      </div>
+    `;
+
+    return;
+  }
+
+  if (!data) {
+
+    area.innerHTML = `
+      <div class="error">
+        Host not found.
+      </div>
+    `;
+
+    return;
+  }
+
+  renderProfile(data);
+}
+
+function renderProfile(host) {
+
+  const area =
+    document.getElementById("profileArea");
+
+  const name =
+    host.display_name ||
+    host.username ||
+    "Host";
+
+  const avatar =
+    host.avatar_url ||
+    "https://i.pravatar.cc/500";
+
+  const bio =
+    host.bio ||
+    "Nice to meet you ❤️";
+
+  const status =
+    host.online_status === "online";
+
+  const topics =
+    Array.isArray(host.topics)
+      ? host.topics
+      : [];
+
+  const interests =
+    Array.isArray(host.interests)
+      ? host.interests
+      : [];
+
+  area.innerHTML = `
+
+    <div class="profile-card">
+
+      <div class="profile-top">
+
+        <img
+          class="avatar"
+          src="${avatar}"
+          alt="${name}"
+        >
+
+        <div class="name">
+          ${name}
+        </div>
+
+        <div class="username">
+          @${host.username || "host"}
+        </div>
+
+        <div class="status ${status ? "online" : "offline"}">
+          ${status ? "🟢 Online" : "⚪ Offline"}
+        </div>
+
+        <div class="bio">
+          ${bio}
+        </div>
+
+        <div class="actions">
+
+          <button
+            class="primary"
+            onclick="chatHost()"
+          >
+            💬 Chat
+          </button>
+
+          <button
+            class="secondary"
+            onclick="followHost()"
+          >
+            ❤️ Follow
+          </button>
+
+          <button
+            class="secondary"
+            onclick="callHost()"
+          >
+            📞 Call
+          </button>
+
+          <button
+            class="secondary"
+            onclick="makeAppointment()"
+          >
+            📅 Meet
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="info-section">
+
+        <div class="section-title">
+          About ${name}
+        </div>
+
+        <div class="info-grid">
+
+          ${infoItem("Birthday", host.birthday)}
+          ${infoItem("Region", host.region)}
+          ${infoItem("Education", host.education)}
+          ${infoItem("Occupation", host.occupation)}
+          ${infoItem("MBTI", host.mbti)}
+          ${infoItem("Zodiac", host.zodiac)}
+          ${infoItem("Personality", host.personality)}
+          ${infoItem("Appearance", host.appearance)}
+          ${infoItem("Social Purpose", host.social_purpose)}
+
+        </div>
+
+      </div>
+
+      <div class="info-section">
+
+        <div class="section-title">
+          Topics
+        </div>
+
+        <div class="tag-list">
+          ${
+            topics.length
+              ? topics.map(item => `
+                  <span class="tag">
+                    ${item}
+                  </span>
+                `).join("")
+              : `<span class="label">No topics added yet.</span>`
+          }
+        </div>
+
+      </div>
+
+      <div class="info-section">
+
+        <div class="section-title">
+          Interests
+        </div>
+
+        <div class="tag-list">
+          ${
+            interests.length
+              ? interests.map(item => `
+                  <span class="tag">
+                    ${item}
+                  </span>
+                `).join("")
+              : `<span class="label">No interests added yet.</span>`
+          }
+        </div>
+
+      </div>
+
+      <div class="info-section">
+
+        <div class="section-title">
+          More
+        </div>
+
+        <div class="actions">
+
+          <button
+            class="secondary"
+            onclick="sendGift()"
+          >
+            🎁 Gift
+          </button>
+
+          <button
+            class="secondary"
+            onclick="videoCall()"
+          >
+            🎥 Video
+          </button>
+
+          <button
+            class="secondary"
+            onclick="viewImpressions()"
+          >
+            💬 Impressions
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}
+
+function infoItem(label, value) {
+
+  return `
+    <div class="info-item">
+
+      <div class="label">
+        ${label}
+      </div>
+
+      <div class="value">
+        ${value || "Not provided"}
+      </div>
+
+    </div>
+  `;
+}
+
+function chatHost() {
+
+  window.location.href =
+    "chat.html?host=" +
+    encodeURIComponent(hostId);
+}
+
+function followHost() {
+
+  alert("Follow system will be connected next.");
+}
+
+function callHost() {
+
+  alert("Voice call will be connected next.");
+}
+
+function videoCall() {
+
+  alert("Video call will be connected next.");
+}
+
+function makeAppointment() {
+
+  alert("Appointment system will be connected next.");
+}
+
+function sendGift() {
+
+  alert("Gift system will be connected next.");
+}
+
+function viewImpressions() {
+
+  alert("Impressions will be connected next.");
+}
+
+function goBack() {
+
+  window.history.back();
+}
+
+loadProfile();
+
+</script>
+
+</body>
+</html>
+```
