@@ -125,6 +125,11 @@
       font-size: 14px;
     }
 
+    .actions button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
     .primary {
       background: #ff4f81;
       color: white;
@@ -133,6 +138,11 @@
     .secondary {
       background: #fff0f5;
       color: #ff4f81;
+    }
+
+    .following {
+      background: #ff4f81;
+      color: white;
     }
 
     .info-section {
@@ -254,6 +264,15 @@ const params =
 const hostId =
   params.get("id");
 
+let currentUser = null;
+let isFollowing = false;
+let followButton = null;
+
+
+/* =========================
+   LOAD PROFILE
+========================= */
+
 async function loadProfile() {
 
   const area =
@@ -269,6 +288,38 @@ async function loadProfile() {
 
     return;
   }
+
+
+  /*
+    Get current logged-in user
+  */
+
+  const {
+    data: {
+      user
+    },
+    error: authError
+  } =
+    await supabaseClient.auth.getUser();
+
+
+  if (authError) {
+
+    console.error(
+      "Auth error:",
+      authError
+    );
+
+  }
+
+
+  currentUser =
+    user || null;
+
+
+  /*
+    Load host profile
+  */
 
   const { data, error } =
     await supabaseClient
@@ -297,9 +348,13 @@ async function loadProfile() {
       .eq("role", "host")
       .maybeSingle();
 
+
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Profile error:",
+      error
+    );
 
     area.innerHTML = `
       <div class="error">
@@ -309,6 +364,7 @@ async function loadProfile() {
 
     return;
   }
+
 
   if (!data) {
 
@@ -321,8 +377,22 @@ async function loadProfile() {
     return;
   }
 
+
   renderProfile(data);
+
+
+  /*
+    Check Follow status
+  */
+
+  await checkFollowStatus();
+
 }
+
+
+/* =========================
+   RENDER PROFILE
+========================= */
 
 function renderProfile(host) {
 
@@ -355,6 +425,7 @@ function renderProfile(host) {
       ? host.interests
       : [];
 
+
   area.innerHTML = `
 
     <div class="profile-card">
@@ -363,16 +434,16 @@ function renderProfile(host) {
 
         <img
           class="avatar"
-          src="${avatar}"
-          alt="${name}"
+          src="${escapeHtml(avatar)}"
+          alt="${escapeHtml(name)}"
         >
 
         <div class="name">
-          ${name}
+          ${escapeHtml(name)}
         </div>
 
         <div class="username">
-          @${host.username || "host"}
+          @${escapeHtml(host.username || "host")}
         </div>
 
         <div class="status ${status ? "online" : "offline"}">
@@ -380,7 +451,7 @@ function renderProfile(host) {
         </div>
 
         <div class="bio">
-          ${bio}
+          ${escapeHtml(bio)}
         </div>
 
         <div class="actions">
@@ -393,6 +464,7 @@ function renderProfile(host) {
           </button>
 
           <button
+            id="followButton"
             class="secondary"
             onclick="followHost()"
           >
@@ -417,10 +489,11 @@ function renderProfile(host) {
 
       </div>
 
+
       <div class="info-section">
 
         <div class="section-title">
-          About ${name}
+          About ${escapeHtml(name)}
         </div>
 
         <div class="info-grid">
@@ -439,6 +512,7 @@ function renderProfile(host) {
 
       </div>
 
+
       <div class="info-section">
 
         <div class="section-title">
@@ -446,18 +520,21 @@ function renderProfile(host) {
         </div>
 
         <div class="tag-list">
+
           ${
             topics.length
               ? topics.map(item => `
                   <span class="tag">
-                    ${item}
+                    ${escapeHtml(item)}
                   </span>
                 `).join("")
               : `<span class="label">No topics added yet.</span>`
           }
+
         </div>
 
       </div>
+
 
       <div class="info-section">
 
@@ -466,18 +543,21 @@ function renderProfile(host) {
         </div>
 
         <div class="tag-list">
+
           ${
             interests.length
               ? interests.map(item => `
                   <span class="tag">
-                    ${item}
+                    ${escapeHtml(item)}
                   </span>
                 `).join("")
               : `<span class="label">No interests added yet.</span>`
           }
+
         </div>
 
       </div>
+
 
       <div class="info-section">
 
@@ -514,66 +594,380 @@ function renderProfile(host) {
 
     </div>
   `;
+
+
+  followButton =
+    document.getElementById(
+      "followButton"
+    );
+
 }
 
-function infoItem(label, value) {
+
+/* =========================
+   CHECK FOLLOW STATUS
+========================= */
+
+async function checkFollowStatus() {
+
+  if (!currentUser) {
+
+    return;
+  }
+
+
+  /*
+    Don't allow following yourself
+  */
+
+  if (
+    currentUser.id === hostId
+  ) {
+
+    if (followButton) {
+
+      followButton.disabled =
+        true;
+
+      followButton.textContent =
+        "❤️ Your Profile";
+
+    }
+
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("follows")
+      .select("following_id")
+      .eq(
+        "follower_id",
+        currentUser.id
+      )
+      .eq(
+        "following_id",
+        hostId
+      )
+      .limit(1);
+
+
+  if (error) {
+
+    console.error(
+      "Follow status error:",
+      error
+    );
+
+    return;
+  }
+
+
+  isFollowing =
+    !!(
+      data &&
+      data.length > 0
+    );
+
+
+  updateFollowButton();
+
+}
+
+
+/* =========================
+   UPDATE FOLLOW BUTTON
+========================= */
+
+function updateFollowButton() {
+
+  if (!followButton) {
+
+    return;
+  }
+
+
+  if (isFollowing) {
+
+    followButton.className =
+      "following";
+
+    followButton.textContent =
+      "❤️ Following";
+
+  } else {
+
+    followButton.className =
+      "secondary";
+
+    followButton.textContent =
+      "❤️ Follow";
+
+  }
+
+}
+
+
+/* =========================
+   FOLLOW / UNFOLLOW
+========================= */
+
+async function followHost() {
+
+  if (!currentUser) {
+
+    alert(
+      "Please login first."
+    );
+
+    return;
+  }
+
+
+  if (
+    currentUser.id === hostId
+  ) {
+
+    return;
+  }
+
+
+  if (!followButton) {
+
+    return;
+  }
+
+
+  followButton.disabled =
+    true;
+
+
+  /*
+    UNFOLLOW
+  */
+
+  if (isFollowing) {
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .from("follows")
+        .delete()
+        .eq(
+          "follower_id",
+          currentUser.id
+        )
+        .eq(
+          "following_id",
+          hostId
+        );
+
+
+    if (error) {
+
+      console.error(
+        "Unfollow error:",
+        error
+      );
+
+      alert(
+        "Unable to unfollow."
+      );
+
+      followButton.disabled =
+        false;
+
+      return;
+    }
+
+
+    isFollowing =
+      false;
+
+    updateFollowButton();
+
+    followButton.disabled =
+      false;
+
+    return;
+  }
+
+
+  /*
+    FOLLOW
+  */
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("follows")
+      .insert({
+        follower_id:
+          currentUser.id,
+
+        following_id:
+          hostId
+      });
+
+
+  if (error) {
+
+    console.error(
+      "Follow error:",
+      error
+    );
+
+    alert(
+      "Unable to follow this host."
+    );
+
+    followButton.disabled =
+      false;
+
+    return;
+  }
+
+
+  isFollowing =
+    true;
+
+  updateFollowButton();
+
+  followButton.disabled =
+    false;
+
+}
+
+
+/* =========================
+   INFO ITEM
+========================= */
+
+function infoItem(
+  label,
+  value
+) {
 
   return `
     <div class="info-item">
 
       <div class="label">
-        ${label}
+        ${escapeHtml(label)}
       </div>
 
       <div class="value">
-        ${value || "Not provided"}
+        ${escapeHtml(
+          value || "Not provided"
+        )}
       </div>
 
     </div>
   `;
+
 }
+
+
+/* =========================
+   CHAT
+========================= */
 
 function chatHost() {
 
   window.location.href =
     "chat.html?host=" +
     encodeURIComponent(hostId);
+
 }
 
-function followHost() {
 
-  alert("Follow system will be connected next.");
-}
+/* =========================
+   OTHER FEATURES
+========================= */
 
 function callHost() {
 
-  alert("Voice call will be connected next.");
+  alert(
+    "Voice call will be connected next."
+  );
+
 }
+
 
 function videoCall() {
 
-  alert("Video call will be connected next.");
+  alert(
+    "Video call will be connected next."
+  );
+
 }
+
 
 function makeAppointment() {
 
-  alert("Appointment system will be connected next.");
+  alert(
+    "Appointment system will be connected next."
+  );
+
 }
+
 
 function sendGift() {
 
-  alert("Gift system will be connected next.");
+  alert(
+    "Gift system will be connected next."
+  );
+
 }
+
 
 function viewImpressions() {
 
-  alert("Impressions will be connected next.");
+  alert(
+    "Impressions will be connected next."
+  );
+
 }
+
+
+/* =========================
+   HELPERS
+========================= */
+
+function escapeHtml(
+  text
+) {
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.textContent =
+    text == null
+      ? ""
+      : String(text);
+
+  return div.innerHTML;
+
+}
+
 
 function goBack() {
 
   window.history.back();
+
 }
+
+
+/* =========================
+   START
+========================= */
 
 loadProfile();
 
