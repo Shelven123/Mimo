@@ -1,0 +1,966 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mimo - Me</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f7f7f9;
+  color: #222;
+  padding-bottom: 80px;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+  background: white;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.header-title {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+
+/* =========================
+   PROFILE
+========================= */
+
+.profile-card {
+  background: white;
+  margin: 14px;
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #eee;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.name {
+  font-size: 19px;
+  font-weight: bold;
+}
+
+.username {
+  color: #999;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.edit-btn {
+  border: none;
+  background: #fff0f5;
+  color: #ff4f81;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+
+/* =========================
+   WALLET
+========================= */
+
+.wallet-card {
+  background: linear-gradient(
+    135deg,
+    #ff4f81,
+    #ff7fa3
+  );
+
+  color: white;
+
+  margin: 14px;
+
+  border-radius: 18px;
+
+  padding: 20px;
+}
+
+.wallet-title {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.diamond {
+  font-size: 30px;
+  font-weight: bold;
+  margin: 6px 0 15px;
+}
+
+.wallet-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.wallet-btn {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  background: white;
+  color: #ff4f81;
+  font-weight: bold;
+}
+
+
+/* =========================
+   VIP
+========================= */
+
+.vip-card {
+  background: white;
+  margin: 14px;
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+}
+
+.vip-title {
+  font-weight: bold;
+}
+
+.vip-level {
+  color: #ff4f81;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.vip-btn {
+  border: none;
+  background: #ff4f81;
+  color: white;
+  padding: 9px 13px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+
+/* =========================
+   MENU
+========================= */
+
+.menu {
+  background: white;
+  margin: 14px;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 17px;
+  border-bottom: 1px solid #f1f1f1;
+  cursor: pointer;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-icon {
+  width: 34px;
+  font-size: 20px;
+}
+
+.menu-text {
+  flex: 1;
+  font-size: 15px;
+}
+
+.arrow {
+  color: #aaa;
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+.logout {
+  margin: 14px;
+}
+
+.logout button {
+  width: 100%;
+  border: none;
+  background: white;
+  color: #e33;
+  padding: 15px;
+  border-radius: 14px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+
+/* =========================
+   BOTTOM NAV
+========================= */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 68px;
+  background: white;
+  border-top: 1px solid #eee;
+  display: flex;
+  z-index: 20;
+}
+
+.nav-item {
+  flex: 1;
+  text-align: center;
+  padding-top: 10px;
+  font-size: 12px;
+  color: #888;
+  cursor: pointer;
+}
+
+.nav-icon {
+  font-size: 21px;
+  margin-bottom: 3px;
+}
+
+.nav-item.active {
+  color: #ff4f81;
+  font-weight: bold;
+}
+
+
+/* =========================
+   LOADING
+========================= */
+
+.loading {
+  text-align: center;
+  padding: 80px 20px;
+  color: #999;
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<div id="loading" class="loading">
+  Loading your profile...
+</div>
+
+
+<div id="content" style="display:none;">
+
+
+  <!-- HEADER -->
+
+  <div class="header">
+
+    <div class="header-title">
+      👤 Me
+    </div>
+
+  </div>
+
+
+  <!-- PROFILE -->
+
+  <div class="profile-card">
+
+    <img
+      id="avatar"
+      class="avatar"
+      src="https://i.pravatar.cc/200?img=12"
+    >
+
+    <div class="profile-info">
+
+      <div
+        id="displayName"
+        class="name"
+      >
+        User
+      </div>
+
+      <div
+        id="username"
+        class="username"
+      >
+        @username
+      </div>
+
+    </div>
+
+    <button
+      class="edit-btn"
+      onclick="editProfile()"
+    >
+      Edit
+    </button>
+
+  </div>
+
+
+  <!-- WALLET -->
+
+  <div class="wallet-card">
+
+    <div class="wallet-title">
+      💎 My Diamonds
+    </div>
+
+    <div
+      id="diamond"
+      class="diamond"
+    >
+      0
+    </div>
+
+    <div class="wallet-buttons">
+
+      <button
+        class="wallet-btn"
+        onclick="recharge()"
+      >
+        + Recharge
+      </button>
+
+      <button
+        class="wallet-btn"
+        onclick="openWallet()"
+      >
+        Wallet
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- VIP -->
+
+  <div class="vip-card">
+
+    <div>
+
+      <div class="vip-title">
+        ⭐ Mimo VIP
+      </div>
+
+      <div
+        id="vipLevel"
+        class="vip-level"
+      >
+        VIP 0
+      </div>
+
+    </div>
+
+    <button
+      class="vip-btn"
+      onclick="openVIP()"
+    >
+      View VIP
+    </button>
+
+  </div>
+
+
+  <!-- MENU -->
+
+  <div class="menu">
+
+
+    <div
+      class="menu-item"
+      onclick="openFollowing()"
+    >
+
+      <div class="menu-icon">
+        ❤️
+      </div>
+
+      <div class="menu-text">
+        Following
+      </div>
+
+      <div class="arrow">
+        ›
+      </div>
+
+    </div>
+
+
+    <div
+      class="menu-item"
+      onclick="openAppointments()"
+    >
+
+      <div class="menu-icon">
+        📅
+      </div>
+
+      <div class="menu-text">
+        My Appointments
+      </div>
+
+      <div class="arrow">
+        ›
+      </div>
+
+    </div>
+
+
+    <div
+      class="menu-item"
+      onclick="openBackpack()"
+    >
+
+      <div class="menu-icon">
+        🎒
+      </div>
+
+      <div class="menu-text">
+        Backpack
+      </div>
+
+      <div class="arrow">
+        ›
+      </div>
+
+    </div>
+
+
+    <div
+      class="menu-item"
+      onclick="openShop()"
+    >
+
+      <div class="menu-icon">
+        🛒
+      </div>
+
+      <div class="menu-text">
+        Shop
+      </div>
+
+      <div class="arrow">
+        ›
+      </div>
+
+    </div>
+
+
+    <div
+      class="menu-item"
+      onclick="openSettings()"
+    >
+
+      <div class="menu-icon">
+        ⚙️
+      </div>
+
+      <div class="menu-text">
+        Settings
+      </div>
+
+      <div class="arrow">
+        ›
+      </div>
+
+    </div>
+
+
+  </div>
+
+
+  <!-- LOGOUT -->
+
+  <div class="logout">
+
+    <button onclick="logout()">
+      🚪 Logout
+    </button>
+
+  </div>
+
+
+</div>
+
+
+<!-- BOTTOM NAV -->
+
+<div class="bottom-nav">
+
+
+  <div
+    class="nav-item"
+    onclick="goHome()"
+  >
+
+    <div class="nav-icon">
+      🏠
+    </div>
+
+    Home
+
+  </div>
+
+
+  <div
+    class="nav-item"
+    onclick="goPlaza()"
+  >
+
+    <div class="nav-icon">
+      🌐
+    </div>
+
+    Plaza
+
+  </div>
+
+
+  <div
+    class="nav-item"
+    onclick="goMessages()"
+  >
+
+    <div class="nav-icon">
+      💬
+    </div>
+
+    Messages
+
+  </div>
+
+
+  <div
+    class="nav-item"
+    onclick="goNotifications()"
+  >
+
+    <div class="nav-icon">
+      🔔
+    </div>
+
+    Notifications
+
+  </div>
+
+
+  <div
+    class="nav-item active"
+  >
+
+    <div class="nav-icon">
+      👤
+    </div>
+
+    Me
+
+  </div>
+
+
+</div>
+
+
+<script>
+
+
+/* =========================
+   SUPABASE
+========================= */
+
+const SUPABASE_URL =
+  "https://zhhgiwqehwuwzxnqbnth.supabase.co";
+
+
+const SUPABASE_KEY =
+  "sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ";
+
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+/* =========================
+   INIT
+========================= */
+
+async function init() {
+
+
+  const {
+    data: { user }
+  } = await supabaseClient
+    .auth
+    .getUser();
+
+
+  if (!user) {
+
+    window.location.href =
+      "login.html";
+
+    return;
+
+  }
+
+
+  await loadProfile(user.id);
+
+  await loadWallet(user.id);
+
+  await loadVIP(user.id);
+
+
+  document.getElementById(
+    "loading"
+  ).style.display = "none";
+
+
+  document.getElementById(
+    "content"
+  ).style.display = "block";
+
+}
+
+
+/* =========================
+   PROFILE
+========================= */
+
+async function loadProfile(userId) {
+
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("profiles")
+    .select(`
+      id,
+      username,
+      display_name,
+      avatar_url
+    `)
+    .eq("id", userId)
+    .maybeSingle();
+
+
+  if (error) {
+
+    console.error(error);
+
+    return;
+
+  }
+
+
+  if (!data) {
+
+    return;
+
+  }
+
+
+  document.getElementById(
+    "displayName"
+  ).textContent =
+    data.display_name ||
+    "Mimo User";
+
+
+  document.getElementById(
+    "username"
+  ).textContent =
+    data.username
+      ? "@" + data.username
+      : "";
+
+
+  if (data.avatar_url) {
+
+    document.getElementById(
+      "avatar"
+    ).src = data.avatar_url;
+
+  }
+
+}
+
+
+/* =========================
+   WALLET
+========================= */
+
+async function loadWallet(userId) {
+
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("wallets")
+    .select(`
+      diamonds
+    `)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+
+  if (error) {
+
+    console.error(error);
+
+    return;
+
+  }
+
+
+  if (data) {
+
+    document.getElementById(
+      "diamond"
+    ).textContent =
+      Number(data.diamonds || 0)
+        .toLocaleString();
+
+  }
+
+}
+
+
+/* =========================
+   VIP
+========================= */
+
+async function loadVIP(userId) {
+
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("user_vip")
+    .select(`
+      level
+    `)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+
+  if (error) {
+
+    console.error(error);
+
+    return;
+
+  }
+
+
+  if (data) {
+
+    document.getElementById(
+      "vipLevel"
+    ).textContent =
+      "VIP " + (data.level || 0);
+
+  }
+
+}
+
+
+/* =========================
+   ACTIONS
+========================= */
+
+function editProfile() {
+
+  alert(
+    "Profile editing will be connected next."
+  );
+
+}
+
+
+function recharge() {
+
+  alert(
+    "Recharge will be connected next."
+  );
+
+}
+
+
+function openWallet() {
+
+  alert(
+    "Wallet will be connected next."
+  );
+
+}
+
+
+function openVIP() {
+
+  alert(
+    "VIP will be connected next."
+  );
+
+}
+
+
+function openFollowing() {
+
+  alert(
+    "Following will be connected next."
+  );
+
+}
+
+
+function openAppointments() {
+
+  alert(
+    "Appointments will be connected next."
+  );
+
+}
+
+
+function openBackpack() {
+
+  alert(
+    "Backpack will be connected next."
+  );
+
+}
+
+
+function openShop() {
+
+  alert(
+    "Shop will be connected next."
+  );
+
+}
+
+
+function openSettings() {
+
+  alert(
+    "Settings will be connected next."
+  );
+
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+async function logout() {
+
+
+  await supabaseClient
+    .auth
+    .signOut();
+
+
+  window.location.href =
+    "login.html";
+
+}
+
+
+/* =========================
+   NAVIGATION
+========================= */
+
+function goHome() {
+
+  window.location.href =
+    "index.html";
+
+}
+
+
+function goPlaza() {
+
+  window.location.href =
+    "plaza.html";
+
+}
+
+
+function goMessages() {
+
+  window.location.href =
+    "messages.html";
+
+}
+
+
+function goNotifications() {
+
+  window.location.href =
+    "notifications.html";
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+init();
+
+</script>
+
+</body>
+</html>
+```
