@@ -1159,9 +1159,9 @@ function storyComingSoon() {
 
 function callComingSoon(hostId) {
 
-  alert(
-    "Voice Call will be connected next."
-  );
+  window.location.href =
+    "call.html?user=" +
+    encodeURIComponent(hostId);
 }
 
 
