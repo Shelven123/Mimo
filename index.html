@@ -6,140 +6,146 @@
 
   <title>Mimo</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: Arial, Helvetica, sans-serif;
     }
 
     body {
-      background: #f7f7fb;
+      font-family: Arial, sans-serif;
+      background: #f7f7f9;
       color: #222;
-      padding-bottom: 80px;
+      padding-bottom: 75px;
     }
 
-    /* Header */
-    .header {
-      height: 64px;
+    header {
       background: white;
-      border-bottom: 1px solid #eee;
+      height: 60px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 24px;
+      padding: 0 18px;
+      border-bottom: 1px solid #eee;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 10;
     }
 
     .logo {
-      font-size: 25px;
-      font-weight: 800;
+      font-size: 23px;
+      font-weight: bold;
       color: #ff4f81;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .search {
-      border: 1px solid #ddd;
-      border-radius: 20px;
-      padding: 9px 15px;
-      width: 180px;
-      outline: none;
     }
 
     .diamond {
       background: #fff0f5;
       color: #ff4f81;
-      padding: 9px 14px;
+      padding: 8px 12px;
       border-radius: 20px;
       font-weight: bold;
     }
 
-    /* Main */
     .container {
-      max-width: 1200px;
+      max-width: 1100px;
       margin: auto;
-      padding: 25px 20px;
+      padding: 20px 16px;
     }
 
     .welcome {
-      background: linear-gradient(135deg, #ff4f81, #ff7ba2);
+      background: linear-gradient(135deg, #ff4f81, #ff7aa2);
       color: white;
-      border-radius: 22px;
-      padding: 28px;
-      margin-bottom: 28px;
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 20px;
     }
 
     .welcome h1 {
-      font-size: 28px;
+      font-size: 25px;
       margin-bottom: 8px;
     }
 
     .welcome p {
-      opacity: 0.95;
+      opacity: .95;
+    }
+
+    .search {
+      width: 100%;
+      border: none;
+      background: white;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-size: 15px;
+      margin-bottom: 22px;
+      outline: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,.04);
     }
 
     .section-title {
-      font-size: 22px;
-      margin-bottom: 18px;
+      font-size: 21px;
+      font-weight: bold;
+      margin-bottom: 15px;
     }
 
-    /* Host Grid */
-    .host-grid {
+    .hosts {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 18px;
+      gap: 16px;
     }
 
     .host-card {
       background: white;
-      border-radius: 20px;
+      border-radius: 18px;
       overflow: hidden;
-      box-shadow: 0 5px 18px rgba(0,0,0,0.06);
+      box-shadow: 0 3px 12px rgba(0,0,0,.06);
     }
 
     .host-image {
       width: 100%;
-      height: 240px;
+      aspect-ratio: 1 / 1;
       object-fit: cover;
-      background: #eee;
+      display: block;
     }
 
     .host-info {
-      padding: 15px;
+      padding: 13px;
     }
 
     .host-name {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: bold;
       margin-bottom: 5px;
     }
 
+    .host-bio {
+      font-size: 13px;
+      color: #777;
+      min-height: 36px;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+
     .online {
       color: #21b66f;
-      font-size: 13px;
-      margin-bottom: 12px;
+      font-size: 12px;
+      margin-bottom: 11px;
     }
 
-    .host-buttons {
+    .buttons {
       display: flex;
-      gap: 8px;
+      gap: 7px;
     }
 
-    .btn {
+    button {
       border: none;
       cursor: pointer;
-      border-radius: 12px;
-      padding: 10px;
-      flex: 1;
+      border-radius: 10px;
+      padding: 9px;
       font-weight: bold;
+      flex: 1;
     }
 
     .chat-btn {
@@ -152,41 +158,50 @@
       color: #ff4f81;
     }
 
-    /* Bottom Navigation */
+    .empty {
+      background: white;
+      padding: 35px;
+      text-align: center;
+      border-radius: 15px;
+      color: #888;
+      grid-column: 1 / -1;
+    }
+
+    .loading {
+      background: white;
+      padding: 35px;
+      text-align: center;
+      border-radius: 15px;
+      color: #888;
+      grid-column: 1 / -1;
+    }
+
     .bottom-nav {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 70px;
+      height: 68px;
       background: white;
       border-top: 1px solid #eee;
       display: flex;
       justify-content: center;
-      z-index: 200;
+      z-index: 20;
     }
 
     .nav-inner {
       width: 100%;
-      max-width: 600px;
+      max-width: 700px;
       display: flex;
       justify-content: space-around;
       align-items: center;
     }
 
     .nav-item {
-      border: none;
-      background: none;
-      cursor: pointer;
-      color: #777;
-      font-size: 13px;
       text-align: center;
-    }
-
-    .nav-item span {
-      display: block;
-      font-size: 22px;
-      margin-bottom: 3px;
+      font-size: 12px;
+      color: #777;
+      cursor: pointer;
     }
 
     .nav-item.active {
@@ -194,68 +209,32 @@
       font-weight: bold;
     }
 
-    /* Mobile */
-    @media (max-width: 900px) {
-      .host-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    .nav-icon {
+      font-size: 21px;
+      display: block;
+      margin-bottom: 3px;
+    }
 
-      .search {
-        width: 130px;
+    @media (max-width: 900px) {
+      .hosts {
+        grid-template-columns: repeat(3, 1fr);
       }
     }
 
-    @media (max-width: 600px) {
-      .header {
-        padding: 0 14px;
+    @media (max-width: 650px) {
+      .hosts {
+        grid-template-columns: repeat(2, 1fr);
       }
+    }
 
-      .logo {
-        font-size: 22px;
-      }
-
-      .search {
-        display: none;
-      }
-
-      .diamond {
-        font-size: 13px;
-        padding: 8px 10px;
+    @media (max-width: 400px) {
+      .hosts {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
       }
 
       .container {
-        padding: 18px 12px;
-      }
-
-      .welcome {
-        padding: 22px;
-        border-radius: 18px;
-      }
-
-      .welcome h1 {
-        font-size: 23px;
-      }
-
-      .host-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-      }
-
-      .host-image {
-        height: 190px;
-      }
-
-      .host-info {
-        padding: 12px;
-      }
-
-      .host-name {
-        font-size: 16px;
-      }
-
-      .btn {
-        font-size: 12px;
-        padding: 9px 5px;
+        padding: 14px 10px;
       }
     }
   </style>
@@ -263,80 +242,203 @@
 
 <body>
 
-  <!-- Header -->
-  <header class="header">
+<header>
+  <div class="logo">❤️ Mimo</div>
+  <div class="diamond">💎 1,000</div>
+</header>
 
-    <div class="logo">
-      ❤️ Mimo
+<div class="container">
+
+  <div class="welcome">
+    <h1>Welcome to Mimo</h1>
+    <p>Meet new people, chat and make meaningful connections.</p>
+  </div>
+
+  <input
+    id="searchInput"
+    class="search"
+    type="text"
+    placeholder="Search hosts..."
+    oninput="filterHosts()"
+  >
+
+  <div class="section-title">
+    Discover Hosts
+  </div>
+
+  <div id="hostList" class="hosts">
+    <div class="loading">
+      Loading hosts...
+    </div>
+  </div>
+
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-inner">
+
+    <div class="nav-item active">
+      <span class="nav-icon">🏠</span>
+      Home
     </div>
 
-    <div class="header-right">
+    <div class="nav-item" onclick="goTo('plaza.html')">
+      <span class="nav-icon">🌐</span>
+      Plaza
+    </div>
 
-      <input
-        class="search"
-        type="text"
-        placeholder="Search hosts..."
-      >
+    <div class="nav-item" onclick="goTo('messages.html')">
+      <span class="nav-icon">💬</span>
+      Messages
+    </div>
 
-      <div class="diamond">
-        💎 1,000
+    <div class="nav-item" onclick="goTo('notifications.html')">
+      <span class="nav-icon">🔔</span>
+      Notifications
+    </div>
+
+    <div class="nav-item" onclick="goTo('me.html')">
+      <span class="nav-icon">👤</span>
+      Me
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+const SUPABASE_URL = "https://zhhgiwqehwuwzxnqbnth.supabase.co";
+
+/*
+  这里使用 Supabase Publishable/Anon Key。
+  不要把 service_role / secret key 放到这里。
+*/
+const SUPABASE_KEY = "sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ";
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+let allHosts = [];
+
+async function loadHosts() {
+
+  const hostList = document.getElementById("hostList");
+
+  try {
+
+    const { data, error } = await supabaseClient
+      .from("profiles")
+      .select(`
+        id,
+        username,
+        display_name,
+        avatar_url,
+        bio,
+        role,
+        online_status
+      `)
+      .eq("role", "host")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(error);
+
+      hostList.innerHTML = `
+        <div class="empty">
+          Unable to load hosts.<br>
+          Please check Supabase configuration.
+        </div>
+      `;
+
+      return;
+    }
+
+    allHosts = data || [];
+
+    renderHosts(allHosts);
+
+  } catch (err) {
+
+    console.error(err);
+
+    hostList.innerHTML = `
+      <div class="empty">
+        Something went wrong.
       </div>
+    `;
+  }
+}
 
-    </div>
+function renderHosts(hosts) {
 
-  </header>
+  const hostList = document.getElementById("hostList");
 
+  if (!hosts.length) {
 
-  <!-- Main -->
-  <main class="container">
+    hostList.innerHTML = `
+      <div class="empty">
+        No hosts available yet.
+      </div>
+    `;
 
-    <section class="welcome">
-      <h1>Welcome to Mimo ❤️</h1>
-      <p>Meet new people, chat, share moments and make connections.</p>
-    </section>
+    return;
+  }
 
+  hostList.innerHTML = hosts.map(host => {
 
-    <h2 class="section-title">
-      ✨ Discover Hosts
-    </h2>
+    const name =
+      host.display_name ||
+      host.username ||
+      "Host";
 
+    const avatar =
+      host.avatar_url ||
+      "https://i.pravatar.cc/500";
 
-    <div class="host-grid">
+    const bio =
+      host.bio ||
+      "Nice to meet you ❤️";
 
-
-      <!-- Host 1 -->
+    return `
       <div class="host-card">
 
         <img
           class="host-image"
-          src="https://i.pravatar.cc/500?img=47"
-          alt="Amy"
+          src="${avatar}"
+          alt="${name}"
         >
 
         <div class="host-info">
 
           <div class="host-name">
-            Amy
+            ${name}
+          </div>
+
+          <div class="host-bio">
+            ${bio}
           </div>
 
           <div class="online">
             🟢 Online
           </div>
 
-          <div class="host-buttons">
+          <div class="buttons">
 
             <button
-              class="btn chat-btn"
-              onclick="chat('Amy')"
+              class="chat-btn"
+              onclick="chatWithHost('${host.id}')"
             >
-              💬 Chat
+              Chat
             </button>
 
             <button
-              class="btn follow-btn"
-              onclick="follow('Amy')"
+              class="follow-btn"
+              onclick="followHost('${host.id}')"
             >
-              ❤️ Follow
+              Follow
             </button>
 
           </div>
@@ -344,205 +446,64 @@
         </div>
 
       </div>
+    `;
 
+  }).join("");
+}
 
-      <!-- Host 2 -->
-      <div class="host-card">
+function filterHosts() {
 
-        <img
-          class="host-image"
-          src="https://i.pravatar.cc/500?img=32"
-          alt="Meiling"
-        >
+  const keyword =
+    document
+      .getElementById("searchInput")
+      .value
+      .toLowerCase()
+      .trim();
 
-        <div class="host-info">
+  const filtered = allHosts.filter(host => {
 
-          <div class="host-name">
-            Meiling
-          </div>
+    const name =
+      (host.display_name || "").toLowerCase();
 
-          <div class="online">
-            🟢 Online
-          </div>
+    const username =
+      (host.username || "").toLowerCase();
 
-          <div class="host-buttons">
+    const bio =
+      (host.bio || "").toLowerCase();
 
-            <button
-              class="btn chat-btn"
-              onclick="chat('Meiling')"
-            >
-              💬 Chat
-            </button>
+    return (
+      name.includes(keyword) ||
+      username.includes(keyword) ||
+      bio.includes(keyword)
+    );
 
-            <button
-              class="btn follow-btn"
-              onclick="follow('Meiling')"
-            >
-              ❤️ Follow
-            </button>
+  });
 
-          </div>
+  renderHosts(filtered);
+}
 
-        </div>
+function chatWithHost(hostId) {
 
-      </div>
+  window.location.href =
+    "chat.html?host=" +
+    encodeURIComponent(hostId);
+}
 
+function followHost(hostId) {
 
-      <!-- Host 3 -->
-      <div class="host-card">
+  alert("Follow system will be connected next.");
 
-        <img
-          class="host-image"
-          src="https://i.pravatar.cc/500?img=44"
-          alt="Sophie"
-        >
+}
 
-        <div class="host-info">
+function goTo(page) {
 
-          <div class="host-name">
-            Sophie
-          </div>
+  window.location.href = page;
 
-          <div class="online">
-            🟢 Online
-          </div>
+}
 
-          <div class="host-buttons">
+loadHosts();
 
-            <button
-              class="btn chat-btn"
-              onclick="chat('Sophie')"
-            >
-              💬 Chat
-            </button>
-
-            <button
-              class="btn follow-btn"
-              onclick="follow('Sophie')"
-            >
-              ❤️ Follow
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- Host 4 -->
-      <div class="host-card">
-
-        <img
-          class="host-image"
-          src="https://i.pravatar.cc/500?img=49"
-          alt="Emma"
-        >
-
-        <div class="host-info">
-
-          <div class="host-name">
-            Emma
-          </div>
-
-          <div class="online">
-            🟢 Online
-          </div>
-
-          <div class="host-buttons">
-
-            <button
-              class="btn chat-btn"
-              onclick="chat('Emma')"
-            >
-              💬 Chat
-            </button>
-
-            <button
-              class="btn follow-btn"
-              onclick="follow('Emma')"
-            >
-              ❤️ Follow
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-    </div>
-
-  </main>
-
-
-  <!-- Bottom Navigation -->
-  <nav class="bottom-nav">
-
-    <div class="nav-inner">
-
-      <button class="nav-item active" onclick="home()">
-        <span>🏠</span>
-        Home
-      </button>
-
-      <button class="nav-item" onclick="plaza()">
-        <span>🌐</span>
-        Plaza
-      </button>
-
-      <button class="nav-item" onclick="messages()">
-        <span>💬</span>
-        Messages
-      </button>
-
-      <button class="nav-item" onclick="notifications()">
-        <span>🔔</span>
-        Notifications
-      </button>
-
-      <button class="nav-item" onclick="profile()">
-        <span>👤</span>
-        Me
-      </button>
-
-    </div>
-
-  </nav>
-
-
-  <script>
-
-    function chat(name) {
-      alert("Opening chat with " + name);
-    }
-
-    function follow(name) {
-      alert("You followed " + name);
-    }
-
-    function home() {
-      alert("Home");
-    }
-
-    function plaza() {
-      alert("Plaza");
-    }
-
-    function messages() {
-      alert("Messages");
-    }
-
-    function notifications() {
-      alert("Notifications");
-    }
-
-    function profile() {
-      alert("My Profile");
-    }
-
-  </script>
+</script>
 
 </body>
 </html>
