@@ -664,12 +664,20 @@ async function startOutgoingCall() {
     await prepareMicrophone();
     await createPeerConnection();
     await createOffer();
-  } catch (microphoneError) {
-    console.error(microphoneError);
-    showError(
-      "Microphone is unavailable. You can still end this call."
-    );
-    setStatus("Microphone unavailable");
+  } catch (callError) {
+    console.error(callError);
+    showError(callError.message || "Unable to prepare voice connection.");
+    setStatus("Voice connection failed");
+
+    if (callId) {
+      await supabaseClient
+        .from("calls")
+        .update({
+          status: "ended",
+          ended_at: new Date().toISOString()
+        })
+        .eq("id", callId);
+    }
   }
 
 }
@@ -971,6 +979,15 @@ async function sendSignal(
   payload
 ) {
 
+  const { data: sessionData } = await supabaseClient.auth.getSession();
+  const activeUser = sessionData?.session?.user || null;
+
+  if (!activeUser) {
+    throw new Error("Your login session expired. Please login again.");
+  }
+
+  currentUser = activeUser;
+
   const receiverId =
     callRecord.caller_id ===
       currentUser.id
@@ -1000,7 +1017,9 @@ async function sendSignal(
         payload:
           payload
 
-      });
+      })
+      .select("id")
+      .single();
 
 
   if (error) {
@@ -1010,6 +1029,7 @@ async function sendSignal(
       error
     );
 
+    showError("Signaling failed: " + (error.message || "unknown error"));
     throw error;
 
   }
