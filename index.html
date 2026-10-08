@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -101,6 +102,13 @@
       border-radius: 18px;
       overflow: hidden;
       box-shadow: 0 3px 12px rgba(0,0,0,.06);
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .host-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0,0,0,.10);
     }
 
     .host-image {
@@ -128,10 +136,18 @@
       margin-bottom: 10px;
     }
 
-    .online {
-      color: #21b66f;
+    .online,
+    .offline {
       font-size: 12px;
       margin-bottom: 11px;
+    }
+
+    .online {
+      color: #21b66f;
+    }
+
+    .offline {
+      color: #999;
     }
 
     .buttons {
@@ -275,6 +291,7 @@
 </div>
 
 <div class="bottom-nav">
+
   <div class="nav-inner">
 
     <div class="nav-item active">
@@ -282,38 +299,49 @@
       Home
     </div>
 
-    <div class="nav-item" onclick="goTo('plaza.html')">
+    <div
+      class="nav-item"
+      onclick="goTo('plaza.html')"
+    >
       <span class="nav-icon">🌐</span>
       Plaza
     </div>
 
-    <div class="nav-item" onclick="goTo('messages.html')">
+    <div
+      class="nav-item"
+      onclick="goTo('messages.html')"
+    >
       <span class="nav-icon">💬</span>
       Messages
     </div>
 
-    <div class="nav-item" onclick="goTo('notifications.html')">
+    <div
+      class="nav-item"
+      onclick="goTo('notifications.html')"
+    >
       <span class="nav-icon">🔔</span>
       Notifications
     </div>
 
-    <div class="nav-item" onclick="goTo('me.html')">
+    <div
+      class="nav-item"
+      onclick="goTo('me.html')"
+    >
       <span class="nav-icon">👤</span>
       Me
     </div>
 
   </div>
+
 </div>
 
 <script>
 
-const SUPABASE_URL = "https://zhhgiwqehwuwzxnqbnth.supabase.co";
+const SUPABASE_URL =
+  "https://zhhgiwqehwuwzxnqbnth.supabase.co";
 
-/*
-  这里使用 Supabase Publishable/Anon Key。
-  不要把 service_role / secret key 放到这里。
-*/
-const SUPABASE_KEY = "sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ";
+const SUPABASE_KEY =
+  "sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ";
 
 const supabaseClient =
   window.supabase.createClient(
@@ -323,33 +351,43 @@ const supabaseClient =
 
 let allHosts = [];
 
+
+/* =========================
+   LOAD HOSTS
+========================= */
+
 async function loadHosts() {
 
-  const hostList = document.getElementById("hostList");
+  const hostList =
+    document.getElementById("hostList");
 
   try {
 
-    const { data, error } = await supabaseClient
-      .from("profiles")
-      .select(`
-        id,
-        username,
-        display_name,
-        avatar_url,
-        bio,
-        role,
-        online_status
-      `)
-      .eq("role", "host")
-      .order("created_at", { ascending: false });
+    const { data, error } =
+      await supabaseClient
+        .from("profiles")
+        .select(`
+          id,
+          username,
+          display_name,
+          avatar_url,
+          bio,
+          role,
+          online_status
+        `)
+        .eq("role", "host")
+        .order("created_at", {
+          ascending: false
+        });
 
     if (error) {
+
       console.error(error);
 
       hostList.innerHTML = `
         <div class="empty">
           Unable to load hosts.<br>
-          Please check Supabase configuration.
+          Please try again later.
         </div>
       `;
 
@@ -369,12 +407,19 @@ async function loadHosts() {
         Something went wrong.
       </div>
     `;
+
   }
 }
 
+
+/* =========================
+   RENDER HOSTS
+========================= */
+
 function renderHosts(hosts) {
 
-  const hostList = document.getElementById("hostList");
+  const hostList =
+    document.getElementById("hostList");
 
   if (!hosts.length) {
 
@@ -387,69 +432,83 @@ function renderHosts(hosts) {
     return;
   }
 
-  hostList.innerHTML = hosts.map(host => {
+  hostList.innerHTML =
+    hosts.map(host => {
 
-    const name =
-      host.display_name ||
-      host.username ||
-      "Host";
+      const name =
+        host.display_name ||
+        host.username ||
+        "Host";
 
-    const avatar =
-      host.avatar_url ||
-      "https://i.pravatar.cc/500";
+      const avatar =
+        host.avatar_url ||
+        "https://i.pravatar.cc/500";
 
-    const bio =
-      host.bio ||
-      "Nice to meet you ❤️";
+      const bio =
+        host.bio ||
+        "Nice to meet you ❤️";
 
-    return `
-      <div class="host-card">
+      const isOnline =
+        host.online_status === "online";
 
-        <img
-          class="host-image"
-          src="${avatar}"
-          alt="${name}"
+      return `
+
+        <div
+          class="host-card"
+          onclick="openProfile('${host.id}')"
         >
 
-        <div class="host-info">
+          <img
+            class="host-image"
+            src="${avatar}"
+            alt="${name}"
+          >
 
-          <div class="host-name">
-            ${name}
-          </div>
+          <div class="host-info">
 
-          <div class="host-bio">
-            ${bio}
-          </div>
+            <div class="host-name">
+              ${name}
+            </div>
 
-          <div class="online">
-            🟢 Online
-          </div>
+            <div class="host-bio">
+              ${bio}
+            </div>
 
-          <div class="buttons">
+            <div class="${isOnline ? "online" : "offline"}">
+              ${isOnline ? "🟢 Online" : "⚪ Offline"}
+            </div>
 
-            <button
-              class="chat-btn"
-              onclick="chatWithHost('${host.id}')"
-            >
-              Chat
-            </button>
+            <div class="buttons">
 
-            <button
-              class="follow-btn"
-              onclick="followHost('${host.id}')"
-            >
-              Follow
-            </button>
+              <button
+                class="chat-btn"
+                onclick="event.stopPropagation(); chatWithHost('${host.id}')"
+              >
+                💬 Chat
+              </button>
+
+              <button
+                class="follow-btn"
+                onclick="event.stopPropagation(); followHost('${host.id}')"
+              >
+                ❤️ Follow
+              </button>
+
+            </div>
 
           </div>
 
         </div>
 
-      </div>
-    `;
+      `;
 
-  }).join("");
+    }).join("");
 }
+
+
+/* =========================
+   SEARCH
+========================= */
 
 function filterHosts() {
 
@@ -460,40 +519,75 @@ function filterHosts() {
       .toLowerCase()
       .trim();
 
-  const filtered = allHosts.filter(host => {
+  const filtered =
+    allHosts.filter(host => {
 
-    const name =
-      (host.display_name || "").toLowerCase();
+      const name =
+        (host.display_name || "")
+          .toLowerCase();
 
-    const username =
-      (host.username || "").toLowerCase();
+      const username =
+        (host.username || "")
+          .toLowerCase();
 
-    const bio =
-      (host.bio || "").toLowerCase();
+      const bio =
+        (host.bio || "")
+          .toLowerCase();
 
-    return (
-      name.includes(keyword) ||
-      username.includes(keyword) ||
-      bio.includes(keyword)
-    );
+      return (
+        name.includes(keyword) ||
+        username.includes(keyword) ||
+        bio.includes(keyword)
+      );
 
-  });
+    });
 
   renderHosts(filtered);
 }
+
+
+/* =========================
+   OPEN PROFILE
+========================= */
+
+function openProfile(hostId) {
+
+  window.location.href =
+    "profile.html?id=" +
+    encodeURIComponent(hostId);
+
+}
+
+
+/* =========================
+   CHAT
+========================= */
 
 function chatWithHost(hostId) {
 
   window.location.href =
     "chat.html?host=" +
     encodeURIComponent(hostId);
+
 }
+
+
+/* =========================
+   FOLLOW
+========================= */
 
 function followHost(hostId) {
 
-  alert("Follow system will be connected next.");
+  alert(
+    "Follow system will be connected next."
+  );
 
 }
+
+
+/* =========================
+   NAVIGATION
+========================= */
 
 function goTo(page) {
 
@@ -501,9 +595,15 @@ function goTo(page) {
 
 }
 
+
+/* =========================
+   START
+========================= */
+
 loadHosts();
 
 </script>
 
 </body>
 </html>
+```
