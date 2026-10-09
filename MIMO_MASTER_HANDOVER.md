@@ -1,6 +1,6 @@
 # Mimo Master Handover
 
-Current checkpoint: Beauty Engine v2.6. This document is the canonical handover for ChatGPT Work.
+Current checkpoint: Beauty Engine v2.6.1 preview fixes, implemented and regression-tested locally but NOT user-accepted on iPhone. Inherited checkpoint: v2.6. This document is the canonical handover for ChatGPT Work.
 
 ## Rules
 Inspect current repository code before editing. Preserve working features. Do not equate implemented with user-verified. Prefer small reversible changes. The owner prefers direct execution with few unnecessary questions.
@@ -68,7 +68,7 @@ V2.2: c4082587735543f67b2169757dab52cc1548de33 landmark-following natural makeup
 V2.3: deaa2ff9d1b04fda89749873b3ae20c535139f93 protected-detail smoothing; 6f4be22dc50d5e83d4813246d180b1d53a12ca35 UI.
 V2.4: 84b1055f647a1679012409970ee44d1e62e5ad6b portrait/background segmentation blur; 1569f3dab4ca319da777c1afa395cc77ada0d462 UI.
 V2.5: b2cd33536419c19e41c0000edc7a140bb74dd183 landmark stabilization/performance allocation improvement; ccceac8d61bf89a9616aa29680425078ac58448c UI.
-CURRENT V2.6: ec7119ec881b35469c4e073ba0bd6c5f1f650134 adaptive iPhone processing width/performance; 6ac7788ade61d355874b0a4a2f6602b3b41015dc UI.
+V2.6: ec7119ec881b35469c4e073ba0bd6c5f1f650134 adaptive iPhone processing width/performance; 6ac7788ade61d355874b0a4a2f6602b3b41015dc UI.
 
 ## Verification matrix
 User-verified:
@@ -109,3 +109,29 @@ Database foundations do not mean end-to-end features are complete. Remaining wor
 Inspect before edit. Never claim failed operations succeeded. Never call something verified without evidence. Diagnose visual failures before patching. Cache-bust engine imports after updates. Avoid broad rewrites of working files. Keep commits focused. Mobile Safari/iPhone is a first-class target.
 
 Mimo is not a zero-stage demo. Continue from current repository state; do not restart it.
+
+## Work handover continuation — v2.6.1 preview fixes (2026-10-10 Malaysia)
+
+The inherited handover was read in full before changes. Repository base: de207a0d0a5ec6db6075a548dbf4f92cf91aebe4. No call.html, signaling, mirror direction, database or RLS changes.
+
+Implemented:
+- Fix Big Eyes incorrectly treating zero-displacement cheek/chin/nose zones as eye magnification zones. Eye-only settings now affect eye zones only.
+- Use the official pinned SelfieSegmenter .tflite model, category 1 for person, and compose blurred background beneath masked processed foreground. Previously the full original frame covered the blur.
+- Load the optional segmenter on demand; close segmentation results in finally, reuse canvas sizes, and skip duplicate video frames.
+- Preserve processed pixels when restoring detail after smoothing, rather than restoring raw camera pixels that undo reshape/correction/makeup.
+- Clear landmark stabilization after losing the face and use monotonic inference timestamps.
+- Add explicit engine disposal, including late asynchronous model creation, and use it when switching cameras/leaving the page.
+- Update makeup immediately; restore camera retry controls after a failed flip; separate tracking diagnostics from save/error messages; cache-bust the unified page import.
+
+Verified locally (NOT real-device verification): five regression tests use real Canvas pixels with fake MediaPipe outputs: eye-only jaw isolation, foreground/background blur composition and mask disposal, preservation of processed eye detail under smoothing, optional-model/duplicate-frame behavior, and cleanup of a model completing after disposal. JavaScript syntax and git diff checks also pass. See tests/README.md.
+
+Not Verified: actual model loading after these changes, iPhone Safari Canvas filters, hair/body mask edges and orientation, sustained iPhone performance, camera retry/flip behavior, and all v2 effects in the original unaccepted group. Older user-confirmed effects remain historical confirmations; they are not new v2.6.1 acceptance.
+
+Incomplete: GPU/mesh beauty pipeline, skin-only smoothing, full beauty acceptance, and Video Call integration. The inherited Roadmap remains in force.
+
+Repository discrepancies found, deferred from Beauty scope:
+- profile.html callHost/videoCallHost still display placeholder alerts, whereas index.html links to working call.html.
+- Database phases/RLS are documented but SQL migrations are not present in this repository; live database verification was not performed.
+- Legacy beauty-preview.html retains stale explanatory text and an unversioned import. The supported user flow remains the unified beauty-settings.html page.
+
+Next: one consolidated real iPhone Safari test using the checklist in tests/README.md. Record effects as Verified only after explicit acceptance. Keep Beauty isolated from Video Call until accepted.
