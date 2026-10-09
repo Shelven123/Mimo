@@ -44,6 +44,7 @@
 
     .top-bar {
       width: 100%;
+      pointer-events: auto;
       max-width: 500px;
       display: flex;
       justify-content: space-between;
@@ -169,6 +170,7 @@
 
     .controls {
       margin-top: auto;
+      pointer-events: auto;
       width: 100%;
       max-width: 380px;
       display: flex;
@@ -384,7 +386,7 @@
   playsinline
 ></audio>
 
-<div id="videoStage" style="display:none;position:fixed;inset:0;background:#111;z-index:2;">
+<div id="videoStage" style="display:none;position:fixed;inset:0;background:#111;z-index:2;pointer-events:auto;">
   <video id="remoteVideo" autoplay playsinline style="width:100%;height:100%;object-fit:cover;background:#111;"></video>
   <video id="localVideo" autoplay muted playsinline style="position:absolute;right:16px;top:24px;width:110px;height:155px;object-fit:cover;border-radius:16px;background:#222;box-shadow:0 4px 20px rgba(0,0,0,.35);z-index:5;cursor:pointer;"></video>
 </div>
@@ -1029,6 +1031,7 @@ function enableVideoUI() {
     callPage.style.position = "relative";
     callPage.style.zIndex = "3";
     callPage.style.background = "transparent";
+    callPage.style.pointerEvents = "none";
   }
 
   const profile = document.querySelector(".profile");
