@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Mimo - Settings</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f7f7f9;color:#222}
+.header{height:64px;background:#fff;border-bottom:1px solid #eee;display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:10}
+.back{width:38px;height:38px;border:0;border-radius:50%;background:#f6f6f8;font-size:26px;cursor:pointer}.title{font-size:20px;font-weight:700;margin-left:12px}
+.wrap{max-width:620px;margin:auto;padding:14px 14px 40px}.section-title{font-size:12px;color:#999;font-weight:700;margin:18px 10px 8px;text-transform:uppercase;letter-spacing:.5px}
+.card{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,.04)}
+.item{width:100%;border:0;background:#fff;display:flex;align-items:center;text-align:left;padding:16px;border-bottom:1px solid #f1f1f1;cursor:pointer}.item:last-child{border-bottom:0}.icon{width:38px;font-size:21px}.text{flex:1}.name{font-size:15px;font-weight:600}.sub{font-size:12px;color:#999;margin-top:3px;line-height:1.35}.arrow{color:#bbb;font-size:22px}
+.logout{color:#e33;justify-content:center;font-weight:700;margin-top:18px}.version{text-align:center;color:#bbb;font-size:12px;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="header"><button class="back" onclick="history.back()">‹</button><div class="title">Settings</div></div>
+<div class="wrap">
+<div class="section-title">Account</div>
+<div class="card">
+<button class="item" onclick="coming('Account & Profile')"><span class="icon">👤</span><span class="text"><span class="name">Account & Profile</span><span class="sub">Personal information and profile settings</span></span><span class="arrow">›</span></button>
+<button class="item" onclick="coming('Privacy & Safety')"><span class="icon">🔒</span><span class="text"><span class="name">Privacy & Safety</span><span class="sub">Privacy, blocked users and contact permissions</span></span><span class="arrow">›</span></button>
+<button class="item" onclick="coming('Notifications')"><span class="icon">🔔</span><span class="text"><span class="name">Notifications</span><span class="sub">Messages, calls, followers and appointments</span></span><span class="arrow">›</span></button>
+</div>
+<div class="section-title">Calls & Appearance</div>
+<div class="card">
+<button class="item" onclick="coming('Calls')"><span class="icon">📞</span><span class="text"><span class="name">Calls</span><span class="sub">Microphone, camera and speaker preferences</span></span><span class="arrow">›</span></button>
+<button class="item" onclick="coming('Beauty')"><span class="icon">✨</span><span class="text"><span class="name">Beauty</span><span class="sub">Natural beauty, filters and saved presets</span></span><span class="arrow">›</span></button>
+</div>
+<div class="section-title">Mimo</div>
+<div class="card">
+<button class="item" onclick="coming('Wallet & Payments')"><span class="icon">💎</span><span class="text"><span class="name">Wallet & Payments</span><span class="sub">Diamonds, recharge and transaction history</span></span><span class="arrow">›</span></button>
+<button class="item" onclick="coming('VIP')"><span class="icon">⭐</span><span class="text"><span class="name">VIP</span><span class="sub">VIP level and benefits</span></span><span class="arrow">›</span></button>
+<button class="item" onclick="coming('Language')"><span class="icon">🌐</span><span class="text"><span class="name">Language</span><span class="sub">App language</span></span><span class="arrow">›</span></button>
+<button class="item" onclick="coming('Help & Customer Service')"><span class="icon">🎧</span><span class="text"><span class="name">Help & Customer Service</span><span class="sub">Support and help center</span></span><span class="arrow">›</span></button>
+<button class="item" onclick="coming('General')"><span class="icon">⚙️</span><span class="text"><span class="name">General</span><span class="sub">General app preferences</span></span><span class="arrow">›</span></button>
+</div>
+<button class="item card logout" onclick="logout()">🚪&nbsp;&nbsp;Log Out</button>
+<div class="version">Mimo</div>
+</div>
+<script>
+const supabaseClient=window.supabase.createClient("https://zhhgiwqehwuwzxnqbnth.supabase.co","sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ");
+async function guard(){const{data:{user}}=await supabaseClient.auth.getUser();if(!user)location.replace("login.html")}
+function coming(name){alert(name+" settings will be connected next.")}
+async function logout(){await supabaseClient.auth.signOut();location.replace("login.html")}
+guard();
+</script>
+</body>
+</html>
