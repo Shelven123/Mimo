@@ -1629,8 +1629,25 @@ async function setupRealtime() {
           }
 
         }
-      )
-      .subscribe();
+      );
+
+  // Do not continue until the signaling channel is actually listening.
+  // Otherwise an iPhone can miss the offer between page load and Realtime subscription,
+  // leaving both remote video screens black while local preview still works.
+  await new Promise(resolve => {
+    let settled = false;
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    signalChannel.subscribe(status => {
+      if (status === "SUBSCRIBED" || status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        done();
+      }
+    });
+    setTimeout(done, 2500);
+  });
 
 
   callChannel =
