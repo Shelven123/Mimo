@@ -1,16 +1,31 @@
-/* Mimo Beauty Engine v2.6 — adaptive performance + stabilized landmark beauty pipeline. */
+/* Mimo Beauty Engine v2.6.1 — preview correctness and resource lifecycle fixes. */
 export function createBeautyEngine(video, options = {}) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
   if (!ctx || !canvas.captureStream) throw new Error("Canvas video processing unavailable");
   let settings = { smoothing: 0, whitening: 0, rosy: 0, slim_face: 0, big_eyes: 0, chin: 0, nose: 0, eye_brightening: 0, dark_circle: 0, background_blur: 0, enabled: true, ...options };
-  let active = false, frame = 0, stream = null, renderSamples=[], qualityWidth=480, lastQualityCheck=0;
+  let active = false, disposed = false, frame = 0, stream = null, renderSamples=[], qualityWidth=480, lastQualityCheck=0;
   const softCanvas = document.createElement("canvas");
   const softCtx = softCanvas.getContext("2d");
   if (!softCtx) throw new Error("Canvas smoothing unavailable");
+  const detailCanvas = document.createElement("canvas"), detailCtx = detailCanvas.getContext("2d");
+  if (!detailCtx) throw new Error("Canvas detail preservation unavailable");
 
   let tracker = null, face = null, trackingStatus = "loading", lastDetect = 0, videoTime = -1, trackingError = "";
   let segmenter=null, personMask=null, segmentationStatus="idle", lastSegment=0, stableFace=null;
+  let visionLibrary=null, visionFiles=null, lastSegmentVideoTime=-1, lastDetectVideoTime=-1, segmentationError="";
+  async function loadSegmenter(){
+    if(disposed || !visionLibrary || segmentationStatus!=="idle")return;
+    segmentationStatus="loading";
+    try {
+      const loaded=await visionLibrary.ImageSegmenter.createFromOptions(visionFiles,{
+        baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/1/selfie_segmenter.tflite",delegate:"CPU"},
+        runningMode:"VIDEO",outputCategoryMask:true,outputConfidenceMasks:false
+      });
+      if(disposed){loaded.close();return;}
+      segmenter=loaded;segmentationStatus="ready";
+    }catch(error){if(!disposed){segmentationStatus="unavailable";segmentationError=error?.message||String(error);}}
+  }
   (async () => {
     const model = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
     const versions = ["0.10.14", "0.10.3"];
@@ -19,22 +34,21 @@ export function createBeautyEngine(video, options = {}) {
         trackingStatus = "loading";
         const base = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@" + version;
         const lib = await import(base + "/vision_bundle.mjs");
+        if(disposed)return;
         const vision = await lib.FilesetResolver.forVisionTasks(base + "/wasm");
-        tracker = await lib.FaceLandmarker.createFromOptions(vision, {
+        if(disposed)return;
+        const loaded = await lib.FaceLandmarker.createFromOptions(vision, {
           baseOptions: { modelAssetPath: model, delegate: "CPU" },
           runningMode: "VIDEO", numFaces: 1
         });
+        if(disposed){loaded.close();return;}
+        tracker=loaded;visionLibrary=lib;visionFiles=vision;
         trackingStatus = "ready";
         trackingError = "";
-        // Load portrait segmentation independently; Beauty still works if this optional model is unavailable.
-        try {
-          segmentationStatus="loading";
-          const segModel="https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.task";
-          segmenter=await lib.ImageSegmenter.createFromOptions(vision,{baseOptions:{modelAssetPath:segModel,delegate:"CPU"},runningMode:"VIDEO",outputCategoryMask:true,outputConfidenceMasks:false});
-          segmentationStatus="ready";
-        } catch(segError){segmentationStatus="unavailable";console.warn("Mimo portrait segmentation unavailable",segError)}
+        // Segmentation loads only when background blur is requested.
         return;
       } catch (error) {
+        if(disposed)return;
         trackingError = version + ": " + (error?.message || String(error));
         console.warn("Mimo FaceLandmarker failed", trackingError);
       }
@@ -53,7 +67,7 @@ export function createBeautyEngine(video, options = {}) {
     const src=ctx.getImageData(0,0,width,height), dst=ctx.createImageData(width,height);
     const s=src.data,d=dst.data; d.set(s);
     const zones=[];
-    const add=(pt,rx,ry,dx,dy,power)=>{if(power>0)zones.push({x:pt.x,y:pt.y,rx,ry,dx,dy,power})};
+    const add=(pt,rx,ry,dx,dy,power,kind="displace")=>{if(power>0&&(kind==="eye"||dx||dy))zones.push({x:pt.x,y:pt.y,rx,ry,dx,dy,power,kind})};
     // Contour-aware slimming: pull jaw/cheek source outward so rendered contour moves inward.
     const leftIds=[132,58,172,136,150], rightIds=[361,288,397,365,379];
     leftIds.forEach((id,i)=>add(p(id),faceW*.20,faceW*.25,-faceW*(.018+.018*i)*slim,0,1));
@@ -62,7 +76,7 @@ export function createBeautyEngine(video, options = {}) {
     add(J,faceW*.24,faceW*.20,0,-faceW*.075*chin,1);
     // Eyes: local radial magnification centered on iris/eye regions.
     const eyeZones=[[33,133],[263,362]];
-    for(const [outer,inner] of eyeZones){const a=p(outer),b=p(inner),m={x:(a.x+b.x)/2,y:(a.y+b.y)/2};add(m,faceW*.16,faceW*.12,0,0,eyes*.75)}
+    for(const [outer,inner] of eyeZones){const a=p(outer),b=p(inner),m={x:(a.x+b.x)/2,y:(a.y+b.y)/2};add(m,faceW*.16,faceW*.12,0,0,eyes*.75,"eye")}
     // Nose: narrow around alae, not the whole mid-face.
     add(p(98),faceW*.12,faceW*.14,-faceW*.035*nose,0,1);
     add(p(327),faceW*.12,faceW*.14, faceW*.035*nose,0,1);
@@ -73,7 +87,7 @@ export function createBeautyEngine(video, options = {}) {
         if(q>=1)continue;
         const fall=(1-q)*(1-q)*z.power;
         if(z.dx||z.dy){sx+=z.dx*fall;sy+=z.dy*fall}
-        else if(eyes){
+        else if(z.kind==="eye"){
           const k=1-Math.min(.20,eyes*.16)*fall;
           sx=z.x+(sx-z.x)*k; sy=z.y+(sy-z.y)*k;
         }
@@ -138,29 +152,36 @@ export function createBeautyEngine(video, options = {}) {
   }
   function portraitBlur(width,height){
     const amount=Math.max(0,Math.min(1,(+settings.background_blur||0)/100));
-    if(!amount||!segmenter)return;
-    if(performance.now()-lastSegment>260){
+    if(!amount)return;
+    if(!segmenter){void loadSegmenter();return;}
+    if(performance.now()-lastSegment>260 && video.currentTime!==lastSegmentVideoTime){
       lastSegment=performance.now();
+      lastSegmentVideoTime=video.currentTime;
+      let result;
       try{
-        const r=segmenter.segmentForVideo(video,Math.round(video.currentTime*1000));
-        const m=r.categoryMask;
+        result=segmenter.segmentForVideo(video,lastSegment);
+        const m=result.categoryMask;
         if(m){const raw=m.getAsUint8Array();personMask={data:new Uint8Array(raw),w:m.width,h:m.height};}
-        if(r.close)r.close();
-      }catch(e){console.warn("Mimo segmentation frame error",e)}
+        segmentationError="";
+      }catch(e){personMask=null;segmentationError=e?.message||String(e);}
+      finally{if(result)result.close();}
     }
     if(!personMask)return;
     const original=portraitBlur._o||(portraitBlur._o=document.createElement("canvas")),oc=original.getContext("2d");
     const blurred=portraitBlur._b||(portraitBlur._b=document.createElement("canvas")),bc=blurred.getContext("2d");
     const mask=portraitBlur._m||(portraitBlur._m=document.createElement("canvas")),mc=mask.getContext("2d");
-    original.width=blurred.width=mask.width=width;original.height=blurred.height=mask.height=height;
+    for(const surface of [original,blurred,mask]){if(surface.width!==width||surface.height!==height){surface.width=width;surface.height=height;}}
+    oc.clearRect(0,0,width,height);bc.clearRect(0,0,width,height);mc.clearRect(0,0,width,height);
     oc.drawImage(canvas,0,0);
+    bc.globalCompositeOperation="source-over";
     bc.filter="blur("+(3+amount*11).toFixed(1)+"px)";bc.drawImage(original,0,0);
     const small=portraitBlur._s||(portraitBlur._s=document.createElement("canvas")),sc=small.getContext("2d");
-    small.width=personMask.w;small.height=personMask.h;
+    if(small.width!==personMask.w||small.height!==personMask.h){small.width=personMask.w;small.height=personMask.h;}
     const img=sc.createImageData(personMask.w,personMask.h);
-    for(let i=0;i<personMask.data.length;i++){const v=personMask.data[i]===0?255:0,j=i*4;img.data[j]=img.data[j+1]=img.data[j+2]=255;img.data[j+3]=v}
+    // SelfieSegmenter categories: 0 background, 1 person.
+    for(let i=0;i<personMask.data.length;i++){const v=personMask.data[i]===1?255:0,j=i*4;img.data[j]=img.data[j+1]=img.data[j+2]=255;img.data[j+3]=v}
     sc.putImageData(img,0,0);mc.filter="blur(4px)";mc.drawImage(small,0,0,width,height);
-    bc.globalCompositeOperation="destination-out";bc.drawImage(mask,0,0);
+    oc.globalCompositeOperation="destination-in";oc.drawImage(mask,0,0);oc.globalCompositeOperation="source-over";
     ctx.drawImage(blurred,0,0);ctx.drawImage(original,0,0);
   }
   function render() {
@@ -170,16 +191,17 @@ export function createBeautyEngine(video, options = {}) {
     if (w && h && video.readyState >= 2) {
       const width = Math.min(w, qualityWidth), height = Math.max(1, Math.round(h * width / w));
       if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = softCanvas.width = width;
-        canvas.height = softCanvas.height = height;
+        canvas.width = softCanvas.width = detailCanvas.width = width;
+        canvas.height = softCanvas.height = detailCanvas.height = height;
       }
       ctx.filter = "none";
       ctx.drawImage(video, 0, 0, width, height);
-      if (tracker && performance.now()-lastDetect>180) {
+      if (tracker && performance.now()-lastDetect>180 && video.currentTime!==lastDetectVideoTime) {
         lastDetect=performance.now();
+        lastDetectVideoTime=video.currentTime;
         videoTime=video.currentTime;
-        try { const detected=tracker.detectForVideo(video,Math.round(video.currentTime*1000)).faceLandmarks?.[0] || null; if(detected){ if(!stableFace||stableFace.length!==detected.length) stableFace=detected.map(q=>({...q})); else { const alpha=.58; for(let i=0;i<detected.length;i++){ stableFace[i].x+=alpha*(detected[i].x-stableFace[i].x); stableFace[i].y+=alpha*(detected[i].y-stableFace[i].y); stableFace[i].z+=alpha*((detected[i].z||0)-(stableFace[i].z||0)); } } face=stableFace; } else face=null; }
-        catch (error) { face=null; console.warn("Mimo face detection error:",error); }
+        try { const detected=tracker.detectForVideo(video,lastDetect).faceLandmarks?.[0] || null; if(detected){ if(!stableFace||stableFace.length!==detected.length) stableFace=detected.map(q=>({...q})); else { const alpha=.58; for(let i=0;i<detected.length;i++){ stableFace[i].x+=alpha*(detected[i].x-stableFace[i].x); stableFace[i].y+=alpha*(detected[i].y-stableFace[i].y); stableFace[i].z+=alpha*((detected[i].z||0)-(stableFace[i].z||0)); } } face=stableFace; } else {face=null;stableFace=null;} }
+        catch (error) { face=null;stableFace=null; console.warn("Mimo face detection error:",error); }
       }
       if (settings.enabled) {
         warpFace(width,height);
@@ -192,6 +214,8 @@ export function createBeautyEngine(video, options = {}) {
         // used for these controls.
         const smooth = Math.min(0.48, Math.max(0, Number(settings.smoothing) / 100 * 0.48));
         if (smooth) {
+          // Preserve the processed frame, never repaint unwarped camera pixels.
+          detailCtx.drawImage(canvas,0,0,width,height);
           softCtx.clearRect(0, 0, width, height);
           softCtx.filter = "blur(" + (0.7 + smooth * 4).toFixed(2) + "px)";
           softCtx.drawImage(canvas, 0, 0);
@@ -202,7 +226,7 @@ export function createBeautyEngine(video, options = {}) {
           if(face){
             const fp=id=>({x:face[id].x*width,y:face[id].y*height});
             const fw=Math.max(24,Math.hypot(fp(454).x-fp(234).x,fp(454).y-fp(234).y));
-            const restore=(pt,rx,ry,a=.78)=>{ctx.save();ctx.beginPath();ctx.ellipse(pt.x,pt.y,rx,ry,0,0,Math.PI*2);ctx.clip();ctx.globalAlpha=a;ctx.drawImage(video,0,0,width,height);ctx.restore()};
+            const restore=(pt,rx,ry,a=.78)=>{ctx.save();ctx.beginPath();ctx.ellipse(pt.x,pt.y,rx,ry,0,0,Math.PI*2);ctx.clip();ctx.globalAlpha=a;ctx.drawImage(detailCanvas,0,0,width,height);ctx.restore()};
             const le0=fp(33),le1=fp(133),re0=fp(263),re1=fp(362);
             restore({x:(le0.x+le1.x)/2,y:(le0.y+le1.y)/2},fw*.15,fw*.10);
             restore({x:(re0.x+re1.x)/2,y:(re0.y+re1.y)/2},fw*.15,fw*.10);
@@ -239,8 +263,9 @@ export function createBeautyEngine(video, options = {}) {
     getTrackingStatus(){return trackingStatus;},
     getTrackingError(){return trackingError;},
     getFaceDetected(){return !!face;},
-    getDebug(){return {trackingStatus,segmentationStatus,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0,qualityWidth,avgFrameMs:renderSamples.length?Math.round(renderSamples.reduce((a,b)=>a+b,0)/renderSamples.length):0};},
+    getDebug(){return {version:"2.6.1",trackingStatus,segmentationStatus,segmentationError,blurMaskReady:!!personMask,canvasFilterSupported:"filter" in ctx,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0,qualityWidth,avgFrameMs:renderSamples.length?Math.round(renderSamples.reduce((a,b)=>a+b,0)/renderSamples.length):0};},
     start(fps = 24) {
+      if(disposed)throw new Error("Beauty engine disposed");
       if (!stream) stream = canvas.captureStream(fps);
       if (!active) { active = true; render(); }
       return stream;
@@ -251,6 +276,11 @@ export function createBeautyEngine(video, options = {}) {
       cancelAnimationFrame(frame);
       if (stream) stream.getTracks().forEach(track => track.stop());
       stream = null;
+    },
+    dispose(){
+      this.stop();disposed=true;
+      tracker?.close();segmenter?.close();tracker=null;segmenter=null;face=null;stableFace=null;personMask=null;
+      visionLibrary=null;visionFiles=null;
     }
   };
 }
