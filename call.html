@@ -386,7 +386,7 @@
 
 <div id="videoStage" style="display:none;position:fixed;inset:0;background:#111;z-index:2;">
   <video id="remoteVideo" autoplay playsinline style="width:100%;height:100%;object-fit:cover;background:#111;"></video>
-  <video id="localVideo" autoplay muted playsinline style="position:absolute;right:16px;top:24px;width:110px;height:155px;object-fit:cover;border-radius:16px;background:#222;box-shadow:0 4px 20px rgba(0,0,0,.35);z-index:5;"></video>
+  <video id="localVideo" autoplay muted playsinline style="position:absolute;right:16px;top:24px;width:110px;height:155px;object-fit:cover;border-radius:16px;background:#222;box-shadow:0 4px 20px rgba(0,0,0,.35);z-index:5;cursor:pointer;"></video>
 </div>
 
 
@@ -445,6 +445,7 @@ let muted = false;
 let speakerEnabled = true;
 let cameraEnabled = true;
 let currentFacingMode = "user";
+let videoLayoutSwapped = false;
 let ended = false;
 
 const processedSignals =
@@ -919,6 +920,65 @@ async function prepareMedia() {
 }
 
 
+function applyVideoLayout() {
+  const localVideo = document.getElementById("localVideo");
+  const remoteVideo = document.getElementById("remoteVideo");
+  if (!localVideo || !remoteVideo) return;
+
+  if (videoLayoutSwapped) {
+    // My camera becomes the main screen; the other person moves to PiP.
+    localVideo.style.position = "absolute";
+    localVideo.style.inset = "0";
+    localVideo.style.width = "100%";
+    localVideo.style.height = "100%";
+    localVideo.style.borderRadius = "0";
+    localVideo.style.zIndex = "2";
+    localVideo.style.boxShadow = "none";
+    localVideo.style.objectFit = "cover";
+
+    remoteVideo.style.position = "absolute";
+    remoteVideo.style.inset = "auto 16px auto auto";
+    remoteVideo.style.top = "24px";
+    remoteVideo.style.width = "110px";
+    remoteVideo.style.height = "155px";
+    remoteVideo.style.borderRadius = "16px";
+    remoteVideo.style.zIndex = "5";
+    remoteVideo.style.boxShadow = "0 4px 20px rgba(0,0,0,.35)";
+    remoteVideo.style.objectFit = "cover";
+    remoteVideo.style.cursor = "pointer";
+  } else {
+    // Other person is the main screen; my camera is PiP.
+    remoteVideo.style.position = "absolute";
+    remoteVideo.style.inset = "0";
+    remoteVideo.style.width = "100%";
+    remoteVideo.style.height = "100%";
+    remoteVideo.style.borderRadius = "0";
+    remoteVideo.style.zIndex = "1";
+    remoteVideo.style.boxShadow = "none";
+    remoteVideo.style.objectFit = "cover";
+    remoteVideo.style.cursor = "default";
+
+    localVideo.style.position = "absolute";
+    localVideo.style.inset = "auto 16px auto auto";
+    localVideo.style.top = "24px";
+    localVideo.style.width = "110px";
+    localVideo.style.height = "155px";
+    localVideo.style.borderRadius = "16px";
+    localVideo.style.zIndex = "5";
+    localVideo.style.boxShadow = "0 4px 20px rgba(0,0,0,.35)";
+    localVideo.style.objectFit = "cover";
+    localVideo.style.cursor = "pointer";
+  }
+
+  applyLocalPreviewOrientation();
+}
+
+function swapVideoLayout() {
+  if (callRecord?.call_type !== "video") return;
+  videoLayoutSwapped = !videoLayoutSwapped;
+  applyVideoLayout();
+}
+
 function applyLocalPreviewOrientation() {
   const localVideo = document.getElementById("localVideo");
   if (!localVideo) return;
@@ -957,6 +1017,7 @@ async function attachLocalPreview() {
 function enableVideoUI() {
   const stage = document.getElementById("videoStage");
   if (stage) stage.style.display = "block";
+  applyVideoLayout();
 
   const cameraControl = document.getElementById("cameraControl");
   const flipControl = document.getElementById("flipControl");
@@ -2021,6 +2082,13 @@ window.addEventListener(
   }
 );
 
+
+const localVideoEl = document.getElementById("localVideo");
+const remoteVideoEl = document.getElementById("remoteVideo");
+if (localVideoEl) localVideoEl.addEventListener("click", swapVideoLayout);
+if (remoteVideoEl) remoteVideoEl.addEventListener("click", () => {
+  if (videoLayoutSwapped) swapVideoLayout();
+});
 
 init();
 
