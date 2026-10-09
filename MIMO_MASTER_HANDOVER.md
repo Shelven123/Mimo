@@ -1,6 +1,6 @@
 # Mimo Master Handover
 
-Current checkpoint: Beauty Engine v2.6.1 preview fixes, implemented and regression-tested locally but NOT user-accepted on iPhone. Inherited checkpoint: v2.6. This document is the canonical handover for ChatGPT Work.
+Current checkpoint: Beauty Engine v2.7 independent preview, implemented and regression-tested but NOT fully user-accepted on iPhone. Inherited checkpoint: v2.6; v2.6.1 was merged and deployed before this continuation. This document is the canonical handover for ChatGPT Work.
 
 ## Rules
 Inspect current repository code before editing. Preserve working features. Do not equate implemented with user-verified. Prefer small reversible changes. The owner prefers direct execution with few unnecessary questions.
@@ -135,3 +135,26 @@ Repository discrepancies found, deferred from Beauty scope:
 - Legacy beauty-preview.html retains stale explanatory text and an unversioned import. The supported user flow remains the unified beauty-settings.html page.
 
 Next: one consolidated real iPhone Safari test using the checklist in tests/README.md. Record effects as Verified only after explicit acceptance. Keep Beauty isolated from Video Call until accepted.
+
+## Work continuation — v2.7 independent preview (2026-10-10 Malaysia)
+
+The owner authorized continued execution and publication without repeated small-step approvals. Scope remains the Beauty priority; no call.html, database, RLS or accepted mirror-direction changes. The owner's general acknowledgement is not a per-effect or sustained-performance acceptance record.
+
+Implemented:
+- Landmark-attached local inverse mapping now uses face roll axes for jaw, eyes, chin and nose. Eye strength is linear in the slider, combined displacement is bounded, and sampling/iteration is limited to affected regions with a safe margin.
+- Face-contour smoothing with feathered eye/brow/nose/lip exclusions and an edge-sensitive blend of processed pixels. Background and mouth/eyes are protected. This is a geometric face mask, not a semantic skin classifier or production bilateral GPU shader.
+- Native Canvas blur is tested with actual pixels. A no-op or unavailable filter selects a bounded, separable CPU fallback with premultiplied alpha and reusable buffers per destination. Background blur runs last so smoothing cannot soften the entire scene or overwrite it.
+- Regional eye correction and blush follow face roll; lip tint excludes the open-mouth interior.
+- Rendering honors the requested preview frame-rate ceiling and avoids reprocessing unchanged video frames; settings changes still redraw paused frames. Tracking resets on large jumps and adapts smoothing to motion.
+- Effect exceptions restore the raw independent preview and display a diagnostic. Invalid/empty landmark or segmentation results are cleared.
+- Press/hold original comparison (pointer and keyboard) does not persist a temporary disabled state. Unified camera capture requests 640 px / 24 fps where the device supports those preferences.
+- Legacy beauty-preview.html redirects to the unified Beauty page, avoiding obsolete text and a stale unversioned import.
+- Exact test dependencies are locked; a read-only GitHub Actions regression workflow runs relevant pull requests and main pushes.
+
+Verified locally: 11 real-Canvas regression tests with mocked MediaPipe outputs, plus 3 JSDOM interaction tests with mocked camera/auth/engine (14 total). These include native/no-op-filter fallback, protected cheek smoothing, local work bounds, rotated chin direction, lip interior protection, frame-rate/paused-video settings, comparison persistence, immediate Makeup, save-status preservation and camera failure/retry/disposal. Changed JavaScript syntax and whitespace checks pass.
+
+Not Verified: real MediaPipe inference in this build, actual iPhone Safari visuals/thermal behavior, all new effect strengths/face-mask edges, camera constraints across devices, semantic skin quality, and full acceptance of the inherited unaccepted effects. A Chromium installation was attempted but the browser archive download failed; JSDOM testing is NOT browser automation. Do not call this a real Safari or browser-visual acceptance.
+
+Incomplete: production GPU/mesh pipeline, real-device Beauty acceptance and outgoing Video Call integration. Other Mimo product Roadmap features remain pending; this Beauty release does not complete the entire platform.
+
+Next: handle concrete visual/device feedback, record explicitly accepted effects, and only integrate Beauty into Video Call after stability is established. Continue preserving the working call core and all inherited prohibitions.

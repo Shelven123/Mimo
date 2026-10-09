@@ -1,0 +1,11 @@
+{
+  "name": "mimo-beauty-checks",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.cjs"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "0.1.100",
+    "jsdom": "26.1.0"
+  }
+}
