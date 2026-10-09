@@ -15,7 +15,7 @@
 <p class="status" id="status">Loading your Beauty settings…</p><p class="status">Smoothing, Whitening and Rosy Tone work without face tracking. Slim Face, Big Eyes, Chin and Nose activate after the face model loads. Makeup and background blur are not yet implemented.</p>
 </main>
 <script type="module">
-import {createBeautyEngine} from "./beauty-engine.js?v=20261010-3";
+import {createBeautyEngine} from "./beauty-engine.js?v=20261010-4";
 const sb=window.supabase.createClient("https://zhhgiwqehwuwzxnqbnth.supabase.co","sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ");
 const defs=[["smoothing","Smoothing"],["whitening","Whitening"],["rosy","Rosy Tone"],["slim_face","Slim Face"],["big_eyes","Big Eyes"],["chin","Chin"],["nose","Nose"],["eye_brightening","Eye Brightening"],["dark_circle","Dark Circle"],["background_blur","Background Blur"]];
 const presetValues={natural:[25,10,8,0,0,0,0,10,10,0],soft:[40,20,15,10,8,5,5,20,20,0],glam:[55,30,22,25,20,15,12,30,30,0]};
