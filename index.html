@@ -515,6 +515,7 @@
     .incoming-accept { background: #28c76f; }
 
 </style>
+<script src="./contact-permissions.js?v=20261010-contact1"></script>
 </head>
 
 <body>
@@ -1166,6 +1167,7 @@ async function followHost(hostId) {
     followedHostIds.delete(hostId);
 
   } else {
+    if(!await MimoContacts.allow(supabaseClient,hostId,"follow")){if(button)button.disabled=false;return;}
 
     const {
       error

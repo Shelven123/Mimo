@@ -162,6 +162,7 @@ body {
   cursor: default;
 }
 </style>
+<script src="./contact-permissions.js?v=20261010-contact1"></script>
 </head>
 
 <body>
@@ -200,6 +201,8 @@ body {
 
 </div>
 
+
+<div style="text-align:right;padding:8px 16px"><button id="blockContact" type="button" disabled onclick="toggleChatBlock()">Block</button></div>
 
 <div
   id="chatArea"
@@ -270,11 +273,24 @@ let currentUser = null;
 let hostProfile = null;
 let conversationId = null;
 let realtimeChannel = null;
+let messageSending = false;
 
 
 /* =========================
    INIT
 ========================= */
+
+async function toggleChatBlock() {
+  if(!currentUser||!hostProfile)return;
+  const button=document.getElementById("blockContact");button.disabled=true;
+  try {
+    const blocked=await MimoContacts.isBlocked(supabaseClient,currentUser.id,hostId);
+    await MimoContacts.setBlocked(supabaseClient,currentUser.id,hostId,!blocked);
+    button.textContent=blocked?"Block":"Unblock";
+    alert(blocked?"Contact unblocked.":"Contact blocked. New messages, follows and calls are unavailable.");
+  }catch(error){alert("Unable to change blocking settings. Please try again.");}
+  finally{button.disabled=false;}
+}
 
 async function init() {
 
@@ -332,6 +348,8 @@ async function init() {
   }
 
 
+  const blockButton=document.getElementById("blockContact");
+  try{blockButton.textContent=await MimoContacts.isBlocked(supabaseClient,currentUser.id,hostId)?"Unblock":"Block";blockButton.disabled=false;}catch(error){console.warn(error);}
   await loadConversation();
 
 }
@@ -360,10 +378,6 @@ async function loadHost() {
       .eq(
         "id",
         hostId
-      )
-      .eq(
-        "role",
-        "host"
       )
       .maybeSingle();
 
@@ -542,7 +556,7 @@ async function loadConversation() {
   }
 
 
-  await ensureMembers();
+  // Conversations themselves identify the two participants; no client membership writes.
 
 
   if (!conversationId) {
@@ -564,6 +578,7 @@ async function loadConversation() {
 ========================= */
 
 async function createConversation() {
+  if(!await MimoContacts.allow(supabaseClient,hostId,"start_chat"))return;
 
   const {
     data,
@@ -894,6 +909,8 @@ function addMessageToScreen(
 ========================= */
 
 async function sendMessage() {
+  if(messageSending)return;messageSending=true;
+  try {
 
   if (!currentUser) {
 
@@ -938,6 +955,8 @@ async function sendMessage() {
   button.disabled =
     true;
 
+
+  if(!await MimoContacts.allow(supabaseClient,hostId,"message"))return;
 
   const {
     data,
@@ -1015,6 +1034,8 @@ async function sendMessage() {
 
   scrollToBottom();
 
+  } catch(error){console.warn("Message send failed",error);alert("Message could not be sent. Please try again.");}
+  finally {messageSending=false;document.getElementById("sendButton").disabled=false;}
 }
 
 

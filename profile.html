@@ -225,6 +225,7 @@
       }
     }
   </style>
+<script src="./contact-permissions.js?v=20261010-contact1"></script>
 </head>
 
 <body>
@@ -801,6 +802,8 @@ async function followHost() {
   /*
     FOLLOW
   */
+
+  if(!await MimoContacts.allow(supabaseClient,hostId,"follow")){followButton.disabled=false;return;}
 
   const {
     error

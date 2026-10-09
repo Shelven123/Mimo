@@ -53,3 +53,6 @@ User reports only Smoothing/Whitening/Rosy working in VIDEO CALL; other effects 
 
 ## Retained call model
 36 tests now cover engine retention across off/on and rapid off during cached sender replacement. The Beauty circle opens the adjustment panel; its checkbox switches between original camera and processed output. Off retains the model but disables effects; flip/hangup dispose it. The user recording shows loading-face status after a toggle, with no panel values captured. Actual call reshape remains unverified and unaccepted.
+
+## Contact permissions (prepared, not deployed)
+`npm test` includes isolated PGlite PostgreSQL RLS cases with audited baseline policies and the pending migration. 47 total checks pass. These verify SQL authorization behavior in isolation, not the full production schema/triggers or signed-in device flows. See docs/CONTACT_PERMISSIONS_REVIEW.md. Production changes were automatically rejected pending specific user approval; frontend RPC gates must not be published before the migration.
