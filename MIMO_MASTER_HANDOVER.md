@@ -158,3 +158,9 @@ Not Verified: real MediaPipe inference in this build, actual iPhone Safari visua
 Incomplete: production GPU/mesh pipeline, real-device Beauty acceptance and outgoing Video Call integration. Other Mimo product Roadmap features remain pending; this Beauty release does not complete the entire platform.
 
 Next: handle concrete visual/device feedback, record explicitly accepted effects, and only integrate Beauty into Video Call after stability is established. Continue preserving the working call core and all inherited prohibitions.
+
+## v2.7 layout correction — fixed live preview (2026-10-10 Malaysia)
+
+User recording confirmed that document scrolling hid the camera when lower sliders were reached. Beauty now uses a viewport-height flex layout: header and a compact camera stay above a separately scrolling settings panel, with dynamic viewport and safe-area sizing. Engine, mirror direction, camera stream and calls are unchanged. Actual iPhone layout acceptance remains pending; this is an implemented CSS fix, not a device-verified claim.
+
+The same review found that the comparison button shared the preset class and was incorrectly bound as a preset. Preset handlers now target only elements with data-preset. A real click after comparison release is regression-tested and preserves the selected preset. Local tests now total 15 (11 engine + 4 DOM); syntax/whitespace checks pass.

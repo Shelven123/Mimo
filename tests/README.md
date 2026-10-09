@@ -7,7 +7,7 @@ npm ci --ignore-scripts --no-audit --no-fund
 npm test
 ```
 
-Eleven engine tests exercise actual Canvas pixel processing with **fake MediaPipe outputs**. Three JSDOM tests exercise page handlers with **fake camera/auth/engine**. They do not load real models or simulate iPhone Safari. The regression workflow runs relevant PRs and main pushes. Browser visual automation was not performed (browser archive download failed).
+Eleven engine tests exercise actual Canvas pixel processing with **fake MediaPipe outputs**. Four JSDOM tests exercise page handlers with **fake camera/auth/engine**. They do not load real models or simulate iPhone Safari. The regression workflow runs relevant PRs and main pushes. Browser visual automation was not performed (browser archive download failed).
 
 ## Consolidated iPhone Safari acceptance
 

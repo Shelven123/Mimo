@@ -3,6 +3,12 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#0f0f14;color:#fff;font-family:Arial,sans-serif}.top{height:62px;padding:0 16px;display:flex;align-items:center;gap:14px;position:sticky;top:0;background:#0f0f14;z-index:10}.back{border:0;background:#24242b;color:#fff;border-radius:50%;width:38px;height:38px;font-size:25px}.top b{font-size:19px}.camera{height:min(52vh,520px);background:#000;display:grid;place-items:center;overflow:hidden}.camera canvas{width:100%;height:100%;object-fit:cover}.panel{max-width:620px;margin:auto;padding:14px 16px 40px}.switchrow{display:flex;align-items:center;justify-content:space-between;margin:4px 0 14px}.presets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.preset{padding:11px;border:1px solid #383842;border-radius:12px;background:#1c1c23;color:#fff;font-weight:700}.preset.active{background:#fff;color:#111}.slider{margin:14px 0}.sliderhead{display:flex;justify-content:space-between;font-size:14px;margin-bottom:7px}.slider input{width:100%}.actions{display:flex;gap:10px;margin-top:18px}.actions button{flex:1;border:0;border-radius:13px;padding:14px;font-weight:700}.flip{background:#292933;color:#fff}.save{background:#fff;color:#111}.status{font-size:12px;color:#aaa;line-height:1.5;margin-top:12px}#source{display:none}
+/* Keep the live view visible while only the settings panel scrolls. */
+html{height:100%}
+body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.top{flex:0 0 auto;position:relative;height:calc(62px + env(safe-area-inset-top,0px));padding-top:env(safe-area-inset-top,0px)}
+.camera{flex:0 0 auto;height:min(40vh,360px);height:min(40dvh,360px);min-height:120px}
+.panel{flex:1 1 0;min-height:0;width:100%;margin:0 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 </style></head><body>
 <header class="top"><button class="back" id="back">‹</button><b>✨ Beauty</b></header>
 <div class="camera" id="stage"><div style="text-align:center"><div id="cameraMsg">Opening camera…</div><button id="startCamera" type="button" style="margin-top:14px;border:0;border-radius:13px;padding:13px 18px;font-weight:700;display:none">Start Live Preview</button></div></div><video id="source" autoplay muted playsinline></video>
@@ -13,7 +19,7 @@
 <div class="switchrow"><b>Makeup</b><input id="makeup_enabled" type="checkbox"></div>
 <button class="preset" id="compare" type="button" aria-pressed="false" style="width:100%;touch-action:none">Hold to compare original</button>
 <div class="actions"><button class="flip" id="flip">Flip Camera</button><button class="flip" id="mirror" type="button">Mirror: Off</button><button class="save" id="save">Save</button></div>
-<p class="status" id="status">Loading your Beauty settings…</p><p class="status" id="trackingStatus" aria-live="polite"></p><p class="status">Mimo Beauty Engine v2.7 · face detail protection · live comparison · camera preview only.</p>
+<p class="status" id="status">Loading your Beauty settings…</p><p class="status" id="trackingStatus" aria-live="polite"></p><p class="status">Mimo Beauty Engine v2.7 · fixed preview layout · face detail protection · live comparison · camera preview only.</p>
 </main>
 <script type="module">
 import {createBeautyEngine} from "./beauty-engine.js?v=20261010-v27";
@@ -24,12 +30,12 @@ let user=null,camera=null,engine=null,facing="user",preset="natural",saved={},mi
 const stage=document.getElementById("stage"),video=document.getElementById("source"),status=document.getElementById("status"),box=document.getElementById("sliders"),startCamera=document.getElementById("startCamera");
 defs.forEach(([id,label])=>{box.insertAdjacentHTML("beforeend",'<div class="slider"><div class="sliderhead"><span>'+label+'</span><b id="'+id+'_v">0</b></div><input id="'+id+'" type="range" min="0" max="100" value="0"></div>')});
 function values(){const o={enabled:document.getElementById("enabled").checked,makeup_enabled:document.getElementById("makeup_enabled").checked};defs.forEach(([k])=>o[k]=+document.getElementById(k).value);return o}
-function paint(){document.querySelectorAll(".preset").forEach(b=>b.classList.toggle("active",b.dataset.preset===preset))}
+function paint(){document.querySelectorAll(".preset[data-preset]").forEach(b=>b.classList.toggle("active",b.dataset.preset===preset))}
 function refresh(custom=true){defs.forEach(([k])=>document.getElementById(k+"_v").textContent=document.getElementById(k).value);if(custom){preset="custom";paint()}if(engine)engine.update({...values(),enabled:values().enabled&&!comparing})}
 defs.forEach(([k])=>document.getElementById(k).addEventListener("input",()=>refresh(true)));
 document.getElementById("enabled").onchange=()=>refresh(false);
 document.getElementById("makeup_enabled").onchange=()=>refresh(true);
-document.querySelectorAll(".preset").forEach(b=>b.onclick=()=>{preset=b.dataset.preset;presetValues[preset].forEach((v,i)=>document.getElementById(defs[i][0]).value=v);refresh(false);paint()});
+document.querySelectorAll(".preset[data-preset]").forEach(b=>b.onclick=()=>{preset=b.dataset.preset;presetValues[preset].forEach((v,i)=>document.getElementById(defs[i][0]).value=v);refresh(false);paint()});
 async function persist(show=true){if(!user)return false;const r=await sb.from("beauty_settings").upsert({user_id:user.id,...saved,...values(),preset});if(show)status.textContent=r.error?r.error.message:"Beauty settings saved ✓";return !r.error}
 async function openCamera(){
   if(cameraOpening)return;
