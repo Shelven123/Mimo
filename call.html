@@ -907,11 +907,30 @@ function applyLocalPreviewOrientation() {
 async function attachLocalPreview() {
   const localVideo = document.getElementById("localVideo");
   if (!localVideo || !localStream) return;
-  localVideo.srcObject = localStream;
+
   localVideo.muted = true;
+  localVideo.autoplay = true;
+  localVideo.playsInline = true;
   localVideo.setAttribute("playsinline", "");
+  localVideo.srcObject = null;
+  localVideo.srcObject = localStream;
   applyLocalPreviewOrientation();
+
+  // iPhone Safari can leave the first local preview black even though
+  // the camera track is live. Wait for media metadata and retry play.
+  await new Promise(resolve => {
+    if (localVideo.readyState >= 1) return resolve();
+    const done = () => resolve();
+    localVideo.addEventListener("loadedmetadata", done, { once: true });
+    setTimeout(done, 1200);
+  });
+
   try { await localVideo.play(); } catch (_) {}
+
+  if (localVideo.readyState < 2) {
+    await new Promise(resolve => setTimeout(resolve, 250));
+    try { await localVideo.play(); } catch (_) {}
+  }
 }
 
 function enableVideoUI() {
