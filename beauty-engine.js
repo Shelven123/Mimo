@@ -1,10 +1,10 @@
-/* Mimo Beauty Engine v2.5 — stabilized landmarks + protected skin/eye/makeup + portrait blur. */
+/* Mimo Beauty Engine v2.6 — adaptive performance + stabilized landmark beauty pipeline. */
 export function createBeautyEngine(video, options = {}) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
   if (!ctx || !canvas.captureStream) throw new Error("Canvas video processing unavailable");
   let settings = { smoothing: 0, whitening: 0, rosy: 0, slim_face: 0, big_eyes: 0, chin: 0, nose: 0, eye_brightening: 0, dark_circle: 0, background_blur: 0, enabled: true, ...options };
-  let active = false, frame = 0, stream = null;
+  let active = false, frame = 0, stream = null, renderSamples=[], qualityWidth=480, lastQualityCheck=0;
   const softCanvas = document.createElement("canvas");
   const softCtx = softCanvas.getContext("2d");
   if (!softCtx) throw new Error("Canvas smoothing unavailable");
@@ -165,9 +165,10 @@ export function createBeautyEngine(video, options = {}) {
   }
   function render() {
     if (!active) return;
+    const renderStart=performance.now();
     const w = video.videoWidth, h = video.videoHeight;
     if (w && h && video.readyState >= 2) {
-      const width = Math.min(w, 480), height = Math.max(1, Math.round(h * width / w));
+      const width = Math.min(w, qualityWidth), height = Math.max(1, Math.round(h * width / w));
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = softCanvas.width = width;
         canvas.height = softCanvas.height = height;
@@ -223,6 +224,14 @@ export function createBeautyEngine(video, options = {}) {
         }
       }
     }
+    const cost=performance.now()-renderStart;
+    renderSamples.push(cost);if(renderSamples.length>30)renderSamples.shift();
+    if(performance.now()-lastQualityCheck>3500&&renderSamples.length>=20){
+      lastQualityCheck=performance.now();
+      const avg=renderSamples.reduce((a,b)=>a+b,0)/renderSamples.length;
+      const target=avg>38?360:avg<24?480:qualityWidth;
+      if(target!==qualityWidth){qualityWidth=target;renderSamples.length=0;}
+    }
     frame = requestAnimationFrame(render);
   }
   return {
@@ -230,7 +239,7 @@ export function createBeautyEngine(video, options = {}) {
     getTrackingStatus(){return trackingStatus;},
     getTrackingError(){return trackingError;},
     getFaceDetected(){return !!face;},
-    getDebug(){return {trackingStatus,segmentationStatus,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0};},
+    getDebug(){return {trackingStatus,segmentationStatus,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0,qualityWidth,avgFrameMs:renderSamples.length?Math.round(renderSamples.reduce((a,b)=>a+b,0)/renderSamples.length):0};},
     start(fps = 24) {
       if (!stream) stream = canvas.captureStream(fps);
       if (!active) { active = true; render(); }
