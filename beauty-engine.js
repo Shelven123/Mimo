@@ -9,7 +9,7 @@ export function createBeautyEngine(video, options = {}) {
   const softCtx = softCanvas.getContext("2d");
   if (!softCtx) throw new Error("Canvas smoothing unavailable");
 
-  let tracker = null, face = null, trackingStatus = "loading", lastDetect = 0;
+  let tracker = null, face = null, trackingStatus = "loading", lastDetect = 0, videoTime = -1;
   (async () => {
     try {
       const lib = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm");
@@ -90,7 +90,8 @@ export function createBeautyEngine(video, options = {}) {
       ctx.drawImage(video, 0, 0, width, height);
       if (tracker && performance.now()-lastDetect>180) {
         lastDetect=performance.now();
-        try { face=tracker.detectForVideo(video,lastDetect).faceLandmarks?.[0] || null; }
+        videoTime=video.currentTime;
+        try { face=tracker.detectForVideo(video,Math.round(video.currentTime*1000)).faceLandmarks?.[0] || null; }
         catch (error) { face=null; console.warn("Mimo face detection error:",error); }
       }
       if (settings.enabled) {
@@ -128,6 +129,7 @@ export function createBeautyEngine(video, options = {}) {
     canvas,
     getTrackingStatus(){return trackingStatus;},
     getFaceDetected(){return !!face;},
+    getDebug(){return {trackingStatus,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0};},
     start(fps = 24) {
       if (!stream) stream = canvas.captureStream(fps);
       if (!active) { active = true; render(); }
