@@ -43,48 +43,35 @@ export function createBeautyEngine(video, options = {}) {
     const left = p(234), right = p(454), jaw = p(152);
     const faceSize = Math.hypot(right.x-left.x, right.y-left.y);
     if (faceSize < 28) return;
-    const effects = [];
-    function effect(center, radius, power, mode, target) {
-      if (power <= 0) return;
-      effects.push({ x:center.x, y:center.y, r:radius, power, mode, target });
-    }
-    effect(p(33), faceSize*.18, eyes*.24, "scale");
-    effect(p(263), faceSize*.18, eyes*.24, "scale");
-    effect(p(172), faceSize*.32, slim*.42, "move", p(1));
-    effect(p(136), faceSize*.26, slim*.28, "move", p(152));
-    effect(p(397), faceSize*.32, slim*.42, "move", p(1));
-    effect(p(365), faceSize*.26, slim*.28, "move", p(152));
-    effect(jaw, faceSize*.30, chin*.12, "move", p(13));
-    effect(p(1), faceSize*.18, nose*.16, "scale");
-    const src = ctx.getImageData(0,0,width,height);
-    const dst = ctx.createImageData(width,height);
-    const a = src.data, b = dst.data;
-    b.set(a);
-    for (let y=0;y<height;y++) for(let x=0;x<width;x++) {
-      let sx=x,sy=y,activeEffect=false;
-      for(const e of effects) {
-        const dx=x-e.x,dy=y-e.y,dd=dx*dx+dy*dy;
-        if(dd>=e.r*e.r)continue;
-        const weight=(1-dd/(e.r*e.r))**2 * e.power;
-        if(e.mode==="scale") {
-          sx-=dx*weight;
-          sy-=dy*weight;
-        } else {
-          const vx=e.target.x-e.x,vy=e.target.y-e.y;
-          const length=Math.hypot(vx,vy)||1;
-          sx-=vx/length*e.r*weight;
-          sy-=vy/length*e.r*weight;
+    // Face slimming: inverse-map pixels toward the original outer cheek.
+    // Only horizontal cheek compression is used here; the previous radial
+    // point-pull distorted the mouth/chin and made the lower face balloon.
+    if (slim) {
+      const src = ctx.getImageData(0,0,width,height);
+      const dst = ctx.createImageData(width,height);
+      const a=src.data,b=dst.data; b.set(a);
+      const center=p(1), top=p(10), bottom=p(152);
+      const half=Math.max(20,Math.abs(right.x-left.x)*0.56);
+      const yTop=top.y+faceSize*.18, yBottom=bottom.y+faceSize*.04;
+      const strength=0.22*slim;
+      for(let y=Math.max(0,Math.floor(yTop));y<Math.min(height,Math.ceil(yBottom));y++){
+        const yn=(y-(yTop+yBottom)/2)/Math.max(1,(yBottom-yTop)/2);
+        const vertical=Math.max(0,1-yn*yn);
+        for(let x=Math.max(0,Math.floor(center.x-half));x<Math.min(width,Math.ceil(center.x+half));x++){
+          const dx=x-center.x, nx=Math.abs(dx)/half;
+          if(nx>=1)continue;
+          const edge=nx*nx*(3-2*nx);
+          const sx=center.x+dx*(1+strength*vertical*(1-edge));
+          const sy=y;
+          const xx=Math.max(0,Math.min(width-1,sx)), x0=Math.floor(xx), x1=Math.min(width-1,x0+1), fx=xx-x0, to=(y*width+x)*4;
+          const a0=(y*width+x0)*4,a1=(y*width+x1)*4;
+          for(let k=0;k<3;k++)b[to+k]=a[a0+k]*(1-fx)+a[a1+k]*fx;
         }
-        activeEffect=true;
       }
-      if(!activeEffect)continue;
-      sx=Math.max(0,Math.min(width-1,sx));sy=Math.max(0,Math.min(height-1,sy));
-      const x0=Math.floor(sx),y0=Math.floor(sy),x1=Math.min(width-1,x0+1),y1=Math.min(height-1,y0+1);
-      const fx=sx-x0,fy=sy-y0,to=(y*width+x)*4;
-      const a00=(y0*width+x0)*4,a10=(y0*width+x1)*4,a01=(y1*width+x0)*4,a11=(y1*width+x1)*4;
-      for(let k=0;k<3;k++) b[to+k]=a[a00+k]*(1-fx)*(1-fy)+a[a10+k]*fx*(1-fy)+a[a01+k]*(1-fx)*fy+a[a11+k]*fx*fy;
+      ctx.putImageData(dst,0,0);
     }
-    ctx.putImageData(dst,0,0);
+    // Other landmark reshapes stay disabled until each deformation is tuned
+    // independently; they must not contaminate the verified Slim Face path.
   }
   function render() {
     if (!active) return;
