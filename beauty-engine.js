@@ -1,4 +1,4 @@
-/* Mimo Beauty Engine v2.2 — landmark-aware reshape + regional skin/eye/makeup processing. */
+/* Mimo Beauty Engine v2.3 — landmark-aware reshape + protected skin/eye/makeup processing. */
 export function createBeautyEngine(video, options = {}) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
@@ -153,7 +153,7 @@ export function createBeautyEngine(video, options = {}) {
         // screen regions. That produced visible oval seams and rectangular eye
         // artifacts when the face moved. Proper landmark-based warping will be
         // used for these controls.
-        const smooth = Math.min(0.6, Math.max(0, Number(settings.smoothing) / 100 * 0.6));
+        const smooth = Math.min(0.48, Math.max(0, Number(settings.smoothing) / 100 * 0.48));
         if (smooth) {
           softCtx.clearRect(0, 0, width, height);
           softCtx.filter = "blur(" + (0.7 + smooth * 4).toFixed(2) + "px)";
@@ -161,6 +161,17 @@ export function createBeautyEngine(video, options = {}) {
           ctx.globalAlpha = smooth;
           ctx.drawImage(softCanvas, 0, 0);
           ctx.globalAlpha = 1;
+          // Restore key facial features after smoothing so eyes, brows, nose and lips keep detail.
+          if(face){
+            const fp=id=>({x:face[id].x*width,y:face[id].y*height});
+            const fw=Math.max(24,Math.hypot(fp(454).x-fp(234).x,fp(454).y-fp(234).y));
+            const restore=(pt,rx,ry,a=.78)=>{ctx.save();ctx.beginPath();ctx.ellipse(pt.x,pt.y,rx,ry,0,0,Math.PI*2);ctx.clip();ctx.globalAlpha=a;ctx.drawImage(video,0,0,width,height);ctx.restore()};
+            const le0=fp(33),le1=fp(133),re0=fp(263),re1=fp(362);
+            restore({x:(le0.x+le1.x)/2,y:(le0.y+le1.y)/2},fw*.15,fw*.10);
+            restore({x:(re0.x+re1.x)/2,y:(re0.y+re1.y)/2},fw*.15,fw*.10);
+            restore(fp(1),fw*.12,fw*.18,.58);
+            restore(fp(13),fw*.18,fw*.10,.70);
+          }
         }
         const white = Math.max(0, Math.min(100, Number(settings.whitening))) / 100;
         const rosy = Math.max(0, Math.min(100, Number(settings.rosy))) / 100;
