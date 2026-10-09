@@ -7,7 +7,8 @@ const {JSDOM}=require('jsdom');
 const html=fs.readFileSync(path.join(__dirname,'../beauty-settings.html'),'utf8');
 async function page(){
   const dom=new JSDOM(html,{url:'https://mimo.test/beauty-settings.html',runScripts:'outside-only'}),w=dom.window;
-  const state={updates:[],saves:[],disposed:0,tracksStopped:0,interval:null,cameraFailure:false};
+  const state={updates:[],saves:[],disposed:0,tracksStopped:0,interval:null,cameraFailure:false,errors:[]};
+  w.addEventListener('error',event=>{state.errors.push(event.error);event.preventDefault();});
   w.setInterval=callback=>(state.interval=callback,1);
   w.HTMLMediaElement.prototype.play=async()=>{};
   w.HTMLElement.prototype.setPointerCapture=()=>{};
@@ -38,6 +39,13 @@ test('Live comparison restores effects without saving temporary original mode',a
   compare.onpointercancel();assert.equal(p.state.updates.at(-1).enabled,true);assert.equal(compare.getAttribute('aria-pressed'),'false');
   compare.onkeydown({key:' ',preventDefault(){}});assert.equal(p.state.updates.at(-1).enabled,false);
   compare.onkeyup({key:' '});assert.equal(p.state.updates.at(-1).enabled,true);p.dom.window.close();
+});
+test('A click after releasing comparison is not handled as an undefined preset',async()=>{
+  const p=await page(),compare=p.el('compare');
+  compare.onpointerdown({button:0,pointerId:1,preventDefault(){}});compare.onpointerup();compare.click();
+  assert.equal(p.state.errors.length,0);
+  await p.el('save').onclick();assert.equal(p.state.saves.at(-1).preset,'natural');
+  assert.equal(p.state.updates.at(-1).enabled,true);p.dom.window.close();
 });
 test('Makeup updates immediately and tracking text preserves the save result',async()=>{
   const p=await page();p.el('makeup_enabled').checked=true;p.el('makeup_enabled').dispatchEvent(new p.w.Event('change'));
