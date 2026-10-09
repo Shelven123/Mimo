@@ -386,7 +386,7 @@
 
 <div id="videoStage" style="display:none;position:fixed;inset:0;background:#111;z-index:2;">
   <video id="remoteVideo" autoplay playsinline style="width:100%;height:100%;object-fit:cover;background:#111;"></video>
-  <video id="localVideo" autoplay muted playsinline style="position:absolute;right:16px;top:24px;width:110px;height:155px;object-fit:cover;border-radius:16px;background:#222;box-shadow:0 4px 20px rgba(0,0,0,.35);transform:scaleX(-1);"></video>
+  <video id="localVideo" autoplay muted playsinline style="position:absolute;right:16px;top:24px;width:110px;height:155px;object-fit:cover;border-radius:16px;background:#222;box-shadow:0 4px 20px rgba(0,0,0,.35);z-index:5;"></video>
 </div>
 
 
@@ -892,12 +892,7 @@ async function prepareMedia() {
     enableVideoUI();
     currentFacingMode = nextFacingMode;
 
-    const localVideo = document.getElementById("localVideo");
-    if (localVideo) {
-      localVideo.srcObject = localStream;
-      applyLocalPreviewOrientation();
-      localVideo.play().catch(() => {});
-    }
+    await attachLocalPreview();
   }
 
 }
@@ -906,8 +901,17 @@ async function prepareMedia() {
 function applyLocalPreviewOrientation() {
   const localVideo = document.getElementById("localVideo");
   if (!localVideo) return;
-  // iPhone/Safari front preview behaves like a mirror. Flip the displayed front preview once so movement is shown in normal orientation.
-  localVideo.style.transform = currentFacingMode === "user" ? "scaleX(-1)" : "scaleX(1)";
+  localVideo.style.transform = currentFacingMode === "user" ? "scaleX(-1)" : "none";
+}
+
+async function attachLocalPreview() {
+  const localVideo = document.getElementById("localVideo");
+  if (!localVideo || !localStream) return;
+  localVideo.srcObject = localStream;
+  localVideo.muted = true;
+  localVideo.setAttribute("playsinline", "");
+  applyLocalPreviewOrientation();
+  try { await localVideo.play(); } catch (_) {}
 }
 
 function enableVideoUI() {
@@ -951,42 +955,66 @@ async function switchCamera() {
   const oldTrack = localStream.getVideoTracks()[0];
   if (!oldTrack) return;
 
-  const nextFacingMode = currentFacingMode === "user" ? "environment" : "user";
+  const previousFacingMode = currentFacingMode;
+  const nextFacingMode = previousFacingMode === "user" ? "environment" : "user";
+  const sender = peerConnection?.getSenders().find(
+    item => item.track && item.track.kind === "video"
+  );
+
+  // iPhone Safari needs the active camera released before opening the other camera.
+  oldTrack.stop();
+  localStream.removeTrack(oldTrack);
 
   try {
-    const newStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: nextFacingMode } },
-      audio: false
-    });
-
-    const newTrack = newStream.getVideoTracks()[0];
-    if (!newTrack) return;
-
-    const sender = peerConnection?.getSenders().find(
-      item => item.track && item.track.kind === "video"
-    );
-
-    if (sender) await sender.replaceTrack(newTrack);
-
-    localStream.removeTrack(oldTrack);
-    oldTrack.stop();
-    localStream.addTrack(newTrack);
-
-    const localVideo = document.getElementById("localVideo");
-    if (localVideo) {
-      localVideo.srcObject = localStream;
-      applyLocalPreviewOrientation();
-      localVideo.play().catch(() => {});
+    let newStream;
+    try {
+      newStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { exact: nextFacingMode } },
+        audio: false
+      });
+    } catch (_) {
+      newStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: nextFacingMode },
+        audio: false
+      });
     }
 
+    const newTrack = newStream.getVideoTracks()[0];
+    if (!newTrack) throw new Error("No camera track returned");
+
+    if (sender) await sender.replaceTrack(newTrack);
+    localStream.addTrack(newTrack);
+    currentFacingMode = nextFacingMode;
     cameraEnabled = true;
+
+    await attachLocalPreview();
+
     const button = document.getElementById("cameraButton");
     const text = document.getElementById("cameraText");
     if (button) button.classList.remove("active");
     if (text) text.textContent = "Camera";
+    showError("");
   } catch (error) {
     console.error(error);
-    showError("Unable to switch camera on this device.");
+
+    // Recover the previous camera instead of leaving the preview black.
+    try {
+      const recovery = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: previousFacingMode },
+        audio: false
+      });
+      const recoveryTrack = recovery.getVideoTracks()[0];
+      if (recoveryTrack) {
+        if (sender) await sender.replaceTrack(recoveryTrack);
+        localStream.addTrack(recoveryTrack);
+        currentFacingMode = previousFacingMode;
+        await attachLocalPreview();
+      }
+    } catch (recoveryError) {
+      console.error(recoveryError);
+    }
+
+    showError("Unable to switch camera. Please try again.");
   }
 }
 
