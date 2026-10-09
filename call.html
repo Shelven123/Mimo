@@ -365,6 +365,7 @@
     <div id="beautyControl" class="control" style="display:none">
       <button id="beautyButton" class="circle" onclick="toggleCallBeauty()">✨</button>
       <div id="beautyText">Beauty Off</div>
+      <button type="button" onclick="openCallBeautyPanel()" style="border:0;background:transparent;color:inherit;text-decoration:underline">Adjust</button>
     </div>
 
     <div id="flipControl" class="control" style="display:none">
@@ -398,6 +399,14 @@
   <video id="localVideo" autoplay muted playsinline style="position:absolute;right:16px;top:24px;width:110px;height:155px;object-fit:cover;border-radius:16px;background:#222;box-shadow:0 4px 20px rgba(0,0,0,.35);z-index:5;cursor:pointer;"></video>
 </div>
 
+
+<section id="callBeautyPanel" hidden style="position:fixed;left:12px;right:12px;bottom:12px;max-height:48dvh;overflow-y:auto;z-index:30;padding:16px;border-radius:16px;background:#17171f;color:white;box-shadow:0 4px 20px #0008">
+  <div style="display:flex;justify-content:space-between;align-items:center"><b>Beauty · this call</b><button type="button" onclick="closeCallBeautyPanel()">Close</button></div>
+  <p id="callBeautyStatus" style="font-size:12px;line-height:1.5" role="status"></p>
+  <div id="callBeautySliders"></div>
+  <label><input id="callMakeup" type="checkbox"> Makeup</label>
+  <p style="font-size:12px">Changes apply immediately to this call. Save defaults on the Beauty page.</p>
+</section>
 
 <script>
 
@@ -444,6 +453,7 @@ let peerConnection = null;
 let localStream = null;
 let beautyPipeline = null, beautyOutputStream = null, beautyEpoch = 0;
 let beautySettings = null, beautyWanted = false, beautyModule = null;
+let beautyPanelTimer = null, beautyLastReason = "", beautySettingsRead = "Not loaded";
 let beautyOutputQueue = Promise.resolve(), cameraSwitching = false;
 let remoteMediaStream = null;
 
@@ -1178,21 +1188,28 @@ async function startCallBeauty() {
   const token=++beautyEpoch;let pipeline;
   paintCallBeauty("Beauty loading");
   try {
-    beautyModule=beautyModule||await import("./beauty-call.js?v=20261010-call1");
+    beautyModule=beautyModule||await import("./beauty-call.js?v=20261010-call2");
     if(ended||token!==beautyEpoch)return;
     pipeline=await beautyModule.createCallBeautyPipeline(localStream,beautySettings,reason=>{
       if(token!==beautyEpoch||ended)return;
+      beautyLastReason=reason;
       console.warn("Beauty switched to raw camera",reason);
       void stopCallBeauty().then(ok=>paintCallBeauty(ok?"Beauty unavailable":"Beauty retry"));
-    });
+    },{onState:debug=>{
+      if(token!==beautyEpoch||ended||!beautyOutputStream)return;
+      paintCallBeauty(!cameraEnabled?"Camera Off":debug.trackingStatus==="loading"?"Beauty loading face":debug.faceDetected?"Beauty On":"Beauty · no face");
+    }});
     if(ended||token!==beautyEpoch){pipeline.dispose();return;}
+    pipeline.update(beautySettings);
     pipeline.setCameraEnabled(cameraEnabled);
     if(!await selectCallVideoOutput(pipeline.stream,token)){pipeline.dispose();return;}
     pipeline.setCameraEnabled(cameraEnabled);
-    beautyPipeline=pipeline;paintCallBeauty("Beauty On");
+    beautyLastReason="";beautyPipeline=pipeline;
+    const state=pipeline.getDebug();paintCallBeauty(state.faceDetected?"Beauty On":"Beauty loading face");
   } catch(error) {
     pipeline?.dispose();
     if(token!==beautyEpoch||ended)return;
+    beautyLastReason=error?.message||String(error);
     console.warn("Beauty unavailable; keeping raw camera",error);
     await stopCallBeauty();paintCallBeauty("Beauty unavailable");
   }
@@ -1202,11 +1219,17 @@ async function initializeCallBeauty() {
     const result=await supabaseClient.from("beauty_settings").select("*").eq("user_id",currentUser.id).maybeSingle();
     if(ended)return;
     if(result.error)throw result.error;
+    beautySettingsRead=result.data?"Saved settings loaded":"No saved settings; values start at 0";
     beautySettings=result.data||{enabled:false};beautyWanted=!!beautySettings.enabled;
     document.getElementById("beautyControl").style.display="block";
     paintCallBeauty(beautyWanted?"Beauty loading":"Beauty Off");
     if(beautyWanted)await startCallBeauty();
-  } catch(error){console.warn("Unable to load Beauty settings",error);}
+  } catch(error){
+    console.warn("Unable to load Beauty settings",error);
+    if(ended)return;
+    beautyLastReason=error?.message||String(error);beautySettingsRead="Saved settings unavailable";
+    beautySettings={enabled:false};document.getElementById("beautyControl").style.display="block";paintCallBeauty("Beauty Off");
+  }
 }
 async function toggleCallBeauty() {
   if(ended||cameraSwitching||!beautySettings)return;
@@ -1214,7 +1237,36 @@ async function toggleCallBeauty() {
   if(!beautyWanted){const ok=await stopCallBeauty();if(!ok)beautyWanted=true;paintCallBeauty(ok?"Beauty Off":"Beauty retry");}
   else{beautySettings={...beautySettings,enabled:true};await startCallBeauty();}
 }
+const callBeautyDefs=[["smoothing","Smoothing"],["whitening","Whitening"],["rosy","Rosy Tone"],["slim_face","Slim Face"],["big_eyes","Big Eyes"],["chin","Chin"],["nose","Nose"],["eye_brightening","Eye Brightening"],["dark_circle","Dark Circle"],["background_blur","Background Blur"]];
+function showCallBeautyState() {
+  const output=document.getElementById("callBeautyStatus"),debug=beautyPipeline?.getDebug();
+  const sender=peerConnection?.getSenders().find(item=>item.track?.kind==="video");
+  const processed=!!beautyOutputStream&&sender?.track===beautyOutputStream.getVideoTracks()[0];
+  const face=debug?.trackingStatus==="loading"?"Loading face model":debug?.faceDetected?"Face detected · "+debug.landmarkCount+" landmarks":"No face detected — reshape and makeup inactive";
+  output.textContent=beautySettingsRead+" · "+(!cameraEnabled?"Camera Off":processed?"Sending processed video · "+face:"Sending original camera")+(beautyLastReason?" · "+beautyLastReason:"");
+}
+function openCallBeautyPanel() {
+  if(ended||callRecord?.call_type!=="video"||!beautySettings)return;
+  const box=document.getElementById("callBeautySliders");box.replaceChildren();
+  for(const [key,label] of callBeautyDefs){
+    const row=document.createElement("label");row.style.cssText="display:block;margin:12px 0";
+    const title=document.createElement("span"),slider=document.createElement("input");
+    slider.type="range";slider.min="0";slider.max="100";slider.value=Math.max(0,Math.min(100,Number(beautySettings[key])||0));slider.dataset.beautyKey=key;slider.style.width="100%";
+    const paint=()=>title.textContent=label+" · "+slider.value;paint();
+    slider.oninput=()=>{beautySettings={...beautySettings,[key]:Number(slider.value)};beautyPipeline?.update(beautySettings);paint();showCallBeautyState();};
+    row.append(title,slider);box.append(row);
+  }
+  const makeup=document.getElementById("callMakeup");makeup.checked=!!beautySettings.makeup_enabled;
+  makeup.onchange=()=>{beautySettings={...beautySettings,makeup_enabled:makeup.checked};beautyPipeline?.update(beautySettings);};
+  document.getElementById("callBeautyPanel").hidden=false;showCallBeautyState();
+  if(beautyPanelTimer!==null)clearInterval(beautyPanelTimer);beautyPanelTimer=setInterval(showCallBeautyState,500);
+}
+function closeCallBeautyPanel() {
+  if(beautyPanelTimer!==null)clearInterval(beautyPanelTimer);beautyPanelTimer=null;
+  document.getElementById("callBeautyPanel").hidden=true;
+}
 function disposeCallBeauty() {
+  closeCallBeautyPanel();
   ++beautyEpoch;beautyPipeline?.dispose();beautyPipeline=null;beautyOutputStream=null;
 }
 

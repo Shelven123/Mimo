@@ -47,3 +47,6 @@ User generally accepted the v2.7.1 layout and effects. This is not a recorded pr
 31 automated checks now include 12 call adapter/lifecycle tests with mocked video/RTC/model dependencies. They are not two-party browser or iPhone tests. User accepted v2.7.2 standalone stability before integration. The new integration itself remains device Not Verified.
 
 Save your Beauty settings and start a video call. The remote partner must confirm processed video matches your local preview. Check Beauty off/on, Camera off/on (remote must not see the last processed face), front/rear flip, PiP swap, audio/mute, hangup/redial, and three minutes of use. Verify a voice call still works. Startup is raw-first; a failed Beauty load should leave audio/video working. Call-only toggle does not save the preference.
+
+## Video-call feedback and live adjustment
+User reports only Smoothing/Whitening/Rosy working in VIDEO CALL; other effects ineffective. Do not call this resolved or accepted. Open Adjust under the call Beauty control; verify actual loaded Slim Face value, move it 0/100 and check the status reports processed video and detected face. Original-camera or no-face status means reshape is not currently active. 33 automated checks include live parameter updates and changed values during startup; they do not establish the cause of the user's phone issue.

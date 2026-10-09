@@ -1,5 +1,5 @@
 // Video-call adapter. Owns only the processing source and captured output, never the camera/audio.
-import {createBeautyEngine} from "./beauty-engine.js?v=20261010-v272-call1";
+import {createBeautyEngine} from "./beauty-engine.js?v=20261010-v272-call2";
 export async function createCallBeautyPipeline(rawStream, settings, onFailure, dependencies = {}) {
   const makeEngine=dependencies.makeEngine||createBeautyEngine;
   const source=dependencies.makeVideo?dependencies.makeVideo():document.createElement("video");
@@ -30,10 +30,11 @@ export async function createCallBeautyPipeline(rawStream, settings, onFailure, d
     watch=setInterval(()=>{
       if(disposed||document.hidden||!rawStream.getVideoTracks()[0]?.enabled)return;
       const debug=engine.getDebug();
+      dependencies.onState?.(debug);
       if(track.readyState==="ended")fail("Beauty output ended");
       else if(debug.processingError||debug.trackingStatus==="unavailable")fail(debug.processingError||"Beauty tracking unavailable");
       else if(Number.isFinite(debug.lastRenderTime)&&performance.now()-debug.lastRenderTime>2000)fail("Beauty rendering stalled");
     },1000);
-    return {stream,track,dispose,setCameraEnabled(enabled){track.enabled=enabled;}};
+    return {stream,track,dispose,update:patch=>engine.update(patch),getDebug:()=>engine.getDebug(),setCameraEnabled(enabled){track.enabled=enabled;}};
   } catch(error) {dispose();throw error;}
 }
