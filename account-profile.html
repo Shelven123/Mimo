@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Mimo - Account & Profile</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f7f7f9;color:#222}.header{height:64px;background:#fff;border-bottom:1px solid #eee;display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:10}.back{width:38px;height:38px;border:0;border-radius:50%;background:#f6f6f8;font-size:26px}.title{font-size:20px;font-weight:700;margin-left:12px}.wrap{max-width:620px;margin:auto;padding:14px 14px 40px}.avatarbox{text-align:center;background:#fff;border-radius:18px;padding:22px;margin-bottom:14px}.avatar{width:92px;height:92px;border-radius:50%;object-fit:cover;background:#eee}.section{background:#fff;border-radius:18px;padding:16px;margin-bottom:14px}.label{font-size:12px;color:#888;margin:0 2px 6px}.field{margin-bottom:14px}.field:last-child{margin-bottom:0}input,textarea{width:100%;border:1px solid #e8e8ec;border-radius:12px;padding:12px;font-size:15px;background:#fafafd;outline:none}textarea{min-height:80px;resize:vertical}.hint{font-size:11px;color:#aaa;margin-top:5px}.save{width:100%;border:0;border-radius:14px;padding:15px;background:#ff4f81;color:#fff;font-size:16px;font-weight:700}.status{text-align:center;font-size:13px;margin:12px;color:#777}.loading{text-align:center;padding:80px;color:#999}
+</style></head><body>
+<div class="header"><button class="back" onclick="history.back()">‹</button><div class="title">Account & Profile</div></div>
+<div id="loading" class="loading">Loading profile...</div>
+<div id="content" class="wrap" style="display:none">
+<div class="avatarbox"><img id="avatar" class="avatar" alt="Profile photo"><div class="hint">Profile photo is managed separately</div></div>
+<div class="section">
+<div class="field"><div class="label">Display Name</div><input id="display_name" maxlength="50"></div>
+<div class="field"><div class="label">Username</div><input id="username" maxlength="30" autocomplete="off"></div>
+<div class="field"><div class="label">Bio</div><textarea id="bio" maxlength="300"></textarea></div>
+<div class="field"><div class="label">Birthday</div><input id="birthday" type="date"></div>
+<div class="field"><div class="label">Region</div><input id="region" maxlength="80"></div>
+</div>
+<div class="section">
+<div class="field"><div class="label">Education</div><input id="education" maxlength="100"></div>
+<div class="field"><div class="label">Occupation</div><input id="occupation" maxlength="100"></div>
+<div class="field"><div class="label">MBTI</div><input id="mbti" maxlength="10" placeholder="e.g. ENFP"></div>
+<div class="field"><div class="label">Zodiac</div><input id="zodiac" maxlength="30"></div>
+<div class="field"><div class="label">Personality</div><input id="personality" maxlength="150"></div>
+<div class="field"><div class="label">Appearance</div><input id="appearance" maxlength="150"></div>
+<div class="field"><div class="label">Social Purpose</div><input id="social_purpose" maxlength="150"></div>
+</div>
+<div class="section">
+<div class="field"><div class="label">Topics</div><input id="topics" placeholder="Travel, Music, Food"><div class="hint">Separate with commas</div></div>
+<div class="field"><div class="label">Interests</div><input id="interests" placeholder="Movies, Gaming, Fitness"><div class="hint">Separate with commas</div></div>
+</div>
+<button id="saveBtn" class="save" onclick="saveProfile()">Save Changes</button><div id="status" class="status"></div>
+</div>
+<script>
+const sb=window.supabase.createClient("https://zhhgiwqehwuwzxnqbnth.supabase.co","sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ");let currentUser=null;
+const ids=["display_name","username","bio","birthday","region","education","occupation","mbti","zodiac","personality","appearance","social_purpose"];
+const arr=v=>Array.isArray(v)?v.join(", "):"";
+const split=v=>v.split(",").map(x=>x.trim()).filter(Boolean);
+async function init(){const{data:{user}}=await sb.auth.getUser();if(!user){location.replace("login.html");return}currentUser=user;const{data,error}=await sb.from("profiles").select("username,display_name,avatar_url,bio,birthday,region,education,occupation,mbti,zodiac,personality,appearance,social_purpose,topics,interests").eq("id",user.id).maybeSingle();if(error){show(error.message);return}if(data){ids.forEach(k=>document.getElementById(k).value=data[k]||"");document.getElementById("topics").value=arr(data.topics);document.getElementById("interests").value=arr(data.interests);if(data.avatar_url)document.getElementById("avatar").src=data.avatar_url}document.getElementById("loading").style.display="none";document.getElementById("content").style.display="block"}
+function show(t){document.getElementById("status").textContent=t}
+async function saveProfile(){if(!currentUser)return;const btn=document.getElementById("saveBtn");btn.disabled=true;show("Saving...");const payload={};ids.forEach(k=>payload[k]=document.getElementById(k).value.trim()||null);payload.username=payload.username?payload.username.replace(/^@/,""):null;payload.mbti=payload.mbti?payload.mbti.toUpperCase():null;payload.topics=split(document.getElementById("topics").value);payload.interests=split(document.getElementById("interests").value);const{error}=await sb.from("profiles").update(payload).eq("id",currentUser.id);btn.disabled=false;if(error){show("Could not save: "+error.message);return}show("✓ Profile saved successfully")}
+init();
+</script></body></html>
