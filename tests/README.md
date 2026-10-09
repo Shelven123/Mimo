@@ -42,3 +42,8 @@ Beauty remains separate from Video Call until these results are accepted. Do not
 
 ## v2.7.2 status
 User generally accepted the v2.7.1 layout and effects. This is not a recorded prolonged motion/performance test. Scale/roll changes with a stationary nose, mouth-expression changes, and face loss/reacquisition now have pixel regressions with fake landmarks. For device acceptance, turn/tilt the head, move closer/farther, speak and leave/re-enter frame; then run three minutes and flip cameras. Device acceptance of v2.7.2 remains pending.
+
+## Video-call integration acceptance
+31 automated checks now include 12 call adapter/lifecycle tests with mocked video/RTC/model dependencies. They are not two-party browser or iPhone tests. User accepted v2.7.2 standalone stability before integration. The new integration itself remains device Not Verified.
+
+Save your Beauty settings and start a video call. The remote partner must confirm processed video matches your local preview. Check Beauty off/on, Camera off/on (remote must not see the last processed face), front/rear flip, PiP swap, audio/mute, hangup/redial, and three minutes of use. Verify a voice call still works. Startup is raw-first; a failed Beauty load should leave audio/video working. Call-only toggle does not save the preference.
