@@ -110,9 +110,9 @@ test('Local eye processing visits less than one quarter of the frame',async()=>{
   assert.ok(f.engine.getDebug().warpedPixels<120*160/4);f.engine.dispose();
 });
 
-test('A 90-degree head roll rotates chin displacement along the face axis',async()=>{
+test('A 90-degree head roll rotates chin displacement toward the face, shortening the chin',async()=>{
   const f=await fixture({chin:100},false,{rotate:true,gradient:true});f.engine.start();
-  assert.ok(pixel(f.engine.canvas,4,80)[0]>pixel(f.video,4,80)[0]);
+  assert.ok(pixel(f.engine.canvas,4,80)[0]<pixel(f.video,4,80)[0]);
   assert.deepEqual(pixel(f.engine.canvas,60,140),pixel(f.video,60,140));f.engine.dispose();
 });
 
@@ -127,4 +127,12 @@ test('Rendering skips over-budget frames but applies changed settings on paused 
   const before=pixel(f.engine.canvas,5,5);
   f.engine.update({whitening:100});f.advance(10,false);assert.deepEqual(pixel(f.engine.canvas,5,5),before);
   f.advance(40,false);assert.notDeepEqual(pixel(f.engine.canvas,5,5),before);f.engine.dispose();
+});
+
+// A coordinate gradient reveals the actual source displacement at maximum strength.
+test('Maximum contour controls stay bounded even when enabled together',async()=>{
+  const f=await fixture({slim_face:100,chin:100,nose:100,big_eyes:100},false,{gradient:true});f.engine.start();
+  for(let y=0;y<160;y++)for(let x=0;x<120;x++)
+    assert.ok(Math.abs(pixel(f.engine.canvas,x,y)[0]-pixel(f.video,x,y)[0])<=6,`excessive displacement at ${x},${y}`);
+  f.engine.dispose();
 });

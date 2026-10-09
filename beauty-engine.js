@@ -1,4 +1,4 @@
-/* Mimo Beauty Engine v2.7 — local processing, face masks and Safari blur fallback. */
+/* Mimo Beauty Engine v2.7.1 — local processing, face masks and Safari blur fallback. */
 import {createBeautyBlur} from "./beauty-blur.js?v=20261010-v27";
 export function createBeautyEngine(video, options = {}) {
   const canvas = document.createElement("canvas");
@@ -78,13 +78,13 @@ export function createBeautyEngine(video, options = {}) {
       if(power>0&&(kind==="eye"||dx||dy))zones.push({x:pt.x,y:pt.y,rx,ry,dx:dx*ux+dy*vx,dy:dx*uy+dy*vy,power,kind});
     };
     // Inverse mapping pulls source outward; the visible contour moves inward.
-    [132,58,172,136,150].forEach((id,i)=>add(p(id),fw*.20,fw*.25,-fw*(.018+.018*i)*slim,0,1));
-    [361,288,397,365,379].forEach((id,i)=>add(p(id),fw*.20,fw*.25,fw*(.018+.018*i)*slim,0,1));
-    add(p(152),fw*.24,fw*.20,0,-fw*.075*chin,1);
+    [132,58,172,136,150].forEach((id,i)=>add(p(id),fw*.20,fw*.25,-fw*(.012+.003*i)*slim,0,1));
+    [361,288,397,365,379].forEach((id,i)=>add(p(id),fw*.20,fw*.25,fw*(.012+.003*i)*slim,0,1));
+    add(p(152),fw*.24,fw*.20,0,fw*.025*chin,1);
     for(const [outer,inner] of [[33,133],[263,362]]){
-      const a=p(outer),b=p(inner);add({x:(a.x+b.x)/2,y:(a.y+b.y)/2},fw*.16,fw*.12,0,0,eyes*.75,"eye");
+      const a=p(outer),b=p(inner);add({x:(a.x+b.x)/2,y:(a.y+b.y)/2},fw*.16,fw*.12,0,0,eyes*.40,"eye");
     }
-    add(p(98),fw*.12,fw*.14,-fw*.035*nose,0,1);add(p(327),fw*.12,fw*.14,fw*.035*nose,0,1);
+    add(p(98),fw*.12,fw*.14,-fw*.012*nose,0,1);add(p(327),fw*.12,fw*.14,fw*.012*nose,0,1);
     // Read and visit only the union of landmark-attached zones, with a sampling margin.
     let xmin=width,ymin=height,xmax=0,ymax=0;
     for(const z of zones){const rx=Math.hypot(z.rx*ux,z.ry*vx),ry=Math.hypot(z.rx*uy,z.ry*vy);xmin=Math.min(xmin,z.x-rx);xmax=Math.max(xmax,z.x+rx);ymin=Math.min(ymin,z.y-ry);ymax=Math.max(ymax,z.y+ry);}
@@ -94,16 +94,18 @@ export function createBeautyEngine(video, options = {}) {
     const source=ctx.getImageData(sx0,sy0,sw,sh),output=ctx.getImageData(xmin,ymin,rw,rh),src=source.data,dst=output.data;
     warpedPixels=rw*rh;
     for(let y=ymin;y<ymax;y++)for(let x=xmin;x<xmax;x++){
-      let sx=x,sy=y,hit=false;
+      let sx=x,sy=y,hit=false,shiftX=0,shiftY=0,weight=0;
       for(const z of zones){
         const dx=x-z.x,dy=y-z.y,nx=(dx*ux+dy*uy)/z.rx,ny=(dx*vx+dy*vy)/z.ry,q=nx*nx+ny*ny;
         if(q>=1)continue;
         const fall=(1-q)*(1-q)*z.power;
         if(z.kind==="eye"){const k=1-.16*fall;sx=z.x+(sx-z.x)*k;sy=z.y+(sy-z.y)*k;}
-        else{sx+=z.dx*fall;sy+=z.dy*fall;}hit=true;
+        else{shiftX+=z.dx*fall;shiftY+=z.dy*fall;weight+=fall;}hit=true;
       }
       if(!hit)continue;
-      const distance=Math.hypot(sx-x,sy-y),limit=fw*.12;if(distance>limit){sx=x+(sx-x)*limit/distance;sy=y+(sy-y)*limit/distance;}
+      // Overlapping jaw anchors blend rather than adding five pulls together.
+      sx+=shiftX/Math.max(1,weight);sy+=shiftY/Math.max(1,weight);
+      const distance=Math.hypot(sx-x,sy-y),limit=fw*.03;if(distance>limit){sx=x+(sx-x)*limit/distance;sy=y+(sy-y)*limit/distance;}
       sx=Math.max(0,Math.min(width-1,sx))-sx0;sy=Math.max(0,Math.min(height-1,sy))-sy0;
       const x0=Math.floor(sx),y0=Math.floor(sy),x1=Math.min(sw-1,x0+1),y1=Math.min(sh-1,y0+1),fx=sx-x0,fy=sy-y0,to=((y-ymin)*rw+x-xmin)*4;
       const i00=(y0*sw+x0)*4,i10=(y0*sw+x1)*4,i01=(y1*sw+x0)*4,i11=(y1*sw+x1)*4;
@@ -171,8 +173,8 @@ export function createBeautyEngine(video, options = {}) {
         if(q>=1.8)continue;
         const fall=Math.max(0,1-q/1.8);
         const under=Math.max(0,Math.min(1,ny/.9));
-        const brighten=eyeBright*fall*(1-under*.55)*.12;
-        const correct=dark*fall*under*.16;
+        const brighten=eyeBright*fall*(1-under*.55)*.045;
+        const correct=dark*fall*under*.06;
         const i=(y*width+x)*4;
         const lift=brighten+correct;
         d[i]=Math.min(255,d[i]+(255-d[i])*lift);
@@ -206,7 +208,7 @@ export function createBeautyEngine(video, options = {}) {
     const amount=Math.max(0,Math.min(1,(+settings.background_blur||0)/100));
     if(!amount)return;
     if(!segmenter){void loadSegmenter();return;}
-    if(performance.now()-lastSegment>260 && video.currentTime!==lastSegmentVideoTime){
+    if(performance.now()-lastSegment>100 && video.currentTime!==lastSegmentVideoTime){
       lastSegment=performance.now();
       lastSegmentVideoTime=video.currentTime;
       let result;
@@ -226,7 +228,7 @@ export function createBeautyEngine(video, options = {}) {
     oc.clearRect(0,0,width,height);bc.clearRect(0,0,width,height);mc.clearRect(0,0,width,height);
     oc.drawImage(canvas,0,0);
     bc.globalCompositeOperation="source-over";
-    blur.draw(original,bc,3+amount*11,width,height);
+    blur.draw(original,bc,1+amount*6,width,height);
     const small=portraitBlur._s||(portraitBlur._s=document.createElement("canvas")),sc=small.getContext("2d");
     if(small.width!==personMask.w||small.height!==personMask.h){small.width=personMask.w;small.height=personMask.h;}
     const img=sc.createImageData(personMask.w,personMask.h);
@@ -316,7 +318,7 @@ export function createBeautyEngine(video, options = {}) {
     getTrackingStatus(){return trackingStatus;},
     getTrackingError(){return trackingError;},
     getFaceDetected(){return !!face;},
-    getDebug(){return {version:"2.7",trackingStatus,segmentationStatus,segmentationError,processingError,blurMaskReady:!!personMask,canvasFilterSupported:blur.native,blurBackend:blur.native?"native":"cpu",warpedPixels,targetFps,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0,qualityWidth,avgFrameMs:renderSamples.length?Math.round(renderSamples.reduce((a,b)=>a+b,0)/renderSamples.length):0};},
+    getDebug(){return {version:"2.7.1",trackingStatus,segmentationStatus,segmentationError,processingError,blurMaskReady:!!personMask,canvasFilterSupported:blur.native,blurBackend:blur.native?"native":"cpu",warpedPixels,targetFps,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0,qualityWidth,avgFrameMs:renderSamples.length?Math.round(renderSamples.reduce((a,b)=>a+b,0)/renderSamples.length):0};},
     start(fps = 24) {
       if(disposed)throw new Error("Beauty engine disposed");
       targetFps=Math.max(1,Math.min(30,Number(fps)||24));
