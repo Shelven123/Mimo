@@ -178,6 +178,8 @@
       gap: 35px;
     }
 
+    .controls.video-controls { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+
     .control {
       text-align: center;
       color: #555;
@@ -360,6 +362,11 @@
 
     </div>
 
+    <div id="beautyControl" class="control" style="display:none">
+      <button id="beautyButton" class="circle" onclick="toggleCallBeauty()">✨</button>
+      <div id="beautyText">Beauty Off</div>
+    </div>
+
     <div id="flipControl" class="control" style="display:none">
 
       <button
@@ -435,6 +442,9 @@ let callRecord = null;
 
 let peerConnection = null;
 let localStream = null;
+let beautyPipeline = null, beautyOutputStream = null, beautyEpoch = 0;
+let beautySettings = null, beautyWanted = false, beautyModule = null;
+let beautyOutputQueue = Promise.resolve(), cameraSwitching = false;
 let remoteMediaStream = null;
 
 let signalChannel = null;
@@ -997,7 +1007,7 @@ async function attachLocalPreview() {
   localVideo.playsInline = true;
   localVideo.setAttribute("playsinline", "");
   localVideo.srcObject = null;
-  localVideo.srcObject = localStream;
+  localVideo.srcObject = beautyOutputStream || localStream;
   applyLocalPreviewOrientation();
 
   // iPhone Safari can leave the first local preview black even though
@@ -1020,6 +1030,7 @@ async function attachLocalPreview() {
 function enableVideoUI() {
   const stage = document.getElementById("videoStage");
   if (stage) stage.style.display = "block";
+  document.querySelector(".controls")?.classList.add("video-controls");
   applyVideoLayout();
 
   const cameraControl = document.getElementById("cameraControl");
@@ -1047,6 +1058,8 @@ function toggleCamera() {
 
   cameraEnabled = !cameraEnabled;
   tracks.forEach(track => track.enabled = cameraEnabled);
+  beautyPipeline?.setCameraEnabled(cameraEnabled);
+  beautyOutputStream?.getVideoTracks().forEach(track=>track.enabled=cameraEnabled);
 
   const button = document.getElementById("cameraButton");
   const text = document.getElementById("cameraText");
@@ -1055,11 +1068,16 @@ function toggleCamera() {
 }
 
 async function switchCamera() {
-  if (!localStream || callRecord?.call_type !== "video") return;
+  if (!localStream || callRecord?.call_type !== "video" || cameraSwitching || ended) return;
 
   const oldTrack = localStream.getVideoTracks()[0];
   if (!oldTrack) return;
 
+  cameraSwitching = true;
+  if (!await stopCallBeauty()) {
+    cameraSwitching = false;showError("Unable to restore camera. Please try again.");return;
+  }
+  if (ended) { cameraSwitching = false; return; }
   const previousFacingMode = currentFacingMode;
   const nextFacingMode = previousFacingMode === "user" ? "environment" : "user";
   const sender = peerConnection?.getSenders().find(
@@ -1087,6 +1105,7 @@ async function switchCamera() {
     const newTrack = newStream.getVideoTracks()[0];
     if (!newTrack) throw new Error("No camera track returned");
 
+    if (ended) { newTrack.stop(); return; }
     if (sender) await sender.replaceTrack(newTrack);
     localStream.addTrack(newTrack);
     currentFacingMode = nextFacingMode;
@@ -1110,6 +1129,7 @@ async function switchCamera() {
       });
       const recoveryTrack = recovery.getVideoTracks()[0];
       if (recoveryTrack) {
+        if (ended) { recoveryTrack.stop(); return; }
         if (sender) await sender.replaceTrack(recoveryTrack);
         localStream.addTrack(recoveryTrack);
         currentFacingMode = previousFacingMode;
@@ -1120,7 +1140,82 @@ async function switchCamera() {
     }
 
     showError("Unable to switch camera. Please try again.");
+  } finally {
+    cameraSwitching = false;
+    if (!ended && beautyWanted) void startCallBeauty();
   }
+}
+
+// Beauty replaces only the outgoing video track; localStream keeps the real microphone/camera.
+function paintCallBeauty(text) {
+  const label=document.getElementById("beautyText");if(label)label.textContent=text;
+  document.getElementById("beautyButton")?.classList.toggle("active",!beautyOutputStream);
+}
+function selectCallVideoOutput(stream, token) {
+  const task=beautyOutputQueue.catch(()=>{}).then(async()=>{
+    if(ended||token!==beautyEpoch)return false;
+    const track=stream.getVideoTracks()[0];if(!track)return false;
+    track.enabled=cameraEnabled;
+    const sender=peerConnection?.getSenders().find(item=>item.track?.kind==="video");
+    if(sender)await sender.replaceTrack(track);
+    if(ended||token!==beautyEpoch)return false;
+    beautyOutputStream=stream===localStream?null:stream;
+    await attachLocalPreview();return !ended&&token===beautyEpoch;
+  });
+  beautyOutputQueue=task;return task;
+}
+async function stopCallBeauty() {
+  const token=++beautyEpoch,old=beautyPipeline;beautyPipeline=null;
+  try {if(localStream&&!ended)await selectCallVideoOutput(localStream,token);}
+  catch(error){
+    console.warn("Beauty raw-camera fallback failed",error);
+    if(token===beautyEpoch&&!ended){beautyPipeline=old;paintCallBeauty("Beauty retry");return false;}
+  }
+  old?.dispose();if(token===beautyEpoch)beautyOutputStream=null;return true;
+}
+async function startCallBeauty() {
+  if(ended||cameraSwitching||!beautyWanted||!beautySettings?.enabled||!localStream?.getVideoTracks().length)return;
+  const token=++beautyEpoch;let pipeline;
+  paintCallBeauty("Beauty loading");
+  try {
+    beautyModule=beautyModule||await import("./beauty-call.js?v=20261010-call1");
+    if(ended||token!==beautyEpoch)return;
+    pipeline=await beautyModule.createCallBeautyPipeline(localStream,beautySettings,reason=>{
+      if(token!==beautyEpoch||ended)return;
+      console.warn("Beauty switched to raw camera",reason);
+      void stopCallBeauty().then(ok=>paintCallBeauty(ok?"Beauty unavailable":"Beauty retry"));
+    });
+    if(ended||token!==beautyEpoch){pipeline.dispose();return;}
+    pipeline.setCameraEnabled(cameraEnabled);
+    if(!await selectCallVideoOutput(pipeline.stream,token)){pipeline.dispose();return;}
+    pipeline.setCameraEnabled(cameraEnabled);
+    beautyPipeline=pipeline;paintCallBeauty("Beauty On");
+  } catch(error) {
+    pipeline?.dispose();
+    if(token!==beautyEpoch||ended)return;
+    console.warn("Beauty unavailable; keeping raw camera",error);
+    await stopCallBeauty();paintCallBeauty("Beauty unavailable");
+  }
+}
+async function initializeCallBeauty() {
+  try {
+    const result=await supabaseClient.from("beauty_settings").select("*").eq("user_id",currentUser.id).maybeSingle();
+    if(ended)return;
+    if(result.error)throw result.error;
+    beautySettings=result.data||{enabled:false};beautyWanted=!!beautySettings.enabled;
+    document.getElementById("beautyControl").style.display="block";
+    paintCallBeauty(beautyWanted?"Beauty loading":"Beauty Off");
+    if(beautyWanted)await startCallBeauty();
+  } catch(error){console.warn("Unable to load Beauty settings",error);}
+}
+async function toggleCallBeauty() {
+  if(ended||cameraSwitching||!beautySettings)return;
+  beautyWanted=!beautyWanted;
+  if(!beautyWanted){const ok=await stopCallBeauty();if(!ok)beautyWanted=true;paintCallBeauty(ok?"Beauty Off":"Beauty retry");}
+  else{beautySettings={...beautySettings,enabled:true};await startCallBeauty();}
+}
+function disposeCallBeauty() {
+  ++beautyEpoch;beautyPipeline?.dispose();beautyPipeline=null;beautyOutputStream=null;
 }
 
 /* =========================
@@ -1147,6 +1242,8 @@ async function createPeerConnection() {
 
     });
 
+
+  if (callRecord?.call_type === "video") void initializeCallBeauty();
 
   remoteMediaStream = new MediaStream();
 
@@ -1922,6 +2019,7 @@ async function endCall() {
   }
 
   ended = true;
+  disposeCallBeauty();
 
 
   let duration = 0;
@@ -1997,6 +2095,7 @@ async function endCall() {
 function cleanupCall() {
 
   ended = true;
+  disposeCallBeauty();
 
 
   if (timerInterval) {
@@ -2106,6 +2205,7 @@ window.addEventListener(
   "beforeunload",
   () => {
 
+    disposeCallBeauty();
     if (localStream) {
 
       localStream

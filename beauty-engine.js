@@ -328,7 +328,7 @@ export function createBeautyEngine(video, options = {}) {
     getTrackingStatus(){return trackingStatus;},
     getTrackingError(){return trackingError;},
     getFaceDetected(){return !!face;},
-    getDebug(){return {version:"2.7.2",trackingStatus,segmentationStatus,segmentationError,processingError,blurMaskReady:!!personMask,canvasFilterSupported:blur.native,blurBackend:blur.native?"native":"cpu",warpedPixels,targetFps,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0,qualityWidth,avgFrameMs:renderSamples.length?Math.round(renderSamples.reduce((a,b)=>a+b,0)/renderSamples.length):0};},
+    getDebug(){return {version:"2.7.2",trackingStatus,segmentationStatus,segmentationError,processingError,blurMaskReady:!!personMask,canvasFilterSupported:blur.native,blurBackend:blur.native?"native":"cpu",warpedPixels,targetFps,lastRenderTime,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0,qualityWidth,avgFrameMs:renderSamples.length?Math.round(renderSamples.reduce((a,b)=>a+b,0)/renderSamples.length):0};},
     start(fps = 24) {
       if(disposed)throw new Error("Beauty engine disposed");
       targetFps=Math.max(1,Math.min(30,Number(fps)||24));
