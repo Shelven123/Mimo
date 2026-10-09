@@ -9,20 +9,29 @@ export function createBeautyEngine(video, options = {}) {
   const softCtx = softCanvas.getContext("2d");
   if (!softCtx) throw new Error("Canvas smoothing unavailable");
 
-  let tracker = null, face = null, trackingStatus = "loading", lastDetect = 0, videoTime = -1;
+  let tracker = null, face = null, trackingStatus = "loading", lastDetect = 0, videoTime = -1, trackingError = "";
   (async () => {
-    try {
-      const lib = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm");
-      const vision = await lib.FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm");
-      tracker = await lib.FaceLandmarker.createFromOptions(vision, {
-        baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task", delegate: "CPU" },
-        runningMode: "VIDEO", numFaces: 1
-      });
-      trackingStatus = "ready";
-    } catch (error) {
-      trackingStatus = "unavailable";
-      console.warn("Mimo face tracking unavailable:", error);
+    const model = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
+    const versions = ["0.10.14", "0.10.3"];
+    for (const version of versions) {
+      try {
+        trackingStatus = "loading";
+        const base = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@" + version;
+        const lib = await import(base + "/vision_bundle.mjs");
+        const vision = await lib.FilesetResolver.forVisionTasks(base + "/wasm");
+        tracker = await lib.FaceLandmarker.createFromOptions(vision, {
+          baseOptions: { modelAssetPath: model, delegate: "CPU" },
+          runningMode: "VIDEO", numFaces: 1
+        });
+        trackingStatus = "ready";
+        trackingError = "";
+        return;
+      } catch (error) {
+        trackingError = version + ": " + (error?.message || String(error));
+        console.warn("Mimo FaceLandmarker failed", trackingError);
+      }
     }
+    trackingStatus = "unavailable";
   })();
   function warpFace(width, height) {
     if (!face || !settings.enabled) return;
@@ -128,6 +137,7 @@ export function createBeautyEngine(video, options = {}) {
   return {
     canvas,
     getTrackingStatus(){return trackingStatus;},
+    getTrackingError(){return trackingError;},
     getFaceDetected(){return !!face;},
     getDebug(){return {trackingStatus,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0};},
     start(fps = 24) {
