@@ -1352,6 +1352,11 @@ async function handleSignal(
 
   if (!signal) return;
 
+  // A realtime signal can arrive before media and RTCPeerConnection finish
+  // initializing on iPhone. Do not consume it yet; loadExistingSignals()
+  // will replay stored signals immediately after peer setup.
+  if (!peerConnection) return;
+
 
   if (
     processedSignals.has(
