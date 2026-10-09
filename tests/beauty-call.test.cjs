@@ -103,3 +103,8 @@ test('Rejected raw restoration retains a live output and can be retried',async()
   f.sender.replaceTrack=replace;await f.t.toggleCallBeauty();
   assert.equal(f.sender.track,f.raw.getVideoTracks()[0]);assert.equal(p.disposed,1);f.dom.window.close();
 });
+
+test('Watchdog detects stalled rendering but does not fail a disabled camera',async()=>{
+  const f=await adapter(),p=await f.build();f.debug.lastRenderTime=-3000;f.raw.getVideoTracks()[0].enabled=false;f.monitor();assert.equal(f.failures.length,0);
+  f.raw.getVideoTracks()[0].enabled=true;f.monitor();assert.match(f.failures[0],/stalled/);p.dispose();
+});

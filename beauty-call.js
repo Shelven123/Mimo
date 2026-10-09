@@ -1,5 +1,5 @@
 // Video-call adapter. Owns only the processing source and captured output, never the camera/audio.
-import {createBeautyEngine} from "./beauty-engine.js?v=20261010-v272";
+import {createBeautyEngine} from "./beauty-engine.js?v=20261010-v272-call1";
 export async function createCallBeautyPipeline(rawStream, settings, onFailure, dependencies = {}) {
   const makeEngine=dependencies.makeEngine||createBeautyEngine;
   const source=dependencies.makeVideo?dependencies.makeVideo():document.createElement("video");
