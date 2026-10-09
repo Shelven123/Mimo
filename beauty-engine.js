@@ -41,8 +41,8 @@ export function createBeautyEngine(video, options = {}) {
     }
     effect(p(33), faceSize*.18, eyes*.24, "scale");
     effect(p(263), faceSize*.18, eyes*.24, "scale");
-    effect(p(234), faceSize*.42, slim*.34, "move", p(1));
-    effect(p(454), faceSize*.42, slim*.34, "move", p(1));
+    effect(p(172), faceSize*.32, slim*.42, "move", p(1));\n    effect(p(136), faceSize*.26, slim*.28, "move", p(152));
+    effect(p(397), faceSize*.32, slim*.42, "move", p(1));\n    effect(p(365), faceSize*.26, slim*.28, "move", p(152));
     effect(jaw, faceSize*.30, chin*.12, "move", p(13));
     effect(p(1), faceSize*.18, nose*.16, "scale");
     const src = ctx.getImageData(0,0,width,height);
