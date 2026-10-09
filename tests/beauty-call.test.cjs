@@ -50,13 +50,13 @@ async function call(config={}){
   const module={async createCallBeautyPipeline(stream,settings,failure){
     if(config.fail)throw Error('capture unsupported');
     if(config.gate)await config.gate;
-    const track=new Track('video');const p={stream:new Stream([...stream.getAudioTracks(),track]),track,failure,disposed:0,dispose(){this.disposed++;track.stop();},setCameraEnabled(v){track.enabled=v;}};
+    const track=new Track('video');const p={stream:new Stream([...stream.getAudioTracks(),track]),track,failure,updates:[],update(s){this.updates.push(s);},getDebug:()=>({faceDetected:true,landmarkCount:478,trackingStatus:'ready'}),disposed:0,dispose(){this.disposed++;track.stop();},setCameraEnabled(v){track.enabled=v;}};
     state.pipelines.push(p);return p;
   }};
   w.testSetup={raw,pc,module,type:config.voice?'voice':'video'};
   const source=Array.from(dom.window.document.querySelectorAll('script')).find(s=>s.textContent.includes('async function prepareMedia')).textContent.replace(/\ninit\(\);/,'');
   w.eval(source+`\nlocalStream=testSetup.raw;peerConnection=testSetup.pc;callRecord={call_type:testSetup.type};currentUser={id:'me'};beautyModule=testSetup.module;
-window.testing={initializeCallBeauty,startCallBeauty,toggleCallBeauty,toggleCamera,switchCamera,createPeerConnection,disposeCallBeauty,stopCallBeauty,get:()=>({beautyOutputStream,beautyPipeline,localStream,cameraEnabled,currentFacingMode}),end(){ended=true;disposeCallBeauty();}};`);
+window.testing={openCallBeautyPanel,closeCallBeautyPanel,initializeCallBeauty,startCallBeauty,toggleCallBeauty,toggleCamera,switchCamera,createPeerConnection,disposeCallBeauty,stopCallBeauty,get:()=>({beautyOutputStream,beautyPipeline,localStream,cameraEnabled,currentFacingMode}),end(){ended=true;disposeCallBeauty();}};`);
   return {dom,w,t:w.testing,state,raw,sender};
 }
 test('Saved Beauty sends processed video; off restores raw; camera off disables both tracks',async()=>{
@@ -107,4 +107,19 @@ test('Rejected raw restoration retains a live output and can be retried',async()
 test('Watchdog detects stalled rendering but does not fail a disabled camera',async()=>{
   const f=await adapter(),p=await f.build();f.debug.lastRenderTime=-3000;f.raw.getVideoTracks()[0].enabled=false;f.monitor();assert.equal(f.failures.length,0);
   f.raw.getVideoTracks()[0].enabled=true;f.monitor();assert.match(f.failures[0],/stalled/);p.dispose();
+});
+
+test('In-call reshape sliders update the active engine immediately without replacing tracks',async()=>{
+  const f=await call();await f.t.initializeCallBeauty();f.t.openCallBeautyPanel();
+  const slider=f.w.document.querySelector('[data-beauty-key="slim_face"]');assert.equal(slider.value,'25');
+  slider.value='100';slider.dispatchEvent(new f.w.Event('input'));
+  assert.equal(f.state.pipelines[0].updates.at(-1).slim_face,100);assert.equal(f.state.replacements.length,1);
+  assert.match(f.w.document.getElementById('callBeautyStatus').textContent,/Sending processed video.*Face detected/);
+  f.t.end();assert.equal(f.w.document.getElementById('callBeautyPanel').hidden,true);f.dom.window.close();
+});
+
+test('Slider changes during model startup reach the engine before output selection',async()=>{
+  let release;const gate=new Promise(r=>release=r),f=await call({gate});const loading=f.t.initializeCallBeauty();await flush();f.t.openCallBeautyPanel();
+  const slider=f.w.document.querySelector('[data-beauty-key="big_eyes"]');slider.value='80';slider.dispatchEvent(new f.w.Event('input'));release();await loading;
+  assert.equal(f.state.pipelines[0].updates[0].big_eyes,80);f.t.end();f.dom.window.close();
 });
