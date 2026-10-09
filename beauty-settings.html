@@ -12,10 +12,10 @@
 <div id="sliders"></div>
 <div class="switchrow"><b>Makeup</b><input id="makeup_enabled" type="checkbox"></div>
 <div class="actions"><button class="flip" id="flip">Flip Camera</button><button class="flip" id="mirror" type="button">Mirror: Off</button><button class="save" id="save">Save</button></div>
-<p class="status" id="status">Loading your Beauty settings…</p><p class="status">Mimo Beauty Engine v2 · 478-point face tracking · contour-aware face, eye, chin and nose reshape. Makeup and background blur are next-stage effects.</p>
+<p class="status" id="status">Loading your Beauty settings…</p><p class="status">Mimo Beauty Engine v2.1 · 478-point tracking · face/eye/chin/nose reshape · landmark eye brightening and dark-circle correction. Makeup and background blur remain next-stage effects.</p>
 </main>
 <script type="module">
-import {createBeautyEngine} from "./beauty-engine.js?v=20261010-v2";
+import {createBeautyEngine} from "./beauty-engine.js?v=20261010-v21";
 const sb=window.supabase.createClient("https://zhhgiwqehwuwzxnqbnth.supabase.co","sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ");
 const defs=[["smoothing","Smoothing"],["whitening","Whitening"],["rosy","Rosy Tone"],["slim_face","Slim Face"],["big_eyes","Big Eyes"],["chin","Chin"],["nose","Nose"],["eye_brightening","Eye Brightening"],["dark_circle","Dark Circle"],["background_blur","Background Blur"]];
 const presetValues={natural:[25,10,8,0,0,0,0,10,10,0],soft:[40,20,15,10,8,5,5,20,20,0],glam:[55,30,22,25,20,15,12,30,30,0]};
