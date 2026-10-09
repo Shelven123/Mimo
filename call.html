@@ -363,7 +363,7 @@
     </div>
 
     <div id="beautyControl" class="control" style="display:none">
-      <button id="beautyButton" class="circle" onclick="toggleCallBeauty()">✨</button>
+      <button id="beautyButton" class="circle" aria-controls="callBeautyPanel" aria-expanded="false" onclick="openCallBeautyPanel()">✨</button>
       <div id="beautyText">Beauty Off</div>
       <button type="button" onclick="openCallBeautyPanel()" style="border:0;background:transparent;color:inherit;text-decoration:underline">Adjust</button>
     </div>
@@ -403,6 +403,7 @@
 <section id="callBeautyPanel" hidden style="position:fixed;left:12px;right:12px;bottom:12px;max-height:48dvh;overflow-y:auto;z-index:30;padding:16px;border-radius:16px;background:#17171f;color:white;box-shadow:0 4px 20px #0008">
   <div style="display:flex;justify-content:space-between;align-items:center"><b>Beauty · this call</b><button type="button" onclick="closeCallBeautyPanel()">Close</button></div>
   <p id="callBeautyStatus" style="font-size:12px;line-height:1.5" role="status"></p>
+  <label><input id="callBeautyEnabled" type="checkbox"> Beauty On</label>
   <div id="callBeautySliders"></div>
   <label><input id="callMakeup" type="checkbox"> Makeup</label>
   <p style="font-size:12px">Changes apply immediately to this call. Save defaults on the Beauty page.</p>
@@ -1174,41 +1175,45 @@ function selectCallVideoOutput(stream, token) {
   });
   beautyOutputQueue=task;return task;
 }
-async function stopCallBeauty() {
-  const token=++beautyEpoch,old=beautyPipeline;beautyPipeline=null;
+async function stopCallBeauty(dispose = true) {
+  const token=++beautyEpoch,old=beautyPipeline;if(dispose)beautyPipeline=null;
   try {if(localStream&&!ended)await selectCallVideoOutput(localStream,token);}
   catch(error){
     console.warn("Beauty raw-camera fallback failed",error);
     if(token===beautyEpoch&&!ended){beautyPipeline=old;paintCallBeauty("Beauty retry");return false;}
   }
-  old?.dispose();if(token===beautyEpoch)beautyOutputStream=null;return true;
+  if(dispose)old?.dispose();else old?.update({...beautySettings,enabled:false});
+  if(token===beautyEpoch)beautyOutputStream=null;return true;
 }
 async function startCallBeauty() {
   if(ended||cameraSwitching||!beautyWanted||!beautySettings?.enabled||!localStream?.getVideoTracks().length)return;
-  const token=++beautyEpoch;let pipeline;
+  const token=++beautyEpoch;let pipeline=beautyPipeline;
   paintCallBeauty("Beauty loading");
   try {
-    beautyModule=beautyModule||await import("./beauty-call.js?v=20261010-call2");
+    if(!pipeline){
+    beautyModule=beautyModule||await import("./beauty-call.js?v=20261010-call3");
     if(ended||token!==beautyEpoch)return;
     pipeline=await beautyModule.createCallBeautyPipeline(localStream,beautySettings,reason=>{
-      if(token!==beautyEpoch||ended)return;
+      if(ended||(beautyPipeline!==pipeline&&token!==beautyEpoch))return;
       beautyLastReason=reason;
       console.warn("Beauty switched to raw camera",reason);
       void stopCallBeauty().then(ok=>paintCallBeauty(ok?"Beauty unavailable":"Beauty retry"));
     },{onState:debug=>{
-      if(token!==beautyEpoch||ended||!beautyOutputStream)return;
+      if(beautyPipeline!==pipeline||ended||!beautyOutputStream)return;
       paintCallBeauty(!cameraEnabled?"Camera Off":debug.trackingStatus==="loading"?"Beauty loading face":debug.faceDetected?"Beauty On":"Beauty · no face");
     }});
-    if(ended||token!==beautyEpoch){pipeline.dispose();return;}
-    pipeline.update(beautySettings);
+    }
+    if(ended||token!==beautyEpoch){if(beautyPipeline!==pipeline)pipeline.dispose();return;}
+    pipeline.update({...beautySettings,enabled:beautyWanted});
     pipeline.setCameraEnabled(cameraEnabled);
-    if(!await selectCallVideoOutput(pipeline.stream,token)){pipeline.dispose();return;}
+    if(!await selectCallVideoOutput(pipeline.stream,token)){if(beautyPipeline!==pipeline)pipeline.dispose();return;}
     pipeline.setCameraEnabled(cameraEnabled);
     beautyLastReason="";beautyPipeline=pipeline;
     const state=pipeline.getDebug();paintCallBeauty(state.faceDetected?"Beauty On":"Beauty loading face");
   } catch(error) {
+    if(token!==beautyEpoch||ended){if(beautyPipeline!==pipeline)pipeline?.dispose();return;}
+    if(beautyPipeline===pipeline)beautyPipeline=null;
     pipeline?.dispose();
-    if(token!==beautyEpoch||ended)return;
     beautyLastReason=error?.message||String(error);
     console.warn("Beauty unavailable; keeping raw camera",error);
     await stopCallBeauty();paintCallBeauty("Beauty unavailable");
@@ -1234,7 +1239,7 @@ async function initializeCallBeauty() {
 async function toggleCallBeauty() {
   if(ended||cameraSwitching||!beautySettings)return;
   beautyWanted=!beautyWanted;
-  if(!beautyWanted){const ok=await stopCallBeauty();if(!ok)beautyWanted=true;paintCallBeauty(ok?"Beauty Off":"Beauty retry");}
+  if(!beautyWanted){const ok=await stopCallBeauty(false);if(!ok)beautyWanted=true;paintCallBeauty(ok?"Beauty Off":"Beauty retry");}
   else{beautySettings={...beautySettings,enabled:true};await startCallBeauty();}
 }
 const callBeautyDefs=[["smoothing","Smoothing"],["whitening","Whitening"],["rosy","Rosy Tone"],["slim_face","Slim Face"],["big_eyes","Big Eyes"],["chin","Chin"],["nose","Nose"],["eye_brightening","Eye Brightening"],["dark_circle","Dark Circle"],["background_blur","Background Blur"]];
@@ -1247,23 +1252,27 @@ function showCallBeautyState() {
 }
 function openCallBeautyPanel() {
   if(ended||callRecord?.call_type!=="video"||!beautySettings)return;
+  const enabled=document.getElementById("callBeautyEnabled");enabled.checked=beautyWanted;
+  enabled.onchange=async()=>{enabled.disabled=true;try{await toggleCallBeauty();}finally{enabled.checked=beautyWanted;enabled.disabled=false;showCallBeautyState();}};
+  document.getElementById("beautyButton").setAttribute("aria-expanded","true");
   const box=document.getElementById("callBeautySliders");box.replaceChildren();
   for(const [key,label] of callBeautyDefs){
     const row=document.createElement("label");row.style.cssText="display:block;margin:12px 0";
     const title=document.createElement("span"),slider=document.createElement("input");
     slider.type="range";slider.min="0";slider.max="100";slider.value=Math.max(0,Math.min(100,Number(beautySettings[key])||0));slider.dataset.beautyKey=key;slider.style.width="100%";
     const paint=()=>title.textContent=label+" · "+slider.value;paint();
-    slider.oninput=()=>{beautySettings={...beautySettings,[key]:Number(slider.value)};beautyPipeline?.update(beautySettings);paint();showCallBeautyState();};
+    slider.oninput=()=>{beautySettings={...beautySettings,[key]:Number(slider.value)};beautyPipeline?.update({...beautySettings,enabled:beautyWanted});paint();showCallBeautyState();};
     row.append(title,slider);box.append(row);
   }
   const makeup=document.getElementById("callMakeup");makeup.checked=!!beautySettings.makeup_enabled;
-  makeup.onchange=()=>{beautySettings={...beautySettings,makeup_enabled:makeup.checked};beautyPipeline?.update(beautySettings);};
+  makeup.onchange=()=>{beautySettings={...beautySettings,makeup_enabled:makeup.checked};beautyPipeline?.update({...beautySettings,enabled:beautyWanted});};
   document.getElementById("callBeautyPanel").hidden=false;showCallBeautyState();
   if(beautyPanelTimer!==null)clearInterval(beautyPanelTimer);beautyPanelTimer=setInterval(showCallBeautyState,500);
 }
 function closeCallBeautyPanel() {
   if(beautyPanelTimer!==null)clearInterval(beautyPanelTimer);beautyPanelTimer=null;
   document.getElementById("callBeautyPanel").hidden=true;
+  document.getElementById("beautyButton").setAttribute("aria-expanded","false");
 }
 function disposeCallBeauty() {
   closeCallBeautyPanel();
