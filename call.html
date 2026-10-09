@@ -353,6 +353,11 @@
   playsinline
 ></audio>
 
+<div id="videoStage" style="display:none;position:fixed;inset:0;background:#111;z-index:2;">
+  <video id="remoteVideo" autoplay playsinline style="width:100%;height:100%;object-fit:cover;background:#111;"></video>
+  <video id="localVideo" autoplay muted playsinline style="position:absolute;right:16px;top:24px;width:110px;height:155px;object-fit:cover;border-radius:16px;background:#222;box-shadow:0 4px 20px rgba(0,0,0,.35);"></video>
+</div>
+
 
 <script>
 
@@ -379,6 +384,11 @@ const targetUserId =
 
 const existingCallId =
   params.get("call");
+
+const requestedCallType =
+  params.get("type") === "video"
+    ? "video"
+    : "voice";
 
 
 let currentUser = null;
@@ -630,7 +640,7 @@ async function startOutgoingCall() {
           targetUserId,
 
         call_type:
-          "voice",
+          requestedCallType,
 
         status:
           "ringing"
@@ -661,7 +671,7 @@ async function startOutgoingCall() {
   await setupRealtime();
 
   try {
-    await prepareMicrophone();
+    await prepareMedia();
     await createPeerConnection();
     await createOffer();
   } catch (callError) {
@@ -743,11 +753,13 @@ async function loadExistingCall() {
   await setupRealtime();
 
   try {
-    await prepareMicrophone();
+    await prepareMedia();
   } catch (microphoneError) {
     console.error(microphoneError);
-    showError("Please allow microphone access in your browser settings, then try the call again.");
-    setStatus("Microphone permission required");
+    showError(callRecord?.call_type === "video"
+      ? "Please allow camera and microphone access in your browser settings, then try again."
+      : "Please allow microphone access in your browser settings, then try the call again.");
+    setStatus(callRecord?.call_type === "video" ? "Camera / microphone permission required" : "Microphone permission required");
     return;
   }
 
@@ -809,7 +821,7 @@ async function loadExistingCall() {
    MICROPHONE
 ========================= */
 
-async function prepareMicrophone() {
+async function prepareMedia() {
 
   if (
     !navigator.mediaDevices ||
@@ -833,11 +845,32 @@ async function prepareMicrophone() {
           noiseSuppression: true,
           autoGainControl: true
         },
-        video: false
+        video: callRecord?.call_type === "video"
+          ? { facingMode: "user" }
+          : false
       });
+
+  if (callRecord?.call_type === "video") {
+    enableVideoUI();
+    const localVideo = document.getElementById("localVideo");
+    if (localVideo) {
+      localVideo.srcObject = localStream;
+      localVideo.play().catch(() => {});
+    }
+  }
 
 }
 
+
+function enableVideoUI() {
+  const stage = document.getElementById("videoStage");
+  if (stage) stage.style.display = "block";
+  const app = document.querySelector(".app");
+  if (app) {
+    app.style.position = "relative";
+    app.style.zIndex = "3";
+  }
+}
 
 /* =========================
    WEBRTC
@@ -867,13 +900,22 @@ async function createPeerConnection() {
   peerConnection.ontrack =
     event => {
 
+      const remoteStream = event.streams[0];
+
+      if (callRecord?.call_type === "video") {
+        const remoteVideo = document.getElementById("remoteVideo");
+        if (remoteVideo) {
+          remoteVideo.srcObject = remoteStream;
+          remoteVideo.play().catch(() => {});
+        }
+      }
+
       const remoteAudio =
         document.getElementById(
           "remoteAudio"
         );
 
-      remoteAudio.srcObject =
-        event.streams[0];
+      remoteAudio.srcObject = remoteStream;
 
       remoteAudio.play()
         .catch(() => {});
