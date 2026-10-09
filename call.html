@@ -890,9 +890,30 @@ async function prepareMedia() {
 
   if (callRecord?.call_type === "video") {
     enableVideoUI();
-    currentFacingMode = nextFacingMode;
-
     await attachLocalPreview();
+
+    // If iPhone Safari gives us a live camera track but renders the first
+    // local preview black, reopen the same camera once automatically.
+    const localVideo = document.getElementById("localVideo");
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    if (localVideo && localVideo.videoWidth === 0) {
+      const firstTrack = localStream.getVideoTracks()[0];
+      if (firstTrack) {
+        firstTrack.stop();
+        localStream.removeTrack(firstTrack);
+      }
+
+      const retryStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: currentFacingMode },
+        audio: false
+      });
+      const retryTrack = retryStream.getVideoTracks()[0];
+      if (retryTrack) {
+        localStream.addTrack(retryTrack);
+        await attachLocalPreview();
+      }
+    }
   }
 
 }
