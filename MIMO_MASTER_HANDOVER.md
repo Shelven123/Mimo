@@ -164,3 +164,7 @@ Next: handle concrete visual/device feedback, record explicitly accepted effects
 User recording confirmed that document scrolling hid the camera when lower sliders were reached. Beauty now uses a viewport-height flex layout: header and a compact camera stay above a separately scrolling settings panel, with dynamic viewport and safe-area sizing. Engine, mirror direction, camera stream and calls are unchanged. Actual iPhone layout acceptance remains pending; this is an implemented CSS fix, not a device-verified claim.
 
 The same review found that the comparison button shared the preset class and was incorrectly bound as a preset. Preset handlers now target only elements with data-preset. A real click after comparison release is regression-tested and preserves the selected preset. Local tests now total 15 (11 engine + 4 DOM); syntax/whitespace checks pass.
+
+## v2.7 preview sizing follow-up (2026-10-10 Malaysia)
+
+User screenshot showed a large black area above a clipped face after the fixed-layout change. The preview still inherited Grid sizing and cover cropping. The camera container now explicitly uses relative positioning/flex centering; its canvas is absolutely constrained to the container and uses contain/center to display the entire source frame. The independent settings scroll remains. Engine processing and mirror transform are unchanged. Source checks and regression tests are distinct from real iPhone layout acceptance, which remains pending.
