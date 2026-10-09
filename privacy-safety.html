@@ -9,5 +9,48 @@
 </div>
 <div class="section-title">Safety</div><div class="card"><button class="link" onclick="location.href='blocked-users.html'">🚫 &nbsp;Blocked Users <span class="arrow">›</span></button></div>
 <div class="note">Voice and video calls keep Mimo's platform rule: only Users can start calls to Hosts. Hosts cannot start voice or video calls to Users.</div>
-<button id="save" class="save" onclick="save()">Save Changes</button><div id="status" class="status"></div></div>
-<script>const sb=window.supabase.createClient("https://zhhgiwqehwuwzxnqbnth.supabase.co","sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ");let uid=null;async function init(){const{data:{user}}=await sb.auth.getUser();if(!user){location.replace("login.html");return}uid=user.id;const{data,error}=await sb.from("privacy_settings").select("*").eq("user_id",uid).maybeSingle();if(error){status.textContent=error.message;return}if(data){message_permission.value=data.message_permission;follow_permission.value=data.follow_permission;profile_visibility.value=data.profile_visibility;show_profile_views.checked=data.show_profile_views}else{show_profile_views.checked=true}}async function save(){const b=document.getElementById("save");b.disabled=true;status.textContent="Saving...";const payload={user_id:uid,message_permission:message_permission.value,follow_permission:follow_permission.value,profile_visibility:profile_visibility.value,show_profile_views:show_profile_views.checked,updated_at:new Date().toISOString()};const{error}=await sb.from("privacy_settings").upsert(payload,{onConflict:"user_id"});b.disabled=false;status.textContent=error?"Could not save: "+error.message:"✓ Privacy settings saved"}init();</script></body></html>
+<button id="saveBtn" class="save" type="button">Save Changes</button><div id="status" class="status"></div></div>
+<script>
+const sb=window.supabase.createClient("https://zhhgiwqehwuwzxnqbnth.supabase.co","sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ");
+let uid=null;
+const statusEl=document.getElementById("status");
+const saveBtn=document.getElementById("saveBtn");
+const messagePermission=document.getElementById("message_permission");
+const followPermission=document.getElementById("follow_permission");
+const profileVisibility=document.getElementById("profile_visibility");
+const showProfileViews=document.getElementById("show_profile_views");
+
+async function init(){
+  const{data:{user}}=await sb.auth.getUser();
+  if(!user){location.replace("login.html");return}
+  uid=user.id;
+  const{data,error}=await sb.from("privacy_settings").select("*").eq("user_id",uid).maybeSingle();
+  if(error){statusEl.textContent=error.message;return}
+  if(data){
+    messagePermission.value=data.message_permission;
+    followPermission.value=data.follow_permission;
+    profileVisibility.value=data.profile_visibility;
+    showProfileViews.checked=data.show_profile_views;
+  }else{
+    showProfileViews.checked=true;
+  }
+}
+async function savePrivacy(){
+  if(!uid){statusEl.textContent="Please wait a moment and try again.";return}
+  saveBtn.disabled=true;
+  statusEl.textContent="Saving...";
+  const payload={
+    user_id:uid,
+    message_permission:messagePermission.value,
+    follow_permission:followPermission.value,
+    profile_visibility:profileVisibility.value,
+    show_profile_views:showProfileViews.checked,
+    updated_at:new Date().toISOString()
+  };
+  const{error}=await sb.from("privacy_settings").upsert(payload,{onConflict:"user_id"});
+  saveBtn.disabled=false;
+  statusEl.textContent=error?"Could not save: "+error.message:"✓ Privacy settings saved";
+}
+saveBtn.addEventListener("click",savePrivacy);
+init();
+</script></body></html>
