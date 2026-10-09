@@ -1221,9 +1221,10 @@ function callComingSoon(hostId) {
 
 function videoComingSoon(hostId) {
 
-  alert(
-    "Video Call will be connected next."
-  );
+  window.location.href =
+    "call.html?user=" +
+    encodeURIComponent(hostId) +
+    "&type=video";
 }
 
 
@@ -1309,6 +1310,14 @@ async function showIncomingCall(call) {
 
   document.getElementById("incomingName").textContent =
     caller?.display_name || caller?.username || "Mimo User";
+
+  const incomingLabel = document.querySelector(".incoming-label");
+  if (incomingLabel) {
+    incomingLabel.textContent =
+      call.call_type === "video"
+        ? "Incoming video call"
+        : "Incoming voice call";
+  }
 
   const avatar = document.getElementById("incomingAvatar");
   avatar.src = caller?.avatar_url ||
