@@ -435,6 +435,7 @@ let callRecord = null;
 
 let peerConnection = null;
 let localStream = null;
+let remoteMediaStream = null;
 
 let signalChannel = null;
 let callChannel = null;
@@ -1147,15 +1148,25 @@ async function createPeerConnection() {
     });
 
 
+  remoteMediaStream = new MediaStream();
+
   peerConnection.ontrack =
     event => {
 
-      const remoteStream = event.streams[0];
+      const incomingTracks = event.streams?.[0]?.getTracks?.() || [event.track];
+
+      incomingTracks.forEach(track => {
+        if (!remoteMediaStream.getTracks().some(existing => existing.id === track.id)) {
+          remoteMediaStream.addTrack(track);
+        }
+      });
 
       if (callRecord?.call_type === "video") {
         const remoteVideo = document.getElementById("remoteVideo");
         if (remoteVideo) {
-          remoteVideo.srcObject = remoteStream;
+          if (remoteVideo.srcObject !== remoteMediaStream) {
+            remoteVideo.srcObject = remoteMediaStream;
+          }
           remoteVideo.play().catch(() => {});
         }
       }
@@ -1165,7 +1176,9 @@ async function createPeerConnection() {
           "remoteAudio"
         );
 
-      remoteAudio.srcObject = remoteStream;
+      if (remoteAudio.srcObject !== remoteMediaStream) {
+        remoteAudio.srcObject = remoteMediaStream;
+      }
 
       remoteAudio.play()
         .catch(() => {});
