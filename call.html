@@ -386,7 +386,7 @@
 
 <div id="videoStage" style="display:none;position:fixed;inset:0;background:#111;z-index:2;">
   <video id="remoteVideo" autoplay playsinline style="width:100%;height:100%;object-fit:cover;background:#111;"></video>
-  <video id="localVideo" autoplay muted playsinline style="position:absolute;right:16px;top:24px;width:110px;height:155px;object-fit:cover;border-radius:16px;background:#222;box-shadow:0 4px 20px rgba(0,0,0,.35);"></video>
+  <video id="localVideo" autoplay muted playsinline style="position:absolute;right:16px;top:24px;width:110px;height:155px;object-fit:cover;border-radius:16px;background:#222;box-shadow:0 4px 20px rgba(0,0,0,.35);transform:scaleX(1);"></video>
 </div>
 
 
@@ -893,12 +893,20 @@ async function prepareMedia() {
     const localVideo = document.getElementById("localVideo");
     if (localVideo) {
       localVideo.srcObject = localStream;
+      applyLocalPreviewOrientation();
       localVideo.play().catch(() => {});
     }
   }
 
 }
 
+
+function applyLocalPreviewOrientation() {
+  const localVideo = document.getElementById("localVideo");
+  if (!localVideo) return;
+  // Mimo intentionally shows the camera preview in normal (non-mirrored) orientation.
+  localVideo.style.transform = "scaleX(1)";
+}
 
 function enableVideoUI() {
   const stage = document.getElementById("videoStage");
@@ -965,6 +973,7 @@ async function switchCamera() {
     const localVideo = document.getElementById("localVideo");
     if (localVideo) {
       localVideo.srcObject = localStream;
+      applyLocalPreviewOrientation();
       localVideo.play().catch(() => {});
     }
 
