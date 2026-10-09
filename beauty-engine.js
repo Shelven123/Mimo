@@ -41,8 +41,8 @@ export function createBeautyEngine(video, options = {}) {
     }
     effect(p(33), faceSize*.18, eyes*.24, "scale");
     effect(p(263), faceSize*.18, eyes*.24, "scale");
-    effect(p(234), faceSize*.38, slim*.20, "move", p(1));
-    effect(p(454), faceSize*.38, slim*.20, "move", p(1));
+    effect(p(234), faceSize*.42, slim*.34, "move", p(1));
+    effect(p(454), faceSize*.42, slim*.34, "move", p(1));
     effect(jaw, faceSize*.30, chin*.12, "move", p(13));
     effect(p(1), faceSize*.18, nose*.16, "scale");
     const src = ctx.getImageData(0,0,width,height);
@@ -61,8 +61,8 @@ export function createBeautyEngine(video, options = {}) {
         } else {
           const vx=e.target.x-e.x,vy=e.target.y-e.y;
           const length=Math.hypot(vx,vy)||1;
-          sx-=vx/length*e.r*weight;
-          sy-=vy/length*e.r*weight;
+          sx+=vx/length*e.r*weight;
+          sy+=vy/length*e.r*weight;
         }
         activeEffect=true;
       }
