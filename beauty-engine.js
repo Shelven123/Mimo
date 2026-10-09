@@ -1,15 +1,18 @@
-/* Mimo Beauty Engine v2.6.1 — preview correctness and resource lifecycle fixes. */
+/* Mimo Beauty Engine v2.7 — local processing, face masks and Safari blur fallback. */
+import {createBeautyBlur} from "./beauty-blur.js?v=20261010-v27";
 export function createBeautyEngine(video, options = {}) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
   if (!ctx || !canvas.captureStream) throw new Error("Canvas video processing unavailable");
   let settings = { smoothing: 0, whitening: 0, rosy: 0, slim_face: 0, big_eyes: 0, chin: 0, nose: 0, eye_brightening: 0, dark_circle: 0, background_blur: 0, enabled: true, ...options };
-  let active = false, disposed = false, frame = 0, stream = null, renderSamples=[], qualityWidth=480, lastQualityCheck=0;
+  let active = false, disposed = false, frame = 0, stream = null, renderSamples=[], qualityWidth=480, lastQualityCheck=0, targetFps=24, lastRenderTime=-Infinity, lastRenderedVideoTime=-1, dirty=true, warpedPixels=0, processingError="";
   const softCanvas = document.createElement("canvas");
   const softCtx = softCanvas.getContext("2d");
   if (!softCtx) throw new Error("Canvas smoothing unavailable");
-  const detailCanvas = document.createElement("canvas"), detailCtx = detailCanvas.getContext("2d");
-  if (!detailCtx) throw new Error("Canvas detail preservation unavailable");
+  const blur=createBeautyBlur();
+  const skinCanvas=document.createElement("canvas"),skinCtx=skinCanvas.getContext("2d",{willReadFrequently:true});
+  const featherCanvas=document.createElement("canvas"),featherCtx=featherCanvas.getContext("2d",{willReadFrequently:true});
+  if(!skinCtx||!featherCtx)throw new Error("Canvas skin mask unavailable");
 
   let tracker = null, face = null, trackingStatus = "loading", lastDetect = 0, videoTime = -1, trackingError = "";
   let segmenter=null, personMask=null, segmentationStatus="idle", lastSegment=0, stableFace=null;
@@ -55,58 +58,102 @@ export function createBeautyEngine(video, options = {}) {
     }
     trackingStatus = "unavailable";
   })();
-  function warpFace(width, height) {
-    if (!face || !settings.enabled) return;
-    const amount = name => Math.max(0, Math.min(1, (+settings[name] || 0) / 100));
-    const slim=amount("slim_face"), eyes=amount("big_eyes"), chin=amount("chin"), nose=amount("nose");
-    if (!slim && !eyes && !chin && !nose) return;
+  const amount=name=>Math.max(0,Math.min(1,(Number(settings[name])||0)/100));
+  function geometry(width,height){
     const p=id=>({x:face[id].x*width,y:face[id].y*height});
-    const L=p(234),R=p(454),C=p(1),J=p(152),T=p(10);
-    const faceW=Math.hypot(R.x-L.x,R.y-L.y);
-    if(faceW<28)return;
-    const src=ctx.getImageData(0,0,width,height), dst=ctx.createImageData(width,height);
-    const s=src.data,d=dst.data; d.set(s);
-    const zones=[];
-    const add=(pt,rx,ry,dx,dy,power,kind="displace")=>{if(power>0&&(kind==="eye"||dx||dy))zones.push({x:pt.x,y:pt.y,rx,ry,dx,dy,power,kind})};
-    // Contour-aware slimming: pull jaw/cheek source outward so rendered contour moves inward.
-    const leftIds=[132,58,172,136,150], rightIds=[361,288,397,365,379];
-    leftIds.forEach((id,i)=>add(p(id),faceW*.20,faceW*.25,-faceW*(.018+.018*i)*slim,0,1));
-    rightIds.forEach((id,i)=>add(p(id),faceW*.20,faceW*.25, faceW*(.018+.018*i)*slim,0,1));
-    // Chin: lengthen only the lower tip, preserving mouth.
-    add(J,faceW*.24,faceW*.20,0,-faceW*.075*chin,1);
-    // Eyes: local radial magnification centered on iris/eye regions.
-    const eyeZones=[[33,133],[263,362]];
-    for(const [outer,inner] of eyeZones){const a=p(outer),b=p(inner),m={x:(a.x+b.x)/2,y:(a.y+b.y)/2};add(m,faceW*.16,faceW*.12,0,0,eyes*.75,"eye")}
-    // Nose: narrow around alae, not the whole mid-face.
-    add(p(98),faceW*.12,faceW*.14,-faceW*.035*nose,0,1);
-    add(p(327),faceW*.12,faceW*.14, faceW*.035*nose,0,1);
-    for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+    const L=p(234),R=p(454),J=p(152),T=p(10),fw=Math.hypot(R.x-L.x,R.y-L.y);
+    if(fw<28)return null;
+    const ux=(R.x-L.x)/fw,uy=(R.y-L.y)/fw;
+    let vx=-uy,vy=ux;if((J.x-T.x)*vx+(J.y-T.y)*vy<0){vx=-vx;vy=-vy;}
+    return {p,fw,ux,uy,vx,vy,angle:Math.atan2(uy,ux)};
+  }
+  function warpFace(width,height){
+    warpedPixels=0;
+    if(!face||!settings.enabled)return;
+    const slim=amount("slim_face"),eyes=amount("big_eyes"),chin=amount("chin"),nose=amount("nose");
+    if(!slim&&!eyes&&!chin&&!nose)return;
+    const g=geometry(width,height);if(!g)return;
+    const {p,fw,ux,uy,vx,vy}=g,zones=[];
+    const add=(pt,rx,ry,dx,dy,power,kind="displace")=>{
+      if(power>0&&(kind==="eye"||dx||dy))zones.push({x:pt.x,y:pt.y,rx,ry,dx:dx*ux+dy*vx,dy:dx*uy+dy*vy,power,kind});
+    };
+    // Inverse mapping pulls source outward; the visible contour moves inward.
+    [132,58,172,136,150].forEach((id,i)=>add(p(id),fw*.20,fw*.25,-fw*(.018+.018*i)*slim,0,1));
+    [361,288,397,365,379].forEach((id,i)=>add(p(id),fw*.20,fw*.25,fw*(.018+.018*i)*slim,0,1));
+    add(p(152),fw*.24,fw*.20,0,-fw*.075*chin,1);
+    for(const [outer,inner] of [[33,133],[263,362]]){
+      const a=p(outer),b=p(inner);add({x:(a.x+b.x)/2,y:(a.y+b.y)/2},fw*.16,fw*.12,0,0,eyes*.75,"eye");
+    }
+    add(p(98),fw*.12,fw*.14,-fw*.035*nose,0,1);add(p(327),fw*.12,fw*.14,fw*.035*nose,0,1);
+    // Read and visit only the union of landmark-attached zones, with a sampling margin.
+    let xmin=width,ymin=height,xmax=0,ymax=0;
+    for(const z of zones){const rx=Math.hypot(z.rx*ux,z.ry*vx),ry=Math.hypot(z.rx*uy,z.ry*vy);xmin=Math.min(xmin,z.x-rx);xmax=Math.max(xmax,z.x+rx);ymin=Math.min(ymin,z.y-ry);ymax=Math.max(ymax,z.y+ry);}
+    xmin=Math.max(0,Math.floor(xmin));ymin=Math.max(0,Math.floor(ymin));xmax=Math.min(width,Math.ceil(xmax));ymax=Math.min(height,Math.ceil(ymax));
+    const rw=xmax-xmin,rh=ymax-ymin;if(rw<=0||rh<=0)return;
+    const margin=Math.ceil(fw*.13)+2,sx0=Math.max(0,xmin-margin),sy0=Math.max(0,ymin-margin),sw=Math.min(width,xmax+margin)-sx0,sh=Math.min(height,ymax+margin)-sy0;
+    const source=ctx.getImageData(sx0,sy0,sw,sh),output=ctx.getImageData(xmin,ymin,rw,rh),src=source.data,dst=output.data;
+    warpedPixels=rw*rh;
+    for(let y=ymin;y<ymax;y++)for(let x=xmin;x<xmax;x++){
       let sx=x,sy=y,hit=false;
       for(const z of zones){
-        const nx=(x-z.x)/z.rx,ny=(y-z.y)/z.ry,q=nx*nx+ny*ny;
+        const dx=x-z.x,dy=y-z.y,nx=(dx*ux+dy*uy)/z.rx,ny=(dx*vx+dy*vy)/z.ry,q=nx*nx+ny*ny;
         if(q>=1)continue;
         const fall=(1-q)*(1-q)*z.power;
-        if(z.dx||z.dy){sx+=z.dx*fall;sy+=z.dy*fall}
-        else if(z.kind==="eye"){
-          const k=1-Math.min(.20,eyes*.16)*fall;
-          sx=z.x+(sx-z.x)*k; sy=z.y+(sy-z.y)*k;
-        }
-        hit=true;
+        if(z.kind==="eye"){const k=1-.16*fall;sx=z.x+(sx-z.x)*k;sy=z.y+(sy-z.y)*k;}
+        else{sx+=z.dx*fall;sy+=z.dy*fall;}hit=true;
       }
       if(!hit)continue;
-      sx=Math.max(0,Math.min(width-1,sx));sy=Math.max(0,Math.min(height-1,sy));
-      const x0=Math.floor(sx),y0=Math.floor(sy),x1=Math.min(width-1,x0+1),y1=Math.min(height-1,y0+1),fx=sx-x0,fy=sy-y0,to=(y*width+x)*4;
-      const i00=(y0*width+x0)*4,i10=(y0*width+x1)*4,i01=(y1*width+x0)*4,i11=(y1*width+x1)*4;
-      for(let k=0;k<3;k++)d[to+k]=s[i00+k]*(1-fx)*(1-fy)+s[i10+k]*fx*(1-fy)+s[i01+k]*(1-fx)*fy+s[i11+k]*fx*fy;
+      const distance=Math.hypot(sx-x,sy-y),limit=fw*.12;if(distance>limit){sx=x+(sx-x)*limit/distance;sy=y+(sy-y)*limit/distance;}
+      sx=Math.max(0,Math.min(width-1,sx))-sx0;sy=Math.max(0,Math.min(height-1,sy))-sy0;
+      const x0=Math.floor(sx),y0=Math.floor(sy),x1=Math.min(sw-1,x0+1),y1=Math.min(sh-1,y0+1),fx=sx-x0,fy=sy-y0,to=((y-ymin)*rw+x-xmin)*4;
+      const i00=(y0*sw+x0)*4,i10=(y0*sw+x1)*4,i01=(y1*sw+x0)*4,i11=(y1*sw+x1)*4;
+      for(let k=0;k<3;k++)dst[to+k]=src[i00+k]*(1-fx)*(1-fy)+src[i10+k]*fx*(1-fy)+src[i01+k]*(1-fx)*fy+src[i11+k]*fx*fy;
     }
-    ctx.putImageData(dst,0,0);
+    ctx.putImageData(output,xmin,ymin);
+  }
+  function smoothSkin(width,height){
+    const strength=amount("smoothing")*.48;
+    if(!strength||!face)return;
+    const g=geometry(width,height);if(!g)return;
+    const {p,fw,angle}=g;
+    const contour=[10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109].map(p);
+    skinCtx.clearRect(0,0,width,height);skinCtx.fillStyle="#fff";
+    skinCtx.beginPath();skinCtx.moveTo(contour[0].x,contour[0].y);
+    for(const q of contour.slice(1))skinCtx.lineTo(q.x,q.y);
+    skinCtx.closePath();skinCtx.fill();
+    blur.draw(skinCanvas,featherCtx,Math.max(.8,fw*.008),width,height);
+    // Feathered feature exclusions avoid hard ellipse seams and preserve processed detail.
+    const protect=(pt,rx,ry)=>{
+      featherCtx.save();featherCtx.translate(pt.x,pt.y);featherCtx.rotate(angle);featherCtx.scale(rx,ry);
+      const gradient=featherCtx.createRadialGradient(0,0,.45,0,0,1);
+      gradient.addColorStop(0,"rgba(0,0,0,1)");gradient.addColorStop(1,"rgba(0,0,0,0)");
+      featherCtx.globalCompositeOperation="destination-out";featherCtx.fillStyle=gradient;
+      featherCtx.beginPath();featherCtx.arc(0,0,1,0,Math.PI*2);featherCtx.fill();featherCtx.restore();
+    };
+    const midpoint=(a,b)=>({x:(p(a).x+p(b).x)/2,y:(p(a).y+p(b).y)/2});
+    protect(midpoint(33,133),fw*.16,fw*.105);protect(midpoint(263,362),fw*.16,fw*.105);
+    protect(midpoint(70,107),fw*.17,fw*.075);protect(midpoint(300,336),fw*.17,fw*.075);
+    protect(p(1),fw*.10,fw*.16);protect(p(13),fw*.21,fw*.12);
+    blur.draw(canvas,softCtx,.7+strength*4,width,height);
+    const pad=Math.ceil(fw*.03),x0=Math.max(0,Math.floor(Math.min(...contour.map(q=>q.x)))-pad),y0=Math.max(0,Math.floor(Math.min(...contour.map(q=>q.y)))-pad);
+    const rw=Math.min(width,Math.ceil(Math.max(...contour.map(q=>q.x)))+pad)-x0,rh=Math.min(height,Math.ceil(Math.max(...contour.map(q=>q.y)))+pad)-y0;
+    if(rw<=0||rh<=0)return;
+    const original=ctx.getImageData(x0,y0,rw,rh),soft=softCtx.getImageData(x0,y0,rw,rh).data,mask=featherCtx.getImageData(x0,y0,rw,rh).data,d=original.data;
+    for(let i=0;i<d.length;i+=4){
+      if(!mask[i+3])continue;
+      const difference=Math.abs((d[i]+d[i+1]+d[i+2]-soft[i]-soft[i+1]-soft[i+2])/3);
+      const mix=strength*(mask[i+3]/255)/(1+difference*difference/576);
+      for(let k=0;k<3;k++)d[i+k]+=(soft[i+k]-d[i+k])*mix;
+    }
+    ctx.putImageData(original,x0,y0);
   }
   function regionalBeauty(width,height){
     if(!face||!settings.enabled)return;
     const eyeBright=Math.max(0,Math.min(1,(+settings.eye_brightening||0)/100));
     const dark=Math.max(0,Math.min(1,(+settings.dark_circle||0)/100));
     if(!eyeBright&&!dark)return;
-    const p=id=>({x:face[id].x*width,y:face[id].y*height});
+    const g=geometry(width,height);if(!g)return;
+    const {p,ux,uy,vx,vy}=g;
     const L0=p(33),L1=p(133),R0=p(263),R1=p(362);
     const faceW=Math.max(24,Math.hypot(p(454).x-p(234).x,p(454).y-p(234).y));
     const data=ctx.getImageData(0,0,width,height),d=data.data;
@@ -115,14 +162,15 @@ export function createBeautyEngine(video, options = {}) {
       {x:(R0.x+R1.x)/2,y:(R0.y+R1.y)/2,rx:faceW*.13,ry:faceW*.075}
     ];
     for(const z of zones){
-      const x0=Math.max(0,Math.floor(z.x-z.rx)),x1=Math.min(width-1,Math.ceil(z.x+z.rx));
-      const y0=Math.max(0,Math.floor(z.y-z.ry*.65)),y1=Math.min(height-1,Math.ceil(z.y+z.ry*1.85));
+      const extent=Math.max(z.rx,z.ry*1.85);
+      const x0=Math.max(0,Math.floor(z.x-extent)),x1=Math.min(width-1,Math.ceil(z.x+extent));
+      const y0=Math.max(0,Math.floor(z.y-extent)),y1=Math.min(height-1,Math.ceil(z.y+extent));
       for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
-        const nx=(x-z.x)/z.rx, ny=(y-z.y)/z.ry;
+        const dx=x-z.x,dy=y-z.y,nx=(dx*ux+dy*uy)/z.rx,ny=(dx*vx+dy*vy)/z.ry;
         let q=nx*nx+ny*ny;
         if(q>=1.8)continue;
         const fall=Math.max(0,1-q/1.8);
-        const under=Math.max(0,Math.min(1,(y-z.y)/(z.ry*.9)));
+        const under=Math.max(0,Math.min(1,ny/.9));
         const brighten=eyeBright*fall*(1-under*.55)*.12;
         const correct=dark*fall*under*.16;
         const i=(y*width+x)*4;
@@ -136,18 +184,22 @@ export function createBeautyEngine(video, options = {}) {
   }
   function makeupBeauty(width,height){
     if(!face||!settings.enabled||!settings.makeup_enabled)return;
-    const p=id=>({x:face[id].x*width,y:face[id].y*height});
+    const g=geometry(width,height);if(!g)return;
+    const {p,angle}=g;
     const faceW=Math.max(24,Math.hypot(p(454).x-p(234).x,p(454).y-p(234).y));
     ctx.save();
     // Natural blush follows cheek landmarks.
     for(const id of [50,280]){
       const q=p(id),g=ctx.createRadialGradient(q.x,q.y,0,q.x,q.y,faceW*.16);
       g.addColorStop(0,"rgba(255,92,112,.10)");g.addColorStop(1,"rgba(255,92,112,0)");
-      ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(q.x,q.y,faceW*.16,faceW*.10,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(q.x,q.y,faceW*.16,faceW*.10,angle,0,Math.PI*2);ctx.fill();
     }
     // Soft lip tint clipped to landmark lip polygon.
     const lip=[61,40,37,0,267,270,291,321,314,17,84,91].map(p);
-    ctx.fillStyle="rgba(210,48,82,.14)";ctx.beginPath();ctx.moveTo(lip[0].x,lip[0].y);for(let i=1;i<lip.length;i++)ctx.lineTo(lip[i].x,lip[i].y);ctx.closePath();ctx.fill();
+    ctx.fillStyle="rgba(210,48,82,.14)";ctx.beginPath();ctx.moveTo(lip[0].x,lip[0].y);for(let i=1;i<lip.length;i++)ctx.lineTo(lip[i].x,lip[i].y);ctx.closePath();
+    // Leave mouth interior/teeth untouched when the lips part.
+    const inner=[78,95,88,178,87,14,317,402,318,324,308,415,310,311,312,13,82,81,80,191].map(p);
+    ctx.moveTo(inner[0].x,inner[0].y);for(let i=1;i<inner.length;i++)ctx.lineTo(inner[i].x,inner[i].y);ctx.closePath();ctx.fill("evenodd");
     ctx.restore();
   }
   function portraitBlur(width,height){
@@ -161,7 +213,7 @@ export function createBeautyEngine(video, options = {}) {
       try{
         result=segmenter.segmentForVideo(video,lastSegment);
         const m=result.categoryMask;
-        if(m){const raw=m.getAsUint8Array();personMask={data:new Uint8Array(raw),w:m.width,h:m.height};}
+        if(m){const raw=m.getAsUint8Array();personMask={data:new Uint8Array(raw),w:m.width,h:m.height};}else personMask=null;
         segmentationError="";
       }catch(e){personMask=null;segmentationError=e?.message||String(e);}
       finally{if(result)result.close();}
@@ -174,13 +226,13 @@ export function createBeautyEngine(video, options = {}) {
     oc.clearRect(0,0,width,height);bc.clearRect(0,0,width,height);mc.clearRect(0,0,width,height);
     oc.drawImage(canvas,0,0);
     bc.globalCompositeOperation="source-over";
-    bc.filter="blur("+(3+amount*11).toFixed(1)+"px)";bc.drawImage(original,0,0);
+    blur.draw(original,bc,3+amount*11,width,height);
     const small=portraitBlur._s||(portraitBlur._s=document.createElement("canvas")),sc=small.getContext("2d");
     if(small.width!==personMask.w||small.height!==personMask.h){small.width=personMask.w;small.height=personMask.h;}
     const img=sc.createImageData(personMask.w,personMask.h);
     // SelfieSegmenter categories: 0 background, 1 person.
     for(let i=0;i<personMask.data.length;i++){const v=personMask.data[i]===1?255:0,j=i*4;img.data[j]=img.data[j+1]=img.data[j+2]=255;img.data[j+3]=v}
-    sc.putImageData(img,0,0);mc.filter="blur(4px)";mc.drawImage(small,0,0,width,height);
+    sc.putImageData(img,0,0);blur.draw(small,mc,4,width,height);
     oc.globalCompositeOperation="destination-in";oc.drawImage(mask,0,0);oc.globalCompositeOperation="source-over";
     ctx.drawImage(blurred,0,0);ctx.drawImage(original,0,0);
   }
@@ -188,11 +240,13 @@ export function createBeautyEngine(video, options = {}) {
     if (!active) return;
     const renderStart=performance.now();
     const w = video.videoWidth, h = video.videoHeight;
+    if((renderStart-lastRenderTime<1000/targetFps)||(!dirty&&video.currentTime===lastRenderedVideoTime)){frame=requestAnimationFrame(render);return;}
     if (w && h && video.readyState >= 2) {
+      lastRenderTime=renderStart;lastRenderedVideoTime=video.currentTime;dirty=false;warpedPixels=0;
       const width = Math.min(w, qualityWidth), height = Math.max(1, Math.round(h * width / w));
       if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = softCanvas.width = detailCanvas.width = width;
-        canvas.height = softCanvas.height = detailCanvas.height = height;
+        canvas.width = softCanvas.width = skinCanvas.width = featherCanvas.width = width;
+        canvas.height = softCanvas.height = skinCanvas.height = featherCanvas.height = height;
       }
       ctx.filter = "none";
       ctx.drawImage(video, 0, 0, width, height);
@@ -200,40 +254,31 @@ export function createBeautyEngine(video, options = {}) {
         lastDetect=performance.now();
         lastDetectVideoTime=video.currentTime;
         videoTime=video.currentTime;
-        try { const detected=tracker.detectForVideo(video,lastDetect).faceLandmarks?.[0] || null; if(detected){ if(!stableFace||stableFace.length!==detected.length) stableFace=detected.map(q=>({...q})); else { const alpha=.58; for(let i=0;i<detected.length;i++){ stableFace[i].x+=alpha*(detected[i].x-stableFace[i].x); stableFace[i].y+=alpha*(detected[i].y-stableFace[i].y); stableFace[i].z+=alpha*((detected[i].z||0)-(stableFace[i].z||0)); } } face=stableFace; } else {face=null;stableFace=null;} }
-        catch (error) { face=null;stableFace=null; console.warn("Mimo face detection error:",error); }
+        try{
+          const detected=tracker.detectForVideo(video,lastDetect).faceLandmarks?.[0]||null;
+          if(detected&&detected.length>=468&&detected.every(q=>Number.isFinite(q.x)&&Number.isFinite(q.y))){
+            const span=Math.max(.05,Math.hypot(detected[454].x-detected[234].x,detected[454].y-detected[234].y));
+            const jump=stableFace?Math.hypot(detected[1].x-stableFace[1].x,detected[1].y-stableFace[1].y):Infinity;
+            if(!stableFace||stableFace.length!==detected.length||jump>span*.25)stableFace=detected.map(q=>({...q}));
+            else{
+              // Follow motion promptly; retain stronger stabilization for tiny tracking noise.
+              const alpha=Math.min(.88,.58+jump/span*1.5);
+              for(let i=0;i<detected.length;i++){
+                stableFace[i].x+=alpha*(detected[i].x-stableFace[i].x);stableFace[i].y+=alpha*(detected[i].y-stableFace[i].y);
+                stableFace[i].z+=alpha*((detected[i].z||0)-(stableFace[i].z||0));
+              }
+            }
+            face=stableFace;
+          }else{face=null;stableFace=null;}
+        }catch(error){face=null;stableFace=null;console.warn("Mimo face detection error:",error);}
+
       }
       if (settings.enabled) {
+        try{
         warpFace(width,height);
         regionalBeauty(width,height);
         makeupBeauty(width,height);
-        portraitBlur(width,height);
-        // Face reshaping controls are intentionally not approximated with fixed
-        // screen regions. That produced visible oval seams and rectangular eye
-        // artifacts when the face moved. Proper landmark-based warping will be
-        // used for these controls.
-        const smooth = Math.min(0.48, Math.max(0, Number(settings.smoothing) / 100 * 0.48));
-        if (smooth) {
-          // Preserve the processed frame, never repaint unwarped camera pixels.
-          detailCtx.drawImage(canvas,0,0,width,height);
-          softCtx.clearRect(0, 0, width, height);
-          softCtx.filter = "blur(" + (0.7 + smooth * 4).toFixed(2) + "px)";
-          softCtx.drawImage(canvas, 0, 0);
-          ctx.globalAlpha = smooth;
-          ctx.drawImage(softCanvas, 0, 0);
-          ctx.globalAlpha = 1;
-          // Restore key facial features after smoothing so eyes, brows, nose and lips keep detail.
-          if(face){
-            const fp=id=>({x:face[id].x*width,y:face[id].y*height});
-            const fw=Math.max(24,Math.hypot(fp(454).x-fp(234).x,fp(454).y-fp(234).y));
-            const restore=(pt,rx,ry,a=.78)=>{ctx.save();ctx.beginPath();ctx.ellipse(pt.x,pt.y,rx,ry,0,0,Math.PI*2);ctx.clip();ctx.globalAlpha=a;ctx.drawImage(detailCanvas,0,0,width,height);ctx.restore()};
-            const le0=fp(33),le1=fp(133),re0=fp(263),re1=fp(362);
-            restore({x:(le0.x+le1.x)/2,y:(le0.y+le1.y)/2},fw*.15,fw*.10);
-            restore({x:(re0.x+re1.x)/2,y:(re0.y+re1.y)/2},fw*.15,fw*.10);
-            restore(fp(1),fw*.12,fw*.18,.58);
-            restore(fp(13),fw*.18,fw*.10,.70);
-          }
-        }
+        smoothSkin(width,height);
         const white = Math.max(0, Math.min(100, Number(settings.whitening))) / 100;
         const rosy = Math.max(0, Math.min(100, Number(settings.rosy))) / 100;
         if (white || rosy) {
@@ -245,6 +290,14 @@ export function createBeautyEngine(video, options = {}) {
             d[i+2] = Math.min(255, d[i+2] + (255 - d[i+2]) * white * 0.17 + rosy * 4);
           }
           ctx.putImageData(frameData, 0, 0);
+        }
+        portraitBlur(width,height);
+        processingError="";
+        }catch(error){
+          processingError=error?.message||String(error);
+          // Keep the independent preview usable if a device rejects an effect operation.
+          ctx.filter="none";ctx.globalAlpha=1;ctx.globalCompositeOperation="source-over";
+          ctx.drawImage(video,0,0,width,height);
         }
       }
     }
@@ -263,14 +316,15 @@ export function createBeautyEngine(video, options = {}) {
     getTrackingStatus(){return trackingStatus;},
     getTrackingError(){return trackingError;},
     getFaceDetected(){return !!face;},
-    getDebug(){return {version:"2.6.1",trackingStatus,segmentationStatus,segmentationError,blurMaskReady:!!personMask,canvasFilterSupported:"filter" in ctx,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0,qualityWidth,avgFrameMs:renderSamples.length?Math.round(renderSamples.reduce((a,b)=>a+b,0)/renderSamples.length):0};},
+    getDebug(){return {version:"2.7",trackingStatus,segmentationStatus,segmentationError,processingError,blurMaskReady:!!personMask,canvasFilterSupported:blur.native,blurBackend:blur.native?"native":"cpu",warpedPixels,targetFps,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0,qualityWidth,avgFrameMs:renderSamples.length?Math.round(renderSamples.reduce((a,b)=>a+b,0)/renderSamples.length):0};},
     start(fps = 24) {
       if(disposed)throw new Error("Beauty engine disposed");
-      if (!stream) stream = canvas.captureStream(fps);
-      if (!active) { active = true; render(); }
+      targetFps=Math.max(1,Math.min(30,Number(fps)||24));
+      if (!stream) stream = canvas.captureStream(targetFps);
+      if (!active) { active = true;dirty=true;lastRenderTime=-Infinity; render(); }
       return stream;
     },
-    update(patch) { settings = { ...settings, ...patch }; },
+    update(patch) { settings = { ...settings, ...patch }; dirty=true; },
     stop() {
       active = false;
       cancelAnimationFrame(frame);

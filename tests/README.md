@@ -1,17 +1,17 @@
-# Beauty v2.6.1 verification
+# Beauty v2.7 verification
 
-Run on Node.js 22 or newer, with `@napi-rs/canvas@0.1.100` available:
+Run on Node.js 24 using the locked test dependencies:
 
 ```sh
-npm install --no-save --package-lock=false @napi-rs/canvas@0.1.100
-node --test tests/beauty-engine.test.cjs
+npm ci --ignore-scripts --no-audit --no-fund
+npm test
 ```
 
-The five tests exercise actual Canvas pixel processing with **fake MediaPipe outputs**. They do not load the real models or simulate iPhone Safari. There is no browser automation or real-device acceptance claim.
+Eleven engine tests exercise actual Canvas pixel processing with **fake MediaPipe outputs**. Three JSDOM tests exercise page handlers with **fake camera/auth/engine**. They do not load real models or simulate iPhone Safari. The regression workflow runs relevant PRs and main pushes. Browser visual automation was not performed (browser archive download failed).
 
 ## Consolidated iPhone Safari acceptance
 
-Use the unified `beauty-settings.html` page with v2.6.1 visible. Record device/iOS version and screenshots or video of any failure. Keep a patterned background and even light. Set all sliders to zero and Makeup off before testing each effect separately.
+Use the unified `beauty-settings.html` page with v2.7 visible. Record device/iOS version and screenshots or video of any failure. Keep a patterned background and even light. Set all sliders to zero and Makeup off before testing each effect separately.
 
 | Check | Expected / what to record | Current state |
 | --- | --- | --- |
@@ -27,6 +27,15 @@ Use the unified `beauty-settings.html` page with v2.6.1 visible. Record device/i
 | Sustained performance | Run 3 minutes; note displayed width/processing time, visual smoothness, heat, freeze or memory issues; flip 5 times | Not Verified |
 | Save/reopen | Values persist, Makeup updates immediately, save errors/success are not replaced by tracking text | Implemented; Not Verified |
 
-Canvas filter support is reported in diagnostics. If unsupported, blur cannot be considered working. A supported property alone does not prove the Safari effect or edge quality.
+The blur diagnostic reports native or CPU backend after a pixel-based feature probe. The CPU fallback is regression-tested for a simulated filter no-op; it is not real Safari acceptance. A ready mask does not prove hair-edge quality or sustained performance.
 
 Beauty remains separate from Video Call until these results are accepted. Do not alter working call signaling or camera/PiP handling during this test.
+
+## Additional v2.7 acceptance items
+
+- Hold/release original comparison, including interrupted touch; saved settings must remain unchanged.
+- With smoothing only, eyes/brows/nose/lips and background should keep detail. Check face contour feathering with head tilted.
+- Check lip tint with mouth open and teeth visible.
+- Check all reshape sliders on tilted/moving faces at 0/50/100. Effects remain local; this is not whole-face radial compression.
+- Run background blur on browsers with native and CPU backend; inspect mask edges and performance.
+- A processing error should leave the raw preview usable and display a diagnostic.

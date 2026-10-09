@@ -11,20 +11,21 @@
 <div class="presets"><button class="preset" data-preset="natural">Natural</button><button class="preset" data-preset="soft">Soft</button><button class="preset" data-preset="glam">Glam</button></div>
 <div id="sliders"></div>
 <div class="switchrow"><b>Makeup</b><input id="makeup_enabled" type="checkbox"></div>
+<button class="preset" id="compare" type="button" aria-pressed="false" style="width:100%;touch-action:none">Hold to compare original</button>
 <div class="actions"><button class="flip" id="flip">Flip Camera</button><button class="flip" id="mirror" type="button">Mirror: Off</button><button class="save" id="save">Save</button></div>
-<p class="status" id="status">Loading your Beauty settings…</p><p class="status" id="trackingStatus" aria-live="polite"></p><p class="status">Mimo Beauty Engine v2.6.1 · stabilized 478-point tracking · adaptive iPhone performance · protected smoothing · face/eye/chin/nose reshape · eye correction · natural makeup · portrait blur.</p>
+<p class="status" id="status">Loading your Beauty settings…</p><p class="status" id="trackingStatus" aria-live="polite"></p><p class="status">Mimo Beauty Engine v2.7 · face detail protection · live comparison · camera preview only.</p>
 </main>
 <script type="module">
-import {createBeautyEngine} from "./beauty-engine.js?v=20261010-v261";
+import {createBeautyEngine} from "./beauty-engine.js?v=20261010-v27";
 const sb=window.supabase.createClient("https://zhhgiwqehwuwzxnqbnth.supabase.co","sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ");
 const defs=[["smoothing","Smoothing"],["whitening","Whitening"],["rosy","Rosy Tone"],["slim_face","Slim Face"],["big_eyes","Big Eyes"],["chin","Chin"],["nose","Nose"],["eye_brightening","Eye Brightening"],["dark_circle","Dark Circle"],["background_blur","Background Blur"]];
 const presetValues={natural:[25,10,8,0,0,0,0,10,10,0],soft:[40,20,15,10,8,5,5,20,20,0],glam:[55,30,22,25,20,15,12,30,30,0]};
-let user=null,camera=null,engine=null,facing="user",preset="natural",saved={},mirror=false,cameraOpening=false,pageHidden=false;
+let user=null,camera=null,engine=null,facing="user",preset="natural",saved={},mirror=false,cameraOpening=false,pageHidden=false,comparing=false;
 const stage=document.getElementById("stage"),video=document.getElementById("source"),status=document.getElementById("status"),box=document.getElementById("sliders"),startCamera=document.getElementById("startCamera");
 defs.forEach(([id,label])=>{box.insertAdjacentHTML("beforeend",'<div class="slider"><div class="sliderhead"><span>'+label+'</span><b id="'+id+'_v">0</b></div><input id="'+id+'" type="range" min="0" max="100" value="0"></div>')});
 function values(){const o={enabled:document.getElementById("enabled").checked,makeup_enabled:document.getElementById("makeup_enabled").checked};defs.forEach(([k])=>o[k]=+document.getElementById(k).value);return o}
 function paint(){document.querySelectorAll(".preset").forEach(b=>b.classList.toggle("active",b.dataset.preset===preset))}
-function refresh(custom=true){defs.forEach(([k])=>document.getElementById(k+"_v").textContent=document.getElementById(k).value);if(custom){preset="custom";paint()}if(engine)engine.update(values())}
+function refresh(custom=true){defs.forEach(([k])=>document.getElementById(k+"_v").textContent=document.getElementById(k).value);if(custom){preset="custom";paint()}if(engine)engine.update({...values(),enabled:values().enabled&&!comparing})}
 defs.forEach(([k])=>document.getElementById(k).addEventListener("input",()=>refresh(true)));
 document.getElementById("enabled").onchange=()=>refresh(false);
 document.getElementById("makeup_enabled").onchange=()=>refresh(true);
@@ -32,11 +33,12 @@ document.querySelectorAll(".preset").forEach(b=>b.onclick=()=>{preset=b.dataset.
 async function persist(show=true){if(!user)return false;const r=await sb.from("beauty_settings").upsert({user_id:user.id,...saved,...values(),preset});if(show)status.textContent=r.error?r.error.message:"Beauty settings saved ✓";return !r.error}
 async function openCamera(){
   if(cameraOpening)return;
+  setComparison(false);
   cameraOpening=true;startCamera.disabled=true;document.getElementById("flip").disabled=true;
   try{
     if(engine){engine.dispose();engine=null}
     if(camera){camera.getTracks().forEach(t=>t.stop());camera=null}
-    camera=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}},audio:false});
+    camera=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing},width:{ideal:640},frameRate:{ideal:24,max:30}},audio:false});
     if(pageHidden){camera.getTracks().forEach(t=>t.stop());camera=null;return}
     video.srcObject=camera;await video.play();
     if(pageHidden)return;
@@ -54,6 +56,13 @@ async function openCamera(){
   }finally{cameraOpening=false;startCamera.disabled=false;document.getElementById("flip").disabled=false}
 }
 startCamera.onclick=()=>openCamera();
+const compare=document.getElementById("compare");
+function setComparison(active){comparing=active;compare.setAttribute("aria-pressed",String(active));compare.textContent=active?"Original — release to return":"Hold to compare original";refresh(false)}
+compare.onpointerdown=event=>{if(event.button!==0)return;event.preventDefault();compare.setPointerCapture(event.pointerId);setComparison(true)};
+compare.onpointerup=()=>setComparison(false);compare.onpointercancel=()=>setComparison(false);compare.onlostpointercapture=()=>setComparison(false);
+compare.onkeydown=event=>{if(event.key===" "||event.key==="Enter"){event.preventDefault();setComparison(true)}};
+compare.onkeyup=event=>{if(event.key===" "||event.key==="Enter")setComparison(false)};
+compare.onblur=()=>setComparison(false);
 document.getElementById("mirror").onclick=()=>{mirror=!mirror;document.getElementById("mirror").textContent="Mirror: "+(mirror?"On":"Off");if(engine)engine.canvas.style.transform=(mirror&&facing==="user")?"scaleX(-1)":"none"};
 document.getElementById("flip").onclick=async()=>{facing=facing==="user"?"environment":"user";try{await openCamera()}catch(e){status.textContent=e.message}};
 document.getElementById("save").onclick=()=>persist(true);
@@ -64,8 +73,8 @@ setInterval(()=>{
   if(!engine){output.textContent="";return}
   const s=engine.getTrackingStatus(),detected=engine.getFaceDetected(),d=engine.getDebug();
   const tracking=s==="unavailable"?"Face model failed: "+engine.getTrackingError():s==="loading"?"Loading face recognition model…":detected?"Face detected ✓ · "+d.landmarkCount+" landmarks":"Face model loaded, but no face detected. Face reshaping paused.";
-  const blur=values().enabled&&values().background_blur>0?" · Blur: "+(!d.canvasFilterSupported?"unsupported on this browser":d.segmentationError?"unavailable — "+d.segmentationError:d.blurMaskReady?"mask ready":d.segmentationStatus):"";
-  output.textContent=tracking+" · "+d.qualityWidth+"px · "+d.avgFrameMs+"ms processing"+blur;
+  const blur=values().enabled&&values().background_blur>0?" · Blur: "+(d.segmentationError?"unavailable — "+d.segmentationError:d.blurMaskReady?"ready ("+d.blurBackend+")":d.segmentationStatus):"";
+  output.textContent=(d.processingError?"Effect unavailable; showing original: "+d.processingError+" · ":"")+tracking+" · "+d.qualityWidth+"px · "+d.avgFrameMs+"ms processing"+blur;
 },1200);
 window.addEventListener("pagehide",()=>{pageHidden=true;if(engine){engine.dispose();engine=null}if(camera){camera.getTracks().forEach(t=>t.stop());camera=null}});
 window.addEventListener("pageshow",event=>{pageHidden=false;if(event.persisted&&user)void openCamera()});
