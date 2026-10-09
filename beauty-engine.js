@@ -72,8 +72,8 @@ export function createBeautyEngine(video, options = {}) {
         } else {
           const vx=e.target.x-e.x,vy=e.target.y-e.y;
           const length=Math.hypot(vx,vy)||1;
-          sx+=vx/length*e.r*weight;
-          sy+=vy/length*e.r*weight;
+          sx-=vx/length*e.r*weight;
+          sy-=vy/length*e.r*weight;
         }
         activeEffect=true;
       }
