@@ -1,4 +1,4 @@
-/* Mimo Beauty Engine v0.1 — real canvas pixel processing, no CSS-only effects. */
+/* Mimo Beauty Engine v2.1 — landmark-aware reshape + regional skin/eye correction. */
 export function createBeautyEngine(video, options = {}) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
@@ -79,6 +79,39 @@ export function createBeautyEngine(video, options = {}) {
     }
     ctx.putImageData(dst,0,0);
   }
+  function regionalBeauty(width,height){
+    if(!face||!settings.enabled)return;
+    const eyeBright=Math.max(0,Math.min(1,(+settings.eye_brightening||0)/100));
+    const dark=Math.max(0,Math.min(1,(+settings.dark_circle||0)/100));
+    if(!eyeBright&&!dark)return;
+    const p=id=>({x:face[id].x*width,y:face[id].y*height});
+    const L0=p(33),L1=p(133),R0=p(263),R1=p(362);
+    const faceW=Math.max(24,Math.hypot(p(454).x-p(234).x,p(454).y-p(234).y));
+    const data=ctx.getImageData(0,0,width,height),d=data.data;
+    const zones=[
+      {x:(L0.x+L1.x)/2,y:(L0.y+L1.y)/2,rx:faceW*.13,ry:faceW*.075},
+      {x:(R0.x+R1.x)/2,y:(R0.y+R1.y)/2,rx:faceW*.13,ry:faceW*.075}
+    ];
+    for(const z of zones){
+      const x0=Math.max(0,Math.floor(z.x-z.rx)),x1=Math.min(width-1,Math.ceil(z.x+z.rx));
+      const y0=Math.max(0,Math.floor(z.y-z.ry*.65)),y1=Math.min(height-1,Math.ceil(z.y+z.ry*1.85));
+      for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+        const nx=(x-z.x)/z.rx, ny=(y-z.y)/z.ry;
+        let q=nx*nx+ny*ny;
+        if(q>=1.8)continue;
+        const fall=Math.max(0,1-q/1.8);
+        const under=Math.max(0,Math.min(1,(y-z.y)/(z.ry*.9)));
+        const brighten=eyeBright*fall*(1-under*.55)*.12;
+        const correct=dark*fall*under*.16;
+        const i=(y*width+x)*4;
+        const lift=brighten+correct;
+        d[i]=Math.min(255,d[i]+(255-d[i])*lift);
+        d[i+1]=Math.min(255,d[i+1]+(255-d[i+1])*lift+correct*4);
+        d[i+2]=Math.min(255,d[i+2]+(255-d[i+2])*lift+correct*7);
+      }
+    }
+    ctx.putImageData(data,0,0);
+  }
   function render() {
     if (!active) return;
     const w = video.videoWidth, h = video.videoHeight;
@@ -98,6 +131,7 @@ export function createBeautyEngine(video, options = {}) {
       }
       if (settings.enabled) {
         warpFace(width,height);
+        regionalBeauty(width,height);
         // Face reshaping controls are intentionally not approximated with fixed
         // screen regions. That produced visible oval seams and rectangular eye
         // artifacts when the face moved. Proper landmark-based warping will be
