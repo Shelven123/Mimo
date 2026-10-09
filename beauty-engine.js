@@ -1,4 +1,4 @@
-/* Mimo Beauty Engine v2.1 — landmark-aware reshape + regional skin/eye correction. */
+/* Mimo Beauty Engine v2.2 — landmark-aware reshape + regional skin/eye/makeup processing. */
 export function createBeautyEngine(video, options = {}) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
@@ -112,6 +112,22 @@ export function createBeautyEngine(video, options = {}) {
     }
     ctx.putImageData(data,0,0);
   }
+  function makeupBeauty(width,height){
+    if(!face||!settings.enabled||!settings.makeup_enabled)return;
+    const p=id=>({x:face[id].x*width,y:face[id].y*height});
+    const faceW=Math.max(24,Math.hypot(p(454).x-p(234).x,p(454).y-p(234).y));
+    ctx.save();
+    // Natural blush follows cheek landmarks.
+    for(const id of [50,280]){
+      const q=p(id),g=ctx.createRadialGradient(q.x,q.y,0,q.x,q.y,faceW*.16);
+      g.addColorStop(0,"rgba(255,92,112,.10)");g.addColorStop(1,"rgba(255,92,112,0)");
+      ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(q.x,q.y,faceW*.16,faceW*.10,0,0,Math.PI*2);ctx.fill();
+    }
+    // Soft lip tint clipped to landmark lip polygon.
+    const lip=[61,40,37,0,267,270,291,321,314,17,84,91].map(p);
+    ctx.fillStyle="rgba(210,48,82,.14)";ctx.beginPath();ctx.moveTo(lip[0].x,lip[0].y);for(let i=1;i<lip.length;i++)ctx.lineTo(lip[i].x,lip[i].y);ctx.closePath();ctx.fill();
+    ctx.restore();
+  }
   function render() {
     if (!active) return;
     const w = video.videoWidth, h = video.videoHeight;
@@ -132,6 +148,7 @@ export function createBeautyEngine(video, options = {}) {
       if (settings.enabled) {
         warpFace(width,height);
         regionalBeauty(width,height);
+        makeupBeauty(width,height);
         // Face reshaping controls are intentionally not approximated with fixed
         // screen regions. That produced visible oval seams and rectangular eye
         // artifacts when the face moved. Proper landmark-based warping will be
