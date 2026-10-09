@@ -342,6 +342,37 @@
 
     </div>
 
+    <div id="cameraControl" class="control" style="display:none">
+
+      <button
+        id="cameraButton"
+        class="circle"
+        onclick="toggleCamera()"
+      >
+        📷
+      </button>
+
+      <div id="cameraText">
+        Camera
+      </div>
+
+    </div>
+
+    <div id="flipControl" class="control" style="display:none">
+
+      <button
+        class="circle"
+        onclick="switchCamera()"
+      >
+        🔄
+      </button>
+
+      <div>
+        Flip
+      </div>
+
+    </div>
+
   </div>
 
 </div>
@@ -412,6 +443,8 @@ let connectedAt = null;
 
 let muted = false;
 let speakerEnabled = true;
+let cameraEnabled = true;
+let currentFacingMode = "user";
 let ended = false;
 
 const processedSignals =
@@ -506,7 +539,7 @@ async function init() {
 
 
       if (currentProfile?.role !== "user") {
-        showError("Hosts cannot start voice calls.");
+        showError("Hosts cannot start calls.");
         setStatus("Incoming calls only");
         return;
       }
@@ -518,7 +551,7 @@ async function init() {
         .maybeSingle();
 
       if (calleeProfile?.role !== "host") {
-        showError("Voice calls can only be started with a host.");
+        showError("Calls can only be started with a host.");
         setStatus("Unable to start call");
         return;
       }
@@ -846,7 +879,7 @@ async function prepareMedia() {
           autoGainControl: true
         },
         video: callRecord?.call_type === "video"
-          ? { facingMode: "user" }
+          ? { facingMode: { ideal: currentFacingMode } }
           : false
       });
 
@@ -865,10 +898,80 @@ async function prepareMedia() {
 function enableVideoUI() {
   const stage = document.getElementById("videoStage");
   if (stage) stage.style.display = "block";
-  const app = document.querySelector(".app");
-  if (app) {
-    app.style.position = "relative";
-    app.style.zIndex = "3";
+
+  const cameraControl = document.getElementById("cameraControl");
+  const flipControl = document.getElementById("flipControl");
+  if (cameraControl) cameraControl.style.display = "block";
+  if (flipControl) flipControl.style.display = "block";
+
+  const callPage = document.querySelector(".call-page");
+  if (callPage) {
+    callPage.style.position = "relative";
+    callPage.style.zIndex = "3";
+    callPage.style.background = "transparent";
+  }
+
+  const profile = document.querySelector(".profile");
+  if (profile) profile.style.opacity = "0";
+}
+
+function toggleCamera() {
+  if (!localStream || callRecord?.call_type !== "video") return;
+
+  const tracks = localStream.getVideoTracks();
+  if (!tracks.length) return;
+
+  cameraEnabled = !cameraEnabled;
+  tracks.forEach(track => track.enabled = cameraEnabled);
+
+  const button = document.getElementById("cameraButton");
+  const text = document.getElementById("cameraText");
+  if (button) button.classList.toggle("active", !cameraEnabled);
+  if (text) text.textContent = cameraEnabled ? "Camera" : "Camera Off";
+}
+
+async function switchCamera() {
+  if (!localStream || callRecord?.call_type !== "video") return;
+
+  const oldTrack = localStream.getVideoTracks()[0];
+  if (!oldTrack) return;
+
+  const nextFacingMode = currentFacingMode === "user" ? "environment" : "user";
+
+  try {
+    const newStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: nextFacingMode } },
+      audio: false
+    });
+
+    const newTrack = newStream.getVideoTracks()[0];
+    if (!newTrack) return;
+
+    const sender = peerConnection?.getSenders().find(
+      item => item.track && item.track.kind === "video"
+    );
+
+    if (sender) await sender.replaceTrack(newTrack);
+
+    localStream.removeTrack(oldTrack);
+    oldTrack.stop();
+    localStream.addTrack(newTrack);
+
+    const localVideo = document.getElementById("localVideo");
+    if (localVideo) {
+      localVideo.srcObject = localStream;
+      localVideo.play().catch(() => {});
+    }
+
+    currentFacingMode = nextFacingMode;
+    cameraEnabled = true;
+    const button = document.getElementById("cameraButton");
+    const text = document.getElementById("cameraText");
+    if (button) button.classList.remove("active");
+    if (text) text.textContent = "Camera";
+  } catch (error) {
+    console.error(error);
+    showError("Unable to switch camera on this device.");
   }
 }
 
@@ -1603,6 +1706,13 @@ function toggleSpeaker() {
 
   audio.muted =
     !speakerEnabled;
+
+  const remoteVideo =
+    document.getElementById("remoteVideo");
+
+  if (remoteVideo) {
+    remoteVideo.muted = !speakerEnabled;
+  }
 
 
   document
