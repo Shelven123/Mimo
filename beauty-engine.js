@@ -1,4 +1,4 @@
-/* Mimo Beauty Engine v2.4 — landmark-aware reshape + protected skin/eye/makeup + portrait blur. */
+/* Mimo Beauty Engine v2.5 — stabilized landmarks + protected skin/eye/makeup + portrait blur. */
 export function createBeautyEngine(video, options = {}) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
@@ -10,7 +10,7 @@ export function createBeautyEngine(video, options = {}) {
   if (!softCtx) throw new Error("Canvas smoothing unavailable");
 
   let tracker = null, face = null, trackingStatus = "loading", lastDetect = 0, videoTime = -1, trackingError = "";
-  let segmenter=null, personMask=null, segmentationStatus="idle", lastSegment=0;
+  let segmenter=null, personMask=null, segmentationStatus="idle", lastSegment=0, stableFace=null;
   (async () => {
     const model = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
     const versions = ["0.10.14", "0.10.3"];
@@ -149,13 +149,13 @@ export function createBeautyEngine(video, options = {}) {
       }catch(e){console.warn("Mimo segmentation frame error",e)}
     }
     if(!personMask)return;
-    const original=document.createElement("canvas"),oc=original.getContext("2d");
-    const blurred=document.createElement("canvas"),bc=blurred.getContext("2d");
-    const mask=document.createElement("canvas"),mc=mask.getContext("2d");
+    const original=portraitBlur._o||(portraitBlur._o=document.createElement("canvas")),oc=original.getContext("2d");
+    const blurred=portraitBlur._b||(portraitBlur._b=document.createElement("canvas")),bc=blurred.getContext("2d");
+    const mask=portraitBlur._m||(portraitBlur._m=document.createElement("canvas")),mc=mask.getContext("2d");
     original.width=blurred.width=mask.width=width;original.height=blurred.height=mask.height=height;
     oc.drawImage(canvas,0,0);
     bc.filter="blur("+(3+amount*11).toFixed(1)+"px)";bc.drawImage(original,0,0);
-    const small=document.createElement("canvas"),sc=small.getContext("2d");
+    const small=portraitBlur._s||(portraitBlur._s=document.createElement("canvas")),sc=small.getContext("2d");
     small.width=personMask.w;small.height=personMask.h;
     const img=sc.createImageData(personMask.w,personMask.h);
     for(let i=0;i<personMask.data.length;i++){const v=personMask.data[i]===0?255:0,j=i*4;img.data[j]=img.data[j+1]=img.data[j+2]=255;img.data[j+3]=v}
@@ -177,7 +177,7 @@ export function createBeautyEngine(video, options = {}) {
       if (tracker && performance.now()-lastDetect>180) {
         lastDetect=performance.now();
         videoTime=video.currentTime;
-        try { face=tracker.detectForVideo(video,Math.round(video.currentTime*1000)).faceLandmarks?.[0] || null; }
+        try { const detected=tracker.detectForVideo(video,Math.round(video.currentTime*1000)).faceLandmarks?.[0] || null; if(detected){ if(!stableFace||stableFace.length!==detected.length) stableFace=detected.map(q=>({...q})); else { const alpha=.58; for(let i=0;i<detected.length;i++){ stableFace[i].x+=alpha*(detected[i].x-stableFace[i].x); stableFace[i].y+=alpha*(detected[i].y-stableFace[i].y); stableFace[i].z+=alpha*((detected[i].z||0)-(stableFace[i].z||0)); } } face=stableFace; } else face=null; }
         catch (error) { face=null; console.warn("Mimo face detection error:",error); }
       }
       if (settings.enabled) {
