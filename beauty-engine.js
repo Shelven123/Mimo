@@ -36,48 +36,54 @@ export function createBeautyEngine(video, options = {}) {
   function warpFace(width, height) {
     if (!face || !settings.enabled) return;
     const amount = name => Math.max(0, Math.min(1, (+settings[name] || 0) / 100));
-    const slim = amount("slim_face"), eyes = amount("big_eyes");
-    const chin = amount("chin"), nose = amount("nose");
+    const slim=amount("slim_face"), eyes=amount("big_eyes"), chin=amount("chin"), nose=amount("nose");
     if (!slim && !eyes && !chin && !nose) return;
-    const p = id => ({ x: face[id].x * width, y: face[id].y * height });
-    const left = p(234), right = p(454), jaw = p(152);
-    const faceSize = Math.hypot(right.x-left.x, right.y-left.y);
-    if (faceSize < 28) return;
-    // Face slimming: inverse-map pixels toward the original outer cheek.
-    // Only horizontal cheek compression is used here; the previous radial
-    // point-pull distorted the mouth/chin and made the lower face balloon.
-    if (slim) {
-      const src = ctx.getImageData(0,0,width,height);
-      const dst = ctx.createImageData(width,height);
-      const a=src.data,b=dst.data; b.set(a);
-      const center=p(1), top=p(10), bottom=p(152);
-      const half=Math.max(20,Math.abs(right.x-left.x)*0.56);
-      const yTop=top.y+faceSize*.18, yBottom=bottom.y+faceSize*.04;
-      const strength=0.22*slim;
-      for(let y=Math.max(0,Math.floor(yTop));y<Math.min(height,Math.ceil(yBottom));y++){
-        const yn=(y-(yTop+yBottom)/2)/Math.max(1,(yBottom-yTop)/2);
-        const vertical=Math.max(0,1-yn*yn);
-        for(let x=Math.max(0,Math.floor(center.x-half));x<Math.min(width,Math.ceil(center.x+half));x++){
-          const dx=x-center.x, nx=Math.abs(dx)/half;
-          if(nx>=1)continue;
-          const edge=nx*nx*(3-2*nx);
-          const sx=center.x+dx*(1+strength*vertical*(1-edge));
-          const sy=y;
-          const xx=Math.max(0,Math.min(width-1,sx)), x0=Math.floor(xx), x1=Math.min(width-1,x0+1), fx=xx-x0, to=(y*width+x)*4;
-          const a0=(y*width+x0)*4,a1=(y*width+x1)*4;
-          for(let k=0;k<3;k++)b[to+k]=a[a0+k]*(1-fx)+a[a1+k]*fx;
+    const p=id=>({x:face[id].x*width,y:face[id].y*height});
+    const L=p(234),R=p(454),C=p(1),J=p(152),T=p(10);
+    const faceW=Math.hypot(R.x-L.x,R.y-L.y);
+    if(faceW<28)return;
+    const src=ctx.getImageData(0,0,width,height), dst=ctx.createImageData(width,height);
+    const s=src.data,d=dst.data; d.set(s);
+    const zones=[];
+    const add=(pt,rx,ry,dx,dy,power)=>{if(power>0)zones.push({x:pt.x,y:pt.y,rx,ry,dx,dy,power})};
+    // Contour-aware slimming: pull jaw/cheek source outward so rendered contour moves inward.
+    const leftIds=[132,58,172,136,150], rightIds=[361,288,397,365,379];
+    leftIds.forEach((id,i)=>add(p(id),faceW*.20,faceW*.25,-faceW*(.018+.018*i)*slim,0,1));
+    rightIds.forEach((id,i)=>add(p(id),faceW*.20,faceW*.25, faceW*(.018+.018*i)*slim,0,1));
+    // Chin: lengthen only the lower tip, preserving mouth.
+    add(J,faceW*.24,faceW*.20,0,-faceW*.075*chin,1);
+    // Eyes: local radial magnification centered on iris/eye regions.
+    const eyeZones=[[33,133],[263,362]];
+    for(const [outer,inner] of eyeZones){const a=p(outer),b=p(inner),m={x:(a.x+b.x)/2,y:(a.y+b.y)/2};add(m,faceW*.16,faceW*.12,0,0,eyes*.75)}
+    // Nose: narrow around alae, not the whole mid-face.
+    add(p(98),faceW*.12,faceW*.14,-faceW*.035*nose,0,1);
+    add(p(327),faceW*.12,faceW*.14, faceW*.035*nose,0,1);
+    for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+      let sx=x,sy=y,hit=false;
+      for(const z of zones){
+        const nx=(x-z.x)/z.rx,ny=(y-z.y)/z.ry,q=nx*nx+ny*ny;
+        if(q>=1)continue;
+        const fall=(1-q)*(1-q)*z.power;
+        if(z.dx||z.dy){sx+=z.dx*fall;sy+=z.dy*fall}
+        else if(eyes){
+          const k=1-Math.min(.20,eyes*.16)*fall;
+          sx=z.x+(sx-z.x)*k; sy=z.y+(sy-z.y)*k;
         }
+        hit=true;
       }
-      ctx.putImageData(dst,0,0);
+      if(!hit)continue;
+      sx=Math.max(0,Math.min(width-1,sx));sy=Math.max(0,Math.min(height-1,sy));
+      const x0=Math.floor(sx),y0=Math.floor(sy),x1=Math.min(width-1,x0+1),y1=Math.min(height-1,y0+1),fx=sx-x0,fy=sy-y0,to=(y*width+x)*4;
+      const i00=(y0*width+x0)*4,i10=(y0*width+x1)*4,i01=(y1*width+x0)*4,i11=(y1*width+x1)*4;
+      for(let k=0;k<3;k++)d[to+k]=s[i00+k]*(1-fx)*(1-fy)+s[i10+k]*fx*(1-fy)+s[i01+k]*(1-fx)*fy+s[i11+k]*fx*fy;
     }
-    // Other landmark reshapes stay disabled until each deformation is tuned
-    // independently; they must not contaminate the verified Slim Face path.
+    ctx.putImageData(dst,0,0);
   }
   function render() {
     if (!active) return;
     const w = video.videoWidth, h = video.videoHeight;
     if (w && h && video.readyState >= 2) {
-      const width = Math.min(w, 360), height = Math.max(1, Math.round(h * width / w));
+      const width = Math.min(w, 480), height = Math.max(1, Math.round(h * width / w));
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = softCanvas.width = width;
         canvas.height = softCanvas.height = height;
