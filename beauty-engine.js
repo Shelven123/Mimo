@@ -1,4 +1,4 @@
-/* Mimo Beauty Engine v2.7.1 — local processing, face masks and Safari blur fallback. */
+/* Mimo Beauty Engine v2.7.2 — local processing, face masks and Safari blur fallback. */
 import {createBeautyBlur} from "./beauty-blur.js?v=20261010-v27";
 export function createBeautyEngine(video, options = {}) {
   const canvas = document.createElement("canvas");
@@ -261,13 +261,23 @@ export function createBeautyEngine(video, options = {}) {
           if(detected&&detected.length>=468&&detected.every(q=>Number.isFinite(q.x)&&Number.isFinite(q.y))){
             const span=Math.max(.05,Math.hypot(detected[454].x-detected[234].x,detected[454].y-detected[234].y));
             const jump=stableFace?Math.hypot(detected[1].x-stableFace[1].x,detected[1].y-stableFace[1].y):Infinity;
-            if(!stableFace||stableFace.length!==detected.length||jump>span*.25)stableFace=detected.map(q=>({...q}));
+            // A stationary nose does not imply a stationary face: scale and roll
+            // changes must reset the old contour instead of averaging two poses.
+            const axis=points=>({x:(points[454].x-points[234].x)*width,y:(points[454].y-points[234].y)*height});
+            const current=axis(detected),previous=stableFace?axis(stableFace):current;
+            const size=Math.hypot(current.x,current.y),oldSize=Math.hypot(previous.x,previous.y);
+            const roll=Math.abs(Math.atan2(current.x*previous.y-current.y*previous.x,current.x*previous.x+current.y*previous.y));
+            const poseChanged=oldSize>0&&(Math.abs(size/oldSize-1)>.08||roll>Math.PI/15);
+            if(!stableFace||stableFace.length!==detected.length||jump>span*.25||poseChanged)stableFace=detected.map(q=>({...q}));
             else{
               // Follow motion promptly; retain stronger stabilization for tiny tracking noise.
               const alpha=Math.min(.88,.58+jump/span*1.5);
               for(let i=0;i<detected.length;i++){
-                stableFace[i].x+=alpha*(detected[i].x-stableFace[i].x);stableFace[i].y+=alpha*(detected[i].y-stableFace[i].y);
-                stableFace[i].z+=alpha*((detected[i].z||0)-(stableFace[i].z||0));
+                // Mouth/eye motion can change while the nose remains still.
+                const motion=Math.hypot(detected[i].x-stableFace[i].x,detected[i].y-stableFace[i].y);
+                const follow=motion>span*.025?1:alpha;
+                stableFace[i].x+=follow*(detected[i].x-stableFace[i].x);stableFace[i].y+=follow*(detected[i].y-stableFace[i].y);
+                stableFace[i].z+=follow*((detected[i].z||0)-(stableFace[i].z||0));
               }
             }
             face=stableFace;
@@ -318,7 +328,7 @@ export function createBeautyEngine(video, options = {}) {
     getTrackingStatus(){return trackingStatus;},
     getTrackingError(){return trackingError;},
     getFaceDetected(){return !!face;},
-    getDebug(){return {version:"2.7.1",trackingStatus,segmentationStatus,segmentationError,processingError,blurMaskReady:!!personMask,canvasFilterSupported:blur.native,blurBackend:blur.native?"native":"cpu",warpedPixels,targetFps,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0,qualityWidth,avgFrameMs:renderSamples.length?Math.round(renderSamples.reduce((a,b)=>a+b,0)/renderSamples.length):0};},
+    getDebug(){return {version:"2.7.2",trackingStatus,segmentationStatus,segmentationError,processingError,blurMaskReady:!!personMask,canvasFilterSupported:blur.native,blurBackend:blur.native?"native":"cpu",warpedPixels,targetFps,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0,qualityWidth,avgFrameMs:renderSamples.length?Math.round(renderSamples.reduce((a,b)=>a+b,0)/renderSamples.length):0};},
     start(fps = 24) {
       if(disposed)throw new Error("Beauty engine disposed");
       targetFps=Math.max(1,Math.min(30,Number(fps)||24));

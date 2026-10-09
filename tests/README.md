@@ -1,4 +1,4 @@
-# Beauty v2.7 verification
+# Beauty v2.7.2 verification
 
 Run on Node.js 24 using the locked test dependencies:
 
@@ -7,11 +7,11 @@ npm ci --ignore-scripts --no-audit --no-fund
 npm test
 ```
 
-Eleven engine tests exercise actual Canvas pixel processing with **fake MediaPipe outputs**. Four JSDOM tests exercise page handlers with **fake camera/auth/engine**. They do not load real models or simulate iPhone Safari. The regression workflow runs relevant PRs and main pushes. Browser visual automation was not performed (browser archive download failed).
+Fifteen engine tests exercise actual Canvas pixel processing with **fake MediaPipe outputs**. Four JSDOM tests exercise page handlers with **fake camera/auth/engine**. They do not load real models or simulate iPhone Safari. The regression workflow runs relevant PRs and main pushes. Browser visual automation was not performed (browser archive download failed).
 
 ## Consolidated iPhone Safari acceptance
 
-Use the unified `beauty-settings.html` page with v2.7 visible. Record device/iOS version and screenshots or video of any failure. Keep a patterned background and even light. Set all sliders to zero and Makeup off before testing each effect separately.
+Use the unified `beauty-settings.html` page with v2.7.2 visible. Record device/iOS version and screenshots or video of any failure. Keep a patterned background and even light. Set all sliders to zero and Makeup off before testing each effect separately.
 
 | Check | Expected / what to record | Current state |
 | --- | --- | --- |
@@ -39,3 +39,6 @@ Beauty remains separate from Video Call until these results are accepted. Do not
 - Check all reshape sliders on tilted/moving faces at 0/50/100. Effects remain local; this is not whole-face radial compression.
 - Run background blur on browsers with native and CPU backend; inspect mask edges and performance.
 - A processing error should leave the raw preview usable and display a diagnostic.
+
+## v2.7.2 status
+User generally accepted the v2.7.1 layout and effects. This is not a recorded prolonged motion/performance test. Scale/roll changes with a stationary nose, mouth-expression changes, and face loss/reacquisition now have pixel regressions with fake landmarks. For device acceptance, turn/tilt the head, move closer/farther, speak and leave/re-enter frame; then run three minutes and flip cameras. Device acceptance of v2.7.2 remains pending.
