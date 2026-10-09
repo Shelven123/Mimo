@@ -1,21 +1,38 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Mimo - Beauty</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f7f7f9;color:#222}.header{height:64px;background:#fff;border-bottom:1px solid #eee;display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:10}.back{width:38px;height:38px;border:0;border-radius:50%;background:#f6f6f8;font-size:26px}.title{font-size:20px;font-weight:700;margin-left:12px}.wrap{max-width:620px;margin:auto;padding:14px 14px 40px}.card{background:#fff;border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 3px 12px rgba(0,0,0,.04)}.row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.name{font-weight:650}.sub{font-size:12px;color:#999;margin-top:4px}.switch{width:50px;height:30px}.presets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.preset{border:1px solid #eee;background:#fafafa;border-radius:12px;padding:12px 4px;font-weight:650}.preset.active{border-color:#222;background:#222;color:#fff}.slider{margin:17px 0}.slider-head{display:flex;justify-content:space-between;font-size:14px}.slider input{width:100%;margin-top:8px}.save{width:100%;border:0;border-radius:15px;padding:15px;background:#222;color:#fff;font-size:16px;font-weight:700}.note{font-size:12px;color:#999;line-height:1.5;margin-top:10px}
-</style></head><body><div class="header"><button class="back" onclick="history.back()">‹</button><div class="title">Beauty</div></div><div class="wrap">
-<div class="card"><div class="row"><div><div class="name">✨ Beauty</div><div class="sub">Use your saved beauty preset during video calls</div></div><input id="enabled" class="switch" type="checkbox"></div><div class="presets"><button class="preset" data-preset="natural">Natural</button><button class="preset" data-preset="soft">Soft</button><button class="preset" data-preset="glam">Glam</button></div></div>
-<div class="card" id="sliders"></div>
-<div class="card"><div class="row"><div><div class="name">💄 Makeup</div><div class="sub">Enable makeup effects when supported</div></div><input id="makeup_enabled" class="switch" type="checkbox"></div><div class="slider"><div class="slider-head"><span>Background Blur</span><b id="background_blur_v">0</b></div><input id="background_blur" type="range" min="0" max="100" value="0"></div><div class="note">These settings save your final Beauty preset. Real-time face reshaping, makeup and AR require the Beauty processing engine and will be connected to Video Call separately.</div></div>
-<button id="previewBtn" type="button" style="width:100%;border:0;text-align:center;background:#ede8ff;color:#33236b;padding:15px;border-radius:15px;font-weight:700;margin-bottom:12px">📷 Open Live Beauty Preview</button><button class="save" onclick="save()">Save Beauty Preset</button></div>
-<script>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Mimo Beauty</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0f0f14;color:#fff;font-family:Arial,sans-serif}.top{height:62px;padding:0 16px;display:flex;align-items:center;gap:14px;position:sticky;top:0;background:#0f0f14;z-index:10}.back{border:0;background:#24242b;color:#fff;border-radius:50%;width:38px;height:38px;font-size:25px}.top b{font-size:19px}.camera{height:min(52vh,520px);background:#000;display:grid;place-items:center;overflow:hidden}.camera canvas{width:100%;height:100%;object-fit:cover}.panel{max-width:620px;margin:auto;padding:14px 16px 40px}.switchrow{display:flex;align-items:center;justify-content:space-between;margin:4px 0 14px}.presets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.preset{padding:11px;border:1px solid #383842;border-radius:12px;background:#1c1c23;color:#fff;font-weight:700}.preset.active{background:#fff;color:#111}.slider{margin:14px 0}.sliderhead{display:flex;justify-content:space-between;font-size:14px;margin-bottom:7px}.slider input{width:100%}.actions{display:flex;gap:10px;margin-top:18px}.actions button{flex:1;border:0;border-radius:13px;padding:14px;font-weight:700}.flip{background:#292933;color:#fff}.save{background:#fff;color:#111}.status{font-size:12px;color:#aaa;line-height:1.5;margin-top:12px}#source{display:none}
+</style></head><body>
+<header class="top"><button class="back" id="back">‹</button><b>✨ Beauty</b></header>
+<div class="camera" id="stage"><span>Opening camera…</span></div><video id="source" autoplay muted playsinline></video>
+<main class="panel">
+<div class="switchrow"><b>Beauty</b><label><input id="enabled" type="checkbox"> On</label></div>
+<div class="presets"><button class="preset" data-preset="natural">Natural</button><button class="preset" data-preset="soft">Soft</button><button class="preset" data-preset="glam">Glam</button></div>
+<div id="sliders"></div>
+<div class="switchrow"><b>Makeup</b><input id="makeup_enabled" type="checkbox"></div>
+<div class="actions"><button class="flip" id="flip">Flip Camera</button><button class="save" id="save">Save</button></div>
+<p class="status" id="status">Loading your Beauty settings…</p>
+</main>
+<script type="module">
+import {createBeautyEngine} from "./beauty-engine.js";
 const sb=window.supabase.createClient("https://zhhgiwqehwuwzxnqbnth.supabase.co","sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ");
-const fields=[["smoothing","Smoothing"],["whitening","Whitening"],["rosy","Rosy Tone"],["slim_face","Slim Face"],["big_eyes","Big Eyes"],["chin","Chin"],["nose","Nose"],["eye_brightening","Eye Brightening"],["dark_circle","Dark Circle"]];
-let preset="natural",user;
-const box=document.getElementById("sliders");
-fields.forEach(([id,label])=>box.insertAdjacentHTML("beforeend",'<div class="slider"><div class="slider-head"><span>'+label+'</span><b id="'+id+'_v">0</b></div><input id="'+id+'" type="range" min="0" max="100" value="0"></div>'));
-function bind(id){const e=document.getElementById(id),v=document.getElementById(id+"_v");e.oninput=()=>{v.textContent=e.value;preset="custom";paint()};v.textContent=e.value}
-fields.forEach(x=>bind(x[0]));bind("background_blur");
+const defs=[["smoothing","Smoothing"],["whitening","Whitening"],["rosy","Rosy Tone"],["slim_face","Slim Face"],["big_eyes","Big Eyes"],["chin","Chin"],["nose","Nose"],["eye_brightening","Eye Brightening"],["dark_circle","Dark Circle"],["background_blur","Background Blur"]];
+const presetValues={natural:[25,10,8,0,0,0,0,10,10,0],soft:[40,20,15,10,8,5,5,20,20,0],glam:[55,30,22,25,20,15,12,30,30,0]};
+let user=null,camera=null,engine=null,facing="user",preset="natural",saved={};
+const stage=document.getElementById("stage"),video=document.getElementById("source"),status=document.getElementById("status"),box=document.getElementById("sliders");
+defs.forEach(([id,label])=>{box.insertAdjacentHTML("beforeend",'<div class="slider"><div class="sliderhead"><span>'+label+'</span><b id="'+id+'_v">0</b></div><input id="'+id+'" type="range" min="0" max="100" value="0"></div>')});
+function values(){const o={enabled:document.getElementById("enabled").checked,makeup_enabled:document.getElementById("makeup_enabled").checked};defs.forEach(([k])=>o[k]=+document.getElementById(k).value);return o}
 function paint(){document.querySelectorAll(".preset").forEach(b=>b.classList.toggle("active",b.dataset.preset===preset))}
-const values={natural:[25,10,8,0,0,0,0,10,10],soft:[40,20,15,10,8,5,5,20,20],glam:[55,30,22,25,20,15,12,30,30]};
-document.querySelectorAll(".preset").forEach(b=>b.onclick=()=>{preset=b.dataset.preset;values[preset].forEach((v,i)=>{document.getElementById(fields[i][0]).value=v;document.getElementById(fields[i][0]+"_v").textContent=v});paint()});
-async function init(){const r=await sb.auth.getUser();user=r.data.user;if(!user)return location.replace("login.html");const q=await sb.from("beauty_settings").select("*").eq("user_id",user.id).maybeSingle();if(q.data){preset=q.data.preset;["enabled","makeup_enabled"].forEach(k=>document.getElementById(k).checked=q.data[k]);[...fields.map(x=>x[0]),"background_blur"].forEach(k=>{document.getElementById(k).value=q.data[k];document.getElementById(k+"_v").textContent=q.data[k]})}paint()}
-async function save(showMessage=true){const data={user_id:user.id,preset,enabled:document.getElementById('enabled').checked,makeup_enabled:document.getElementById('makeup_enabled').checked};[...fields.map(x=>x[0]),"background_blur"].forEach(k=>data[k]=+document.getElementById(k).value);const r=await sb.from("beauty_settings").upsert(data);if(r.error){if(showMessage)alert(r.error.message);return false}if(showMessage)alert("Beauty preset saved ✅");return true}
-document.getElementById("previewBtn").onclick=async()=>{await save(false);location.href="beauty-preview.html?return=settings"};\ninit();\n</script></body></html>
+function refresh(custom=true){defs.forEach(([k])=>document.getElementById(k+"_v").textContent=document.getElementById(k).value);if(custom){preset="custom";paint()}if(engine)engine.update(values())}
+defs.forEach(([k])=>document.getElementById(k).addEventListener("input",()=>refresh(true)));
+document.getElementById("enabled").onchange=()=>refresh(false);
+document.querySelectorAll(".preset").forEach(b=>b.onclick=()=>{preset=b.dataset.preset;presetValues[preset].forEach((v,i)=>document.getElementById(defs[i][0]).value=v);refresh(false);paint()});
+async function persist(show=true){if(!user)return false;const r=await sb.from("beauty_settings").upsert({user_id:user.id,...saved,...values(),preset});if(show)status.textContent=r.error?r.error.message:"Beauty settings saved ✓";return !r.error}
+async function openCamera(){if(engine){engine.stop();engine=null}if(camera)camera.getTracks().forEach(t=>t.stop());camera=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}},audio:false});video.srcObject=camera;await video.play();engine=createBeautyEngine(video,values());engine.start();stage.replaceChildren(engine.canvas);status.textContent="Live Beauty is active. Adjust everything here — no separate preview page."}
+document.getElementById("flip").onclick=async()=>{facing=facing==="user"?"environment":"user";try{await openCamera()}catch(e){status.textContent=e.message}};
+document.getElementById("save").onclick=()=>persist(true);
+document.getElementById("back").onclick=async()=>{await persist(false);location.replace("settings.html")};
+(async()=>{try{const r=await sb.auth.getUser();user=r.data.user;if(!user)return location.replace("login.html");const q=await sb.from("beauty_settings").select("*").eq("user_id",user.id).maybeSingle();saved=q.data||{};preset=saved.preset||"natural";document.getElementById("enabled").checked=!!saved.enabled;document.getElementById("makeup_enabled").checked=!!saved.makeup_enabled;defs.forEach(([k])=>document.getElementById(k).value=saved[k]??0);refresh(false);paint();await openCamera()}catch(e){status.textContent="Beauty camera unavailable: "+e.message}})();
+window.addEventListener("pagehide",()=>{if(engine)engine.stop();if(camera)camera.getTracks().forEach(t=>t.stop())});
+</script></body></html>
