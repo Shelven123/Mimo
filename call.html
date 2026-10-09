@@ -709,18 +709,23 @@ async function startOutgoingCall() {
     await createOffer();
   } catch (callError) {
     console.error(callError);
-    showError(callError.message || "Unable to prepare voice connection.");
-    setStatus("Voice connection failed");
 
-    if (callId) {
-      await supabaseClient
-        .from("calls")
-        .update({
-          status: "ended",
-          ended_at: new Date().toISOString()
-        })
-        .eq("id", callId);
-    }
+    const isVideo = callRecord?.call_type === "video";
+
+    showError(
+      isVideo
+        ? "Camera or microphone is unavailable. Allow Camera and Microphone for Mimo, then try again."
+        : (callError.message || "Unable to prepare voice connection.")
+    );
+
+    setStatus(
+      isVideo
+        ? "Camera / microphone permission required"
+        : "Voice connection failed"
+    );
+
+    // Keep the call screen open so a permission/device problem does not
+    // look like an automatic hang-up. The user can press End or retry.
   }
 
 }
