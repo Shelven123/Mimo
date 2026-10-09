@@ -1,4 +1,4 @@
-/* Mimo Beauty Engine v2.3 — landmark-aware reshape + protected skin/eye/makeup processing. */
+/* Mimo Beauty Engine v2.4 — landmark-aware reshape + protected skin/eye/makeup + portrait blur. */
 export function createBeautyEngine(video, options = {}) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
@@ -10,6 +10,7 @@ export function createBeautyEngine(video, options = {}) {
   if (!softCtx) throw new Error("Canvas smoothing unavailable");
 
   let tracker = null, face = null, trackingStatus = "loading", lastDetect = 0, videoTime = -1, trackingError = "";
+  let segmenter=null, personMask=null, segmentationStatus="idle", lastSegment=0;
   (async () => {
     const model = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
     const versions = ["0.10.14", "0.10.3"];
@@ -25,6 +26,13 @@ export function createBeautyEngine(video, options = {}) {
         });
         trackingStatus = "ready";
         trackingError = "";
+        // Load portrait segmentation independently; Beauty still works if this optional model is unavailable.
+        try {
+          segmentationStatus="loading";
+          const segModel="https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.task";
+          segmenter=await lib.ImageSegmenter.createFromOptions(vision,{baseOptions:{modelAssetPath:segModel,delegate:"CPU"},runningMode:"VIDEO",outputCategoryMask:true,outputConfidenceMasks:false});
+          segmentationStatus="ready";
+        } catch(segError){segmentationStatus="unavailable";console.warn("Mimo portrait segmentation unavailable",segError)}
         return;
       } catch (error) {
         trackingError = version + ": " + (error?.message || String(error));
@@ -128,6 +136,33 @@ export function createBeautyEngine(video, options = {}) {
     ctx.fillStyle="rgba(210,48,82,.14)";ctx.beginPath();ctx.moveTo(lip[0].x,lip[0].y);for(let i=1;i<lip.length;i++)ctx.lineTo(lip[i].x,lip[i].y);ctx.closePath();ctx.fill();
     ctx.restore();
   }
+  function portraitBlur(width,height){
+    const amount=Math.max(0,Math.min(1,(+settings.background_blur||0)/100));
+    if(!amount||!segmenter)return;
+    if(performance.now()-lastSegment>260){
+      lastSegment=performance.now();
+      try{
+        const r=segmenter.segmentForVideo(video,Math.round(video.currentTime*1000));
+        const m=r.categoryMask;
+        if(m){const raw=m.getAsUint8Array();personMask={data:new Uint8Array(raw),w:m.width,h:m.height};}
+        if(r.close)r.close();
+      }catch(e){console.warn("Mimo segmentation frame error",e)}
+    }
+    if(!personMask)return;
+    const original=document.createElement("canvas"),oc=original.getContext("2d");
+    const blurred=document.createElement("canvas"),bc=blurred.getContext("2d");
+    const mask=document.createElement("canvas"),mc=mask.getContext("2d");
+    original.width=blurred.width=mask.width=width;original.height=blurred.height=mask.height=height;
+    oc.drawImage(canvas,0,0);
+    bc.filter="blur("+(3+amount*11).toFixed(1)+"px)";bc.drawImage(original,0,0);
+    const small=document.createElement("canvas"),sc=small.getContext("2d");
+    small.width=personMask.w;small.height=personMask.h;
+    const img=sc.createImageData(personMask.w,personMask.h);
+    for(let i=0;i<personMask.data.length;i++){const v=personMask.data[i]===0?255:0,j=i*4;img.data[j]=img.data[j+1]=img.data[j+2]=255;img.data[j+3]=v}
+    sc.putImageData(img,0,0);mc.filter="blur(4px)";mc.drawImage(small,0,0,width,height);
+    bc.globalCompositeOperation="destination-out";bc.drawImage(mask,0,0);
+    ctx.drawImage(blurred,0,0);ctx.drawImage(original,0,0);
+  }
   function render() {
     if (!active) return;
     const w = video.videoWidth, h = video.videoHeight;
@@ -149,6 +184,7 @@ export function createBeautyEngine(video, options = {}) {
         warpFace(width,height);
         regionalBeauty(width,height);
         makeupBeauty(width,height);
+        portraitBlur(width,height);
         // Face reshaping controls are intentionally not approximated with fixed
         // screen regions. That produced visible oval seams and rectangular eye
         // artifacts when the face moved. Proper landmark-based warping will be
@@ -194,7 +230,7 @@ export function createBeautyEngine(video, options = {}) {
     getTrackingStatus(){return trackingStatus;},
     getTrackingError(){return trackingError;},
     getFaceDetected(){return !!face;},
-    getDebug(){return {trackingStatus,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0};},
+    getDebug(){return {trackingStatus,segmentationStatus,faceDetected:!!face,landmarkCount:face?.length||0,videoTime,slimFace:+settings.slim_face||0,bigEyes:+settings.big_eyes||0};},
     start(fps = 24) {
       if (!stream) stream = canvas.captureStream(fps);
       if (!active) { active = true; render(); }
