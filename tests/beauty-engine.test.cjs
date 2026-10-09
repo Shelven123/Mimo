@@ -31,7 +31,7 @@ async function fixture(options = {}, deferred = false, config={}) {
   }
   if(config.rotate){for(const p of points){const x=(p.x-.5)*120,y=(p.y-.5)*160;p.x=(60-y)/120;p.y=(80+x)/160;}}
   Object.assign(video,{videoWidth:120,videoHeight:160,readyState:4,currentTime:1});
-  const tracker = {detectForVideo(input,timestamp){stats.detect.push(timestamp);return {faceLandmarks:[points]};},close(){stats.trackerClosed++;}};
+  const tracker = {detectForVideo(input,timestamp){stats.detect.push(timestamp);return {faceLandmarks:stats.missing?[]:[points]};},close(){stats.trackerClosed++;}};
   const segmenter = {segmentForVideo(input,timestamp){stats.segment.push(timestamp);return {
     categoryMask:{width:120,height:160,getAsUint8Array(){return Uint8Array.from({length:120*160},(_,i)=>i%120<60?1:0);}},
     close(){stats.masksClosed++;}
@@ -135,4 +135,30 @@ test('Maximum contour controls stay bounded even when enabled together',async()=
   for(let y=0;y<160;y++)for(let x=0;x<120;x++)
     assert.ok(Math.abs(pixel(f.engine.canvas,x,y)[0]-pixel(f.video,x,y)[0])<=6,`excessive displacement at ${x},${y}`);
   f.engine.dispose();
+});
+
+test('Scale and roll changes with a stationary nose reset the old contour',async()=>{
+  for(const change of [points=>{for(const p of points){p.x=.5+(p.x-.5)*1.2;p.y=.5+(p.y-.5)*1.2;}},points=>{for(const p of points){const x=(p.x-.5)*120,y=(p.y-.5)*160,a=Math.PI/9;p.x=.5+(x*Math.cos(a)-y*Math.sin(a))/120;p.y=.5+(x*Math.sin(a)+y*Math.cos(a))/160;}}]){
+    const options={slim_face:100,chin:100,nose:100,big_eyes:100};
+    const moving=await fixture(options),fresh=await fixture(options);moving.engine.start();
+    change(moving.points);change(fresh.points);moving.tick();fresh.engine.start();
+    assert.deepEqual(moving.engine.canvas.getContext('2d').getImageData(0,0,120,160).data,fresh.engine.canvas.getContext('2d').getImageData(0,0,120,160).data);
+    moving.engine.dispose();fresh.engine.dispose();
+  }
+});
+
+test('Face loss clears reshape and reacquisition does not reuse the old pose',async()=>{
+  const f=await fixture({slim_face:100});f.engine.start();f.stats.missing=true;f.tick();
+  assert.equal(f.engine.getFaceDetected(),false);
+  assert.deepEqual(f.engine.canvas.getContext('2d').getImageData(0,0,120,160).data,f.video.getContext('2d').getImageData(0,0,120,160).data);
+  for(const p of f.points)p.x+=.08;f.stats.missing=false;f.tick();
+  assert.equal(f.engine.getFaceDetected(),true);assert.ok(f.engine.getDebug().warpedPixels>0);f.engine.dispose();
+});
+
+test('Opening the mouth follows local landmarks even when the nose is stationary',async()=>{
+  const moving=await fixture({makeup_enabled:true}),fresh=await fixture({makeup_enabled:true});moving.engine.start();
+  for(const f of [moving,fresh])for(const id of [17,84,91,321,314,14,87,178,88,95,317,402,318,324])f.points[id].y+=.035;
+  moving.tick();fresh.engine.start();
+  assert.deepEqual(moving.engine.canvas.getContext('2d').getImageData(0,0,120,160).data,fresh.engine.canvas.getContext('2d').getImageData(0,0,120,160).data);
+  moving.engine.dispose();fresh.engine.dispose();
 });
