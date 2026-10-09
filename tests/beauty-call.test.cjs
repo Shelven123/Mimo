@@ -63,7 +63,7 @@ test('Saved Beauty sends processed video; off restores raw; camera off disables 
   const f=await call();await f.t.initializeCallBeauty();const p=f.state.pipelines[0];
   assert.equal(f.sender.track,p.track);assert.equal(f.t.get().localStream,f.raw);assert.equal(p.stream.getAudioTracks()[0],f.raw.getAudioTracks()[0]);
   f.t.toggleCamera();assert.equal(p.track.enabled,false);assert.equal(f.raw.getVideoTracks()[0].enabled,false);
-  await f.t.toggleCallBeauty();assert.equal(f.sender.track,f.raw.getVideoTracks()[0]);assert.equal(f.sender.track.enabled,false);assert.equal(p.disposed,1);assert.equal(f.raw.getAudioTracks()[0].stops,0);f.dom.window.close();
+  await f.t.toggleCallBeauty();assert.equal(f.sender.track,f.raw.getVideoTracks()[0]);assert.equal(f.sender.track.enabled,false);assert.equal(p.disposed,0);assert.equal(f.raw.getAudioTracks()[0].stops,0);f.t.end();f.dom.window.close();
 });
 test('Failed capture or replaceTrack keeps raw video and original microphone',async()=>{
   for(const fail of [true,false]){
@@ -101,7 +101,7 @@ test('Rejected raw restoration retains a live output and can be retried',async()
   f.sender.replaceTrack=async()=>{throw Error('temporary RTC failure');};await f.t.toggleCallBeauty();
   assert.equal(f.sender.track,p.track);assert.equal(p.disposed,0);
   f.sender.replaceTrack=replace;await f.t.toggleCallBeauty();
-  assert.equal(f.sender.track,f.raw.getVideoTracks()[0]);assert.equal(p.disposed,1);f.dom.window.close();
+  assert.equal(f.sender.track,f.raw.getVideoTracks()[0]);assert.equal(p.disposed,0);f.t.end();f.dom.window.close();
 });
 
 test('Watchdog detects stalled rendering but does not fail a disabled camera',async()=>{
@@ -122,4 +122,25 @@ test('Slider changes during model startup reach the engine before output selecti
   let release;const gate=new Promise(r=>release=r),f=await call({gate});const loading=f.t.initializeCallBeauty();await flush();f.t.openCallBeautyPanel();
   const slider=f.w.document.querySelector('[data-beauty-key="big_eyes"]');slider.value='80';slider.dispatchEvent(new f.w.Event('input'));release();await loading;
   assert.equal(f.state.pipelines[0].updates[0].big_eyes,80);f.t.end();f.dom.window.close();
+});
+
+test('Repeated Beauty off/on reuses the loaded engine and restores updated settings',async()=>{
+  const f=await call();await f.t.initializeCallBeauty();const p=f.state.pipelines[0];
+  await f.t.toggleCallBeauty();assert.equal(f.sender.track,f.raw.getVideoTracks()[0]);assert.equal(p.updates.at(-1).enabled,false);
+  await f.t.toggleCallBeauty();assert.equal(f.sender.track,p.track);assert.equal(p.updates.at(-1).enabled,true);
+  assert.equal(f.state.pipelines.length,1);assert.equal(p.disposed,0);f.t.end();assert.equal(p.disposed,1);f.dom.window.close();
+});
+
+test('Rapid off during cached output replacement keeps the reusable engine alive',async()=>{
+  const f=await call();await f.t.initializeCallBeauty();const p=f.state.pipelines[0];await f.t.toggleCallBeauty();
+  let release;const gate=new Promise(r=>release=r),replace=f.sender.replaceTrack;
+  f.sender.replaceTrack=async function(track){if(track===p.track)await gate;return replace.call(this,track);};
+  const on=f.t.toggleCallBeauty();await flush();const off=f.t.toggleCallBeauty();release();await Promise.all([on,off]);
+  assert.equal(f.sender.track,f.raw.getVideoTracks()[0]);assert.equal(p.disposed,0);assert.equal(f.t.get().beautyPipeline,p);f.t.end();f.dom.window.close();
+});
+
+test('Beauty panel checkbox switches raw/processed video without rebuilding the model',async()=>{
+  const f=await call();await f.t.initializeCallBeauty();f.t.openCallBeautyPanel();const enabled=f.w.document.getElementById('callBeautyEnabled'),p=f.state.pipelines[0];
+  enabled.checked=false;await enabled.onchange();assert.equal(f.sender.track,f.raw.getVideoTracks()[0]);assert.equal(enabled.checked,false);
+  enabled.checked=true;await enabled.onchange();assert.equal(f.sender.track,p.track);assert.equal(enabled.checked,true);assert.equal(f.state.pipelines.length,1);f.t.end();f.dom.window.close();
 });

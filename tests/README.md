@@ -50,3 +50,6 @@ Save your Beauty settings and start a video call. The remote partner must confir
 
 ## Video-call feedback and live adjustment
 User reports only Smoothing/Whitening/Rosy working in VIDEO CALL; other effects ineffective. Do not call this resolved or accepted. Open Adjust under the call Beauty control; verify actual loaded Slim Face value, move it 0/100 and check the status reports processed video and detected face. Original-camera or no-face status means reshape is not currently active. 33 automated checks include live parameter updates and changed values during startup; they do not establish the cause of the user's phone issue.
+
+## Retained call model
+36 tests now cover engine retention across off/on and rapid off during cached sender replacement. The Beauty circle opens the adjustment panel; its checkbox switches between original camera and processed output. Off retains the model but disables effects; flip/hangup dispose it. The user recording shows loading-face status after a toggle, with no panel values captured. Actual call reshape remains unverified and unaccepted.
