@@ -59,3 +59,6 @@ User reports only Smoothing/Whitening/Rosy working in VIDEO CALL; other effects 
 
 ## Contact deployment verification (2026-10-10 UTC)
 Supersedes the prepared status above: the approved migration is deployed. Production SQL smoke with generated synthetic Auth users exercised the live policies/triggers, allowed contact and denied unauthorized actions; all writes rolled back. Seven policies, three identity triggers and RPC grants checked. Frontend release tracked in PR #10. New two-account device flows remain Not Verified. Prior Beauty/call effects have since been USER VERIFIED, as recorded in the master handover; earlier acceptance-pending entries are historical.
+
+## Message center and receipts (2026-10-10 UTC)
+60 automated checks now cover the accepted Beauty/call paths, contact controls, isolated PostgreSQL inbox/receipt authorization, recipient-only explicit-ID acknowledgements, sender forgery protection, late-arrival unread preservation, hidden/error/concurrent/disposal behavior, safe inbox text/URLs, duplicate chat rows and logout during an outstanding inbox request. Production migration and rolled-back synthetic-user smoke passed. New real-device inbox and Sent/Seen acceptance remains Not Verified. Block entry/own operation was USER VERIFIED in the 15:25 phone screenshot; two-account deny/unblock acceptance is still separate.
