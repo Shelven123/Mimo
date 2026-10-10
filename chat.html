@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,6 +45,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .host-avatar {
@@ -58,7 +58,13 @@ body {
 .host-name {
   font-size: 16px;
   font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.host-info > div { min-width: 0; }
+.host-avatar { flex-shrink: 0; }
 
 .host-status {
   font-size: 12px;
@@ -161,6 +167,9 @@ body {
   opacity: 0.5;
   cursor: default;
 }
+  .contact-actions{display:flex;margin-left:auto;padding-left:12px;flex-shrink:0}
+  .block-contact{border:1px solid #ef5b82;border-radius:999px;background:#fff;color:#d83e68;padding:8px 18px;font-weight:700;font-size:14px}
+  .block-contact:disabled{opacity:.45}
 </style>
 <script src="./contact-permissions.js?v=20261010-contact1"></script>
 </head>
@@ -199,10 +208,11 @@ body {
 
   </div>
 
+<div class="contact-actions" aria-label="Contact actions">
+  <button id="blockContact" class="block-contact" type="button" disabled onclick="toggleChatBlock()">Block</button>
 </div>
 
-
-<div style="text-align:right;padding:8px 16px"><button id="blockContact" type="button" disabled onclick="toggleChatBlock()">Block</button></div>
+</div>
 
 <div
   id="chatArea"
@@ -262,7 +272,7 @@ const params =
   );
 
 const hostId =
-  params.get("host");
+  params.get("host") || params.get("id") || params.get("user");
 
 
 /* =========================
@@ -297,8 +307,9 @@ async function init() {
   if (!hostId) {
 
     showError(
-      "Host not found."
+      "Choose a person from the home page to open a chat."
     );
+    document.getElementById("hostName").textContent = "Choose a contact";
 
     return;
   }
@@ -1207,4 +1218,3 @@ init();
 
 </body>
 </html>
-```
