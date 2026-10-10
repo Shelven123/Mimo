@@ -223,6 +223,7 @@
     }
   </style>
 <script src="./contact-permissions.js?v=20261010-contact1"></script>
+<script src="./call-preferences.js?v=20261010-prefs1"></script>
 </head>
 
 <body>
@@ -301,7 +302,7 @@
     <div class="control">
 
       <button
-        id="muteButton"
+        id="muteButton" disabled
         class="circle"
         onclick="toggleMute()"
       >
@@ -334,14 +335,14 @@
     <div class="control">
 
       <button
-        id="speakerButton"
+        id="speakerButton" disabled
         class="circle"
         onclick="toggleSpeaker()"
       >
         🔊
       </button>
 
-      <div>
+      <div id="speakerText">
         Speaker
       </div>
 
@@ -350,7 +351,7 @@
     <div id="cameraControl" class="control" style="display:none">
 
       <button
-        id="cameraButton"
+        id="cameraButton" disabled
         class="circle"
         onclick="toggleCamera()"
       >
@@ -467,6 +468,7 @@ let callStatusPoller = null;
 let connectedAt = null;
 
 let muted = false;
+let callPreferencesLoaded = false;
 let speakerEnabled = true;
 let cameraEnabled = true;
 let currentFacingMode = "user";
@@ -522,6 +524,14 @@ async function init() {
       setStatus("Login required");
       return;
     }
+
+    const preferences=await MimoCallPreferences.load(supabaseClient,currentUser.id);
+    if(ended)return;
+    muted=!preferences.microphone_enabled;
+    cameraEnabled=preferences.camera_enabled;
+    speakerEnabled=preferences.speaker_enabled;
+    callPreferencesLoaded=true;
+    paintCallMediaControls();
 
     const { data: myProfile } = await supabaseClient
       .from("profiles")
@@ -592,10 +602,12 @@ async function init() {
 
   } catch (error) {
 
+    if(ended)return;
+
     console.error(error);
 
     showError(
-      error.message ||
+      (!callPreferencesLoaded ? 'Unable to load your call settings. Reload to retry; microphone and camera have not started.' : error.message) ||
       "Unable to start call."
     );
 
@@ -916,6 +928,10 @@ async function prepareMedia() {
           : false
       });
 
+  localStream.getAudioTracks().forEach(track=>{track.enabled=!muted;});
+  localStream.getVideoTracks().forEach(track=>{track.enabled=cameraEnabled;});
+  paintCallMediaControls();
+
   if (callRecord?.call_type === "video") {
     enableVideoUI();
     await attachLocalPreview();
@@ -925,7 +941,7 @@ async function prepareMedia() {
     const localVideo = document.getElementById("localVideo");
     await new Promise(resolve => setTimeout(resolve, 400));
 
-    if (localVideo && localVideo.videoWidth === 0) {
+    if (cameraEnabled && localVideo && localVideo.videoWidth === 0) {
       const firstTrack = localStream.getVideoTracks()[0];
       if (firstTrack) {
         firstTrack.stop();
@@ -938,6 +954,7 @@ async function prepareMedia() {
       });
       const retryTrack = retryStream.getVideoTracks()[0];
       if (retryTrack) {
+        retryTrack.enabled=cameraEnabled;
         localStream.addTrack(retryTrack);
         await attachLocalPreview();
       }
@@ -1079,6 +1096,8 @@ function toggleCamera() {
   const text = document.getElementById("cameraText");
   if (button) button.classList.toggle("active", !cameraEnabled);
   if (text) text.textContent = cameraEnabled ? "Camera" : "Camera Off";
+  paintCallMediaControls();
+  if(cameraEnabled&&beautyWanted&&!beautyOutputStream)void startCallBeauty();
 }
 
 async function switchCamera() {
@@ -1120,17 +1139,14 @@ async function switchCamera() {
     if (!newTrack) throw new Error("No camera track returned");
 
     if (ended) { newTrack.stop(); return; }
+    newTrack.enabled=cameraEnabled;
     if (sender) await sender.replaceTrack(newTrack);
     localStream.addTrack(newTrack);
     currentFacingMode = nextFacingMode;
-    cameraEnabled = true;
 
     await attachLocalPreview();
 
-    const button = document.getElementById("cameraButton");
-    const text = document.getElementById("cameraText");
-    if (button) button.classList.remove("active");
-    if (text) text.textContent = "Camera";
+    paintCallMediaControls();
     showError("");
   } catch (error) {
     console.error(error);
@@ -1144,6 +1160,7 @@ async function switchCamera() {
       const recoveryTrack = recovery.getVideoTracks()[0];
       if (recoveryTrack) {
         if (ended) { recoveryTrack.stop(); return; }
+        recoveryTrack.enabled=cameraEnabled;
         if (sender) await sender.replaceTrack(recoveryTrack);
         localStream.addTrack(recoveryTrack);
         currentFacingMode = previousFacingMode;
@@ -1190,6 +1207,7 @@ async function stopCallBeauty(dispose = true) {
 }
 async function startCallBeauty() {
   if(ended||cameraSwitching||!beautyWanted||!beautySettings?.enabled||!localStream?.getVideoTracks().length)return;
+  if(!cameraEnabled){paintCallBeauty('Camera Off');return;}
   const token=++beautyEpoch;let pipeline=beautyPipeline;
   paintCallBeauty("Beauty loading");
   try {
@@ -2028,6 +2046,8 @@ function toggleMute() {
         ? "Unmute"
         : "Mute";
 
+  paintCallMediaControls();
+
 }
 
 
@@ -2039,6 +2059,8 @@ function toggleSpeaker() {
 
   speakerEnabled =
     !speakerEnabled;
+
+  paintCallMediaControls();
 
 
   const audio =
@@ -2067,6 +2089,20 @@ function toggleSpeaker() {
       !speakerEnabled
     );
 
+}
+
+function paintCallMediaControls(){
+  const mic=document.getElementById('muteButton');
+  mic.disabled=!localStream?.getAudioTracks().length;mic.classList.toggle('active',muted);mic.setAttribute('aria-pressed',String(muted));
+  document.getElementById('muteText').textContent=muted?'Unmute':'Mute';
+  const camera=document.getElementById('cameraButton');
+  camera.disabled=!localStream?.getVideoTracks().length;camera.classList.toggle('active',!cameraEnabled);camera.setAttribute('aria-pressed',String(!cameraEnabled));
+  document.getElementById('cameraText').textContent=cameraEnabled?'Camera':'Camera Off';
+  const speaker=document.getElementById('speakerButton');
+  speaker.disabled=!callPreferencesLoaded;speaker.classList.toggle('active',!speakerEnabled);speaker.setAttribute('aria-pressed',String(!speakerEnabled));
+  document.getElementById('speakerText').textContent=speakerEnabled?'Sound':'Sound Off';
+  document.getElementById('remoteAudio').muted=!speakerEnabled;
+  document.getElementById('remoteVideo').muted=!speakerEnabled;
 }
 
 

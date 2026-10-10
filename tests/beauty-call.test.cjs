@@ -53,9 +53,9 @@ async function call(config={}){
     const track=new Track('video');const p={stream:new Stream([...stream.getAudioTracks(),track]),track,failure,updates:[],update(s){this.updates.push(s);},getDebug:()=>({faceDetected:true,landmarkCount:478,trackingStatus:'ready'}),disposed:0,dispose(){this.disposed++;track.stop();},setCameraEnabled(v){track.enabled=v;}};
     state.pipelines.push(p);return p;
   }};
-  w.testSetup={raw,pc,module,type:config.voice?'voice':'video'};
+  w.testSetup={raw,pc,module,type:config.voice?'voice':'video',cameraEnabled:!config.cameraOff};
   const source=Array.from(dom.window.document.querySelectorAll('script')).find(s=>s.textContent.includes('async function prepareMedia')).textContent.replace(/\ninit\(\);/,'');
-  w.eval(source+`\nlocalStream=testSetup.raw;peerConnection=testSetup.pc;callRecord={call_type:testSetup.type};currentUser={id:'me'};beautyModule=testSetup.module;
+  w.eval(source+`\nlocalStream=testSetup.raw;peerConnection=testSetup.pc;callRecord={call_type:testSetup.type};currentUser={id:'me'};beautyModule=testSetup.module;cameraEnabled=testSetup.cameraEnabled;localStream.getVideoTracks().forEach(t=>t.enabled=cameraEnabled);
 window.testing={openCallBeautyPanel,closeCallBeautyPanel,initializeCallBeauty,startCallBeauty,toggleCallBeauty,toggleCamera,switchCamera,createPeerConnection,disposeCallBeauty,stopCallBeauty,get:()=>({beautyOutputStream,beautyPipeline,localStream,cameraEnabled,currentFacingMode}),end(){ended=true;disposeCallBeauty();}};`);
   return {dom,w,t:w.testing,state,raw,sender};
 }
@@ -64,6 +64,10 @@ test('Saved Beauty sends processed video; off restores raw; camera off disables 
   assert.equal(f.sender.track,p.track);assert.equal(f.t.get().localStream,f.raw);assert.equal(p.stream.getAudioTracks()[0],f.raw.getAudioTracks()[0]);
   f.t.toggleCamera();assert.equal(p.track.enabled,false);assert.equal(f.raw.getVideoTracks()[0].enabled,false);
   await f.t.toggleCallBeauty();assert.equal(f.sender.track,f.raw.getVideoTracks()[0]);assert.equal(f.sender.track.enabled,false);assert.equal(p.disposed,0);assert.equal(f.raw.getAudioTracks()[0].stops,0);f.t.end();f.dom.window.close();
+});
+test('Camera-off startup defers Beauty; enabling the camera activates saved processing',async()=>{
+  const f=await call({cameraOff:true});await f.t.initializeCallBeauty();assert.equal(f.state.pipelines.length,0);assert.equal(f.raw.getVideoTracks()[0].enabled,false);
+  f.t.toggleCamera();await flush();assert.equal(f.state.pipelines.length,1);assert.equal(f.sender.track,f.state.pipelines[0].track);assert.equal(f.sender.track.enabled,true);f.t.end();f.dom.window.close();
 });
 test('Failed capture or replaceTrack keeps raw video and original microphone',async()=>{
   for(const fail of [true,false]){
