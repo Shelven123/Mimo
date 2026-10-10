@@ -1,6 +1,6 @@
-# Contact permissions: ready for deployment review
+# Contact permissions: deployment and validation
 
-Status: implemented and locally verified; **not deployed**. Production migration was rejected by automatic approval review because it changes core access controls. The live database was checked afterward: the new RPC and policies do not exist. Frontend changes must not be published before the database migration.
+Status: **database deployed on 2026-10-10 UTC following explicit user approval**. All seven policies, three identity triggers and authenticated-only RPC grants were checked in production. Frontend release is tracked in PR #10. Real signed-in two-account device acceptance remains **Not Verified**.
 
 ## Behavior
 
@@ -20,14 +20,14 @@ Database policy checks remain authoritative even if a client bypasses the UI. Pr
 
 ## Validation
 
-47 automated checks pass: the earlier 36 Beauty/call checks; seven PostgreSQL policy subtests plus their parent; three UI checks. SQL is executed against isolated PGlite PostgreSQL with relevant columns and audited live baseline policies. This does not verify all production triggers/grants or real signed-in browser behavior. Current inline scripts pass syntax and whitespace checks.
+47 automated checks pass: the earlier 36 Beauty/call checks; seven PostgreSQL policy subtests plus their parent; three UI checks. SQL is executed against isolated PGlite PostgreSQL with relevant columns and audited live baseline policies. These isolated tests do not establish real signed-in browser behavior. Production smoke checks additionally exercised the live schema and triggers. Current inline scripts pass syntax and whitespace checks.
 
 The isolated SQL tests cover allowed and denied contact, forged identity, correct following direction, existing conversations, either-direction blocking, call acceptance, historical message access, anonymous profile visibility, profile-view consent, role escalation and participant reassignment. UI tests cover fail-closed permission feedback, idempotent blocking, safe names and unblocking when a profile is unavailable.
 
-## Deployment order after approval
+## Deployment and remaining acceptance
 
-1. Apply the checked-in migration to Mimo project `zhhgiwqehwuwzxnqbnth`.
-2. Verify its policies/functions/triggers and run production-compatible allow/deny checks in a rolled-back transaction with synthetic users; run security advisors.
+1. DONE: applied the checked-in migration to Mimo project `zhhgiwqehwuwzxnqbnth`.
+2. DONE: production transaction with generated synthetic Auth users verified normal follow/chat/message/call, recipient acceptance, denied role elevation/caller acceptance, blocked message/call, readable history, existing chat after Nobody, rejected new chat/follow, correct Following direction, visit opt-out, anonymous profile visibility and RPC denial. All synthetic writes rolled back. Security advisors show the same pre-existing items listed below; no new public privileged helper warning.
 3. Merge/publish the frontend PR and confirm deployed files match.
 4. Two-account device check: block/unblock; message and follow permissions; User-to-Host calls; Host-to-User text chat; private profile signed-out visibility.
 
