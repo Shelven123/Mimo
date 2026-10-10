@@ -65,3 +65,6 @@ Supersedes the prepared status above: the approved migration is deployed. Produc
 
 ## Call defaults (2026-10-10 UTC)
 68 checks include explicit false/absent-row handling, timeout abort, incoming/outgoing startup media flags, read-failure prevention of acquisition/invitation/acceptance, voice camera isolation, no false black-preview recovery with camera off, disabled camera flip, settings retry/save protection, and deferred Beauty activation. They use mocked DOM/media/RTC. Production call_settings RLS metadata and own-user policies checked; no new SQL migration or authorization smoke. Phone call-default acceptance remains Not Verified; see docs/CALL_PREFERENCES_REVIEW.md.
+
+## In-app notifications
+76 checks include isolated PostgreSQL notification creation/preferences/own-user acknowledgement/content-forgery denial/rollback, safe rendering, explicit read batching and logout during an outstanding read. Production trigger/grant metadata is verified. Production transaction smoke returned MCP request-state errors and remains Not Verified; see docs/NOTIFICATION_CENTER_REVIEW.md.
