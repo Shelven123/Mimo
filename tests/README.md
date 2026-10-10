@@ -62,3 +62,6 @@ Supersedes the prepared status above: the approved migration is deployed. Produc
 
 ## Message center and receipts (2026-10-10 UTC)
 60 automated checks now cover the accepted Beauty/call paths, contact controls, isolated PostgreSQL inbox/receipt authorization, recipient-only explicit-ID acknowledgements, sender forgery protection, late-arrival unread preservation, hidden/error/concurrent/disposal behavior, safe inbox text/URLs, duplicate chat rows and logout during an outstanding inbox request. Production migration and rolled-back synthetic-user smoke passed. New real-device inbox and Sent/Seen acceptance remains Not Verified. Block entry/own operation was USER VERIFIED in the 15:25 phone screenshot; two-account deny/unblock acceptance is still separate.
+
+## Call defaults (2026-10-10 UTC)
+68 checks include explicit false/absent-row handling, timeout abort, incoming/outgoing startup media flags, read-failure prevention of acquisition/invitation/acceptance, voice camera isolation, no false black-preview recovery with camera off, disabled camera flip, settings retry/save protection, and deferred Beauty activation. They use mocked DOM/media/RTC. Production call_settings RLS metadata and own-user policies checked; no new SQL migration or authorization smoke. Phone call-default acceptance remains Not Verified; see docs/CALL_PREFERENCES_REVIEW.md.
