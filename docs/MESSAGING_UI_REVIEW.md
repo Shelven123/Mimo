@@ -1,0 +1,13 @@
+# Messaging presentation revision
+
+Implemented: dark inbox with real recent conversation avatars, neutral fallback initials, accurate unread styling, compact previews/relative timestamps, loaded-conversation search, All/Unread filters, SVG navigation and start-chat route to existing discovery. No fabricated Notes, map/location, story rings, verification badges, strangers queue or AI assistant. Unread filters/search apply only to loaded pages, clearly stated beside search; Load more retains the scope. Inbox session/page cleanup clears cached contact data.
+
+Chat uses existing message/conversation/read-receipt/block handlers and database policies. Added dark responsive header, profile link, User-to-Host voice/video navigation through existing permission checks (call.html unchanged), three-dot Block/Unblock, abstract Midnight/Rose/Ocean local themes, subtle bubbles, timestamps/date separators/incoming avatar, fixed capsule input, emoji insertion and tools. VisualViewport sizes the layout; actual mobile keyboard behavior not device-verified. No copyrighted wallpaper recreated. Existing HTTPS image messages render, and canonical Mimo Plaza shares become link cards. This does not implement photo uploads, recording voice messages, video attachments, stickers, message reactions or story forwarding; the tool panel states unavailable attachments explicitly. No new server schema/API changes.
+
+Logout/page-hide cleanup clears drafts/contact/header/messages and guards late rendering; existing transport is retained. This is not a comprehensive legacy chat lifecycle redesign: older unbounded message history query and full conversation creation/sign-in edge cases remain to be separately evaluated. Existing text-send retry protocol is unchanged and has no new idempotency guarantee.
+
+Verified: 153 isolated PostgreSQL/JSDOM/Canvas checks, JS/inline syntax and whitespace. Added actual loaded-row search/unread, safe avatar fallback/credential rejection, emoji-without-send/theme, shared/image content safety and chat de-duplication/disposal checks. Existing message, permissions, receipts, Beauty and call checks still pass. No real messages or calls initiated for verification. Visual acceptance is not established by JSDOM.
+
+Not Verified: rendered desktop/phone visual acceptance, iPhone keyboard/safe-area gestures, actual image fetch, new header call navigation on devices and two-account real send/receipt/block flows after this presentation change. Production metadata/policies are unchanged; no database migration was needed. Account/financial/Beauty/call engine scope unchanged.
+
+Rollback: revert this frontend commit; no database rollback necessary.

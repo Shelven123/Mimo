@@ -175,22 +175,22 @@ body {
   #readStatus{font-size:10px;color:#b72f53}
 </style>
 <script src="./contact-permissions.js?v=20261010-contact1"></script>
-<script src="./message-center.js?v=20261010-inbox1"></script>
-</head>
+<script src="./message-center.js?v=20261010-inbox2"></script>
+<link rel="stylesheet" href="./messaging.css?v=20261010-message1"><script src="./messaging-ui.js?v=20261010-message1"></script></head>
 
-<body>
+<body class="chat-page" data-chat-theme="midnight">
 
 <div class="header">
 
-  <button class="back" onclick="goBack()">‹</button>
+  <button class="back" onclick="goBack()" aria-label="Back to messages" data-message-icon="back">‹</button>
 
-  <div class="host-info">
+  <div class="host-info"><a id="chatProfile" aria-label="View contact profile">
 
-    <img
+    <span class="host-avatar-frame"><span id="hostInitial">M</span><img
       id="hostAvatar"
       class="host-avatar"
-      src="https://i.pravatar.cc/200?img=47"
-    >
+      alt="" hidden
+    ></span>
 
     <div>
 
@@ -211,10 +211,10 @@ body {
 
     </div>
 
-  </div>
+  </a></div>
 
-<div class="contact-actions" aria-label="Contact actions">
-  <button id="blockContact" class="block-contact" type="button" disabled onclick="toggleChatBlock()">Block</button>
+<div class="contact-actions" aria-label="Contact actions"><button id="voiceCall" class="ui-icon" type="button" aria-label="Voice call" data-message-icon="phone" disabled></button><button id="videoCall" class="ui-icon" type="button" aria-label="Video call" data-message-icon="video" disabled></button><button id="chatMore" class="ui-icon" type="button" aria-label="Conversation options" data-message-icon="more" disabled></button>
+  <button id="blockContact" class="block-contact" hidden type="button" disabled onclick="toggleChatBlock()">Block</button>
 </div>
 
 </div>
@@ -231,7 +231,7 @@ body {
 </div>
 
 
-<div class="input-area">
+<div class="input-area"><div class="composer-pill"><button id="emojiButton" class="ui-icon" type="button" aria-label="Insert emoji" data-message-icon="smile" disabled></button>
 
   <input
     id="messageInput"
@@ -246,11 +246,10 @@ body {
     class="send-btn"
     onclick="sendMessage()"
   >
-    ➤
-  </button>
+    <span data-message-icon="send"></span>
+  </button><button id="chatPlus" class="ui-icon" type="button" aria-label="Chat tools" data-message-icon="plus" disabled></button>
 
-</div>
-
+</div></div><dialog id="chatTools" aria-labelledby="chatToolTitle"><div class="tool-head"><h2 id="chatToolTitle">Chat tools</h2><button class="ui-icon" id="chatToolClose" type="button" aria-label="Close tools">✕</button></div><div id="chatToolPanel"></div></dialog>
 
 <script>
 
@@ -284,6 +283,7 @@ const hostId =
    VARIABLES
 ========================= */
 
+let chatDisposed=false,chatAuthSubscription=null,chatUI=null;
 let currentUser = null;
 let hostProfile = null;
 let conversationId = null;
@@ -307,7 +307,7 @@ async function toggleChatBlock() {
     button.textContent=blocked?"Block":"Unblock";
     alert(blocked?"Contact unblocked.":"Contact blocked. New messages, follows and calls are unavailable.");
   }catch(error){alert("Unable to change blocking settings. Please try again.");}
-  finally{button.disabled=false;}
+  finally{button.disabled=chatDisposed;if(!chatDisposed){try{const permissions=await MimoContacts.permissions(supabaseClient,hostId);if(!chatDisposed)for(const id of ['voiceCall','videoCall'])document.getElementById(id).disabled=permissions.call!==true;}catch{}}}
 }
 
 async function init() {
@@ -347,6 +347,7 @@ async function init() {
   }
 
 
+  if(chatDisposed)return;
   currentUser = user;
 
 
@@ -358,6 +359,7 @@ async function init() {
   }
 
 
+  if(chatDisposed)return;
   await loadHost();
 
 
@@ -369,6 +371,8 @@ async function init() {
 
   const blockButton=document.getElementById("blockContact");
   try{blockButton.textContent=await MimoContacts.isBlocked(supabaseClient,currentUser.id,hostId)?"Unblock":"Block";blockButton.disabled=false;}catch(error){console.warn(error);}
+  configureChatUI();
+  if(chatDisposed)return;
   await loadConversation();
 
 }
@@ -426,6 +430,7 @@ async function loadHost() {
   }
 
 
+  if(chatDisposed)return;
   hostProfile =
     data;
 
@@ -438,13 +443,9 @@ async function loadHost() {
     "Host";
 
 
-  document.getElementById(
-    "hostAvatar"
-  ).src =
-    data.avatar_url ||
-    "https://i.pravatar.cc/200?img=47";
-
-
+  document.getElementById('hostInitial').textContent=(data.display_name||data.username||'M').slice(0,1);
+  const avatar=document.getElementById('hostAvatar');let avatarURL=null;try{const u=new URL(data.avatar_url);if(u.protocol==='https:'&&!u.username&&!u.password)avatarURL=u.href;}catch{}if(avatarURL){avatar.src=avatarURL;avatar.hidden=false;avatar.onerror=()=>{avatar.hidden=true;};}else{avatar.removeAttribute('src');avatar.hidden=true;}
+  document.getElementById('chatProfile').href='profile.html?id='+encodeURIComponent(hostId);
   document.getElementById(
     "hostStatus"
   ).textContent =
@@ -773,6 +774,8 @@ async function loadMessages() {
         conversation_id,
         sender_id,
         content,
+        message_type,
+        image_url,
         is_read,
         created_at
       `)
@@ -803,6 +806,7 @@ async function loadMessages() {
   }
 
 
+  if(chatDisposed)return;
   renderMessages(
     data || []
   );
@@ -873,7 +877,8 @@ function addMessageToScreen(
   message
 ) {
 
-  if(document.getElementById('message-'+message.id))return;
+  if(chatDisposed||!currentUser||document.getElementById('message-'+message.id))return;
+  const UI=window.MimoMessagingUI,date=new Date(message.created_at);if(UI&&Number.isFinite(date.getTime())){const last=document.querySelector('.message-row:last-of-type');if(!last||last.dataset.day!==date.toLocaleDateString()){const heading=document.createElement('div');heading.className='chat-day';heading.textContent=date.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});document.getElementById('chatArea').append(heading);}}
 
   const area =
     document.getElementById(
@@ -903,10 +908,7 @@ function addMessageToScreen(
   row.dataset.sender=message.sender_id;
 
 
-  const bubble =
-    document.createElement(
-      "div"
-    );
+  const bubble =UI?UI.bubble(document,message):document.createElement("div");
 
 
   bubble.className =
@@ -918,8 +920,8 @@ function addMessageToScreen(
     );
 
 
-  bubble.textContent =
-    message.content;
+  if(!UI)bubble.textContent=message.content;
+  if(UI&&Number.isFinite(date.getTime())){row.dataset.day=date.toLocaleDateString();const time=document.createElement('time');time.className='message-time';time.textContent=date.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});time.dateTime=date.toISOString();bubble.append(time);}if(UI&&!isMe){const avatar=document.getElementById('hostAvatar');if(!avatar.hidden&&avatar.src){const img=document.createElement('img');img.className='mini-avatar';img.src=avatar.src;img.alt='';img.onerror=()=>img.remove();row.append(img);}else{const initial=document.createElement('span');initial.className='mini-avatar';initial.textContent=(hostProfile?.display_name||hostProfile?.username||'M').slice(0,1);row.append(initial);}}
 
 
   row.appendChild(
@@ -940,7 +942,7 @@ function addMessageToScreen(
 ========================= */
 
 async function sendMessage() {
-  if(messageSending)return;messageSending=true;
+  if(chatDisposed||messageSending)return;messageSending=true;
   try {
 
   if (!currentUser) {
@@ -1010,6 +1012,8 @@ async function sendMessage() {
         conversation_id,
         sender_id,
         content,
+        message_type,
+        image_url,
         is_read,
         created_at
       `)
@@ -1035,6 +1039,7 @@ async function sendMessage() {
   }
 
 
+  if(chatDisposed)return;
   input.value = "";
 
 
@@ -1067,7 +1072,7 @@ async function sendMessage() {
   scrollToBottom();
 
   } catch(error){console.warn("Message send failed",error);alert("Message could not be sent. Please try again.");}
-  finally {messageSending=false;document.getElementById("sendButton").disabled=false;}
+  finally {messageSending=false;document.getElementById("sendButton").disabled=chatDisposed;}
 }
 
 
@@ -1110,7 +1115,7 @@ function subscribeToMessages() {
           */
 
           if (
-            payload.new.sender_id !==
+            !chatDisposed&&currentUser&&payload.new.sender_id !==
             currentUser.id
           ) {
 
@@ -1152,7 +1157,7 @@ async function refreshReceipts(){
   finally{receiptRefreshing=false;}
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='hidden')refreshReceipts();});
-window.addEventListener('pagehide',()=>{clearInterval(receiptPoll);if(readTracker)readTracker.dispose();if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);});
+window.addEventListener('pagehide',disposeChat);
 window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
 
 
@@ -1251,11 +1256,15 @@ function showLoginMessage() {
 
 function goBack() {
 
-  window.history.back();
+  location.href="messages.html";
 
 }
 
 
+async function configureChatUI(){if(!window.MimoMessagingUI||!currentUser||chatDisposed)return;chatUI=MimoMessagingUI.setupChat({d:document,getUser:()=>currentUser,canUse:()=>!chatDisposed&&!!currentUser&&!!hostProfile&&!messageSending,getContact:()=>hostProfile,onBlock:toggleChatBlock,onCall:async type=>{if(chatDisposed||!currentUser)return;if(!await MimoContacts.allow(supabaseClient,hostId,'call'))return;if(!chatDisposed)location.href='call.html?user='+encodeURIComponent(hostId)+(type==='video'?'&type=video':'');}});for(const id of ['chatMore','emojiButton','chatPlus'])document.getElementById(id).disabled=false;try{const permissions=await MimoContacts.permissions(supabaseClient,hostId);if(chatDisposed)return;for(const id of ['voiceCall','videoCall']){document.getElementById(id).disabled=permissions.call!==true;document.getElementById(id).title=permissions.call?'Start call':'Calls are available from User to Host only, subject to blocking';}}catch{} }
+function disposeChat(){chatDisposed=true;clearInterval(receiptPoll);readTracker?.dispose();if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);chatAuthSubscription?.unsubscribe();chatUI?.dispose();document.getElementById('messageInput').value='';document.getElementById('chatArea').replaceChildren();document.getElementById('hostName').textContent='Chat';document.getElementById('hostStatus').textContent='';document.getElementById('readStatus').textContent='';document.getElementById('hostAvatar').hidden=true;document.getElementById('hostAvatar').removeAttribute('src');document.getElementById('hostInitial').textContent='M';document.getElementById('chatProfile').removeAttribute('href');for(const id of ['voiceCall','videoCall','chatMore','emojiButton','chatPlus','sendButton','blockContact'])document.getElementById(id).disabled=true;currentUser=null;hostProfile=null;}
+window.MimoMessagingUI?.hydrate(document);
+if(supabaseClient.auth?.onAuthStateChange)chatAuthSubscription=supabaseClient.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||(currentUser&&session&&session.user.id!==currentUser.id)){disposeChat();showError('Your session changed. Reload or sign in again.');}}).data.subscription;
 /* =========================
    START
 ========================= */

@@ -24,7 +24,7 @@
     }
     return {queue(messages){if(disposed)return;for(const m of messages){if(m.id&&m.sender_id!==userId&&m.is_read!==true)pending.add(m.id);}return flush();},flush,dispose(){disposed=true;pending.clear();}};
   }
-  function safeAvatar(value){try{const url=new URL(value);return /^(https?:)$/.test(url.protocol)?url.href:null;}catch{return null;}}
+  function safeAvatar(value){try{const url=new URL(value);return url.protocol==='https:'&&!url.username&&!url.password?url.href:null;}catch{return null;}}
   function renderInbox(document,rows){
     const fragment=document.createDocumentFragment();
     for(const row of rows){
@@ -36,7 +36,7 @@
       info.append(name,preview);const meta=document.createElement('div');meta.className='meta';
       const date=document.createElement('time');const value=new Date(row.activity_at);date.textContent=Number.isNaN(value.getTime())?'':value.toLocaleDateString(undefined,{month:'short',day:'numeric'});meta.append(date);
       const unread=Number(row.unread_count);if(unread>0){const badge=document.createElement('span');badge.className='unread';badge.textContent=unread>99?'99+':String(unread);badge.setAttribute('aria-label',unread+' unread messages');meta.append(badge);}
-      link.append(avatar,info,meta);fragment.append(link);
+      if(global.MimoMessagingUI){const UI=global.MimoMessagingUI;const shell=UI.avatar(document,row.avatar_url,name.textContent);const unread=Number(row.unread_count);link.classList.toggle('has-unread',unread>0);if(unread>0)preview.textContent=(unread>99?'99+':String(unread))+' new messages · '+(row.last_type==='image'?'Photo':row.last_content||'Open conversation');date.textContent=UI.relative(row.activity_at);date.dateTime=Number.isNaN(value.getTime())?'':value.toISOString();link.append(shell,info,meta);}else link.append(avatar,info,meta);fragment.append(link);
     }
     return fragment;
   }
