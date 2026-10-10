@@ -16,6 +16,7 @@
     }
   }
   function destination(row){
+    if(row.notification_type==='appointment')return 'appointments.html';
     const id=row.related_user_id;
     if(!id||!/^[0-9a-f-]{36}$/i.test(id))return null;
     if(row.notification_type==='message')return 'chat.html?host='+encodeURIComponent(id);

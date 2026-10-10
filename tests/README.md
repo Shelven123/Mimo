@@ -68,3 +68,6 @@ Supersedes the prepared status above: the approved migration is deployed. Produc
 
 ## In-app notifications
 76 checks include isolated PostgreSQL notification creation/preferences/own-user acknowledgement/content-forgery denial/rollback, safe rendering, explicit read batching and logout during an outstanding read. Production trigger/grant metadata is verified. Production transaction smoke returned MCP request-state errors and remains Not Verified; see docs/NOTIFICATION_CENTER_REVIEW.md.
+
+## Appointments
+88 automatic checks include request bounds, role/participant authorization, immutable identity, Host-only acceptance, early completion denial, exact-start conflict, terminal states, blocks/preferences/notification behavior, rollback, stale-status detection, signed-out UI and logout during a read. Production metadata verified; production transaction and phone acceptance Not Verified. See docs/APPOINTMENTS_REVIEW.md.
