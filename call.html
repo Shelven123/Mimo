@@ -222,6 +222,7 @@
       display: none;
     }
   </style>
+<script src="./contact-permissions.js?v=20261010-contact1"></script>
 </head>
 
 <body>
@@ -678,6 +679,8 @@ if (data.avatar_url) {
 ========================= */
 
 async function startOutgoingCall() {
+
+  if(!await MimoContacts.allow(supabaseClient,targetUserId,"call")){setStatus("Call unavailable");return;}
 
   setStatus(
     "Requesting microphone..."

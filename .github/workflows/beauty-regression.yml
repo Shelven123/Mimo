@@ -2,9 +2,9 @@ name: Beauty regression
 on:
   push:
     branches: [main]
-    paths: ['call.html', 'beauty-*', 'tests/**', 'package*.json', '.github/workflows/beauty-regression.yml']
+    paths: ['call.html', 'chat.html', 'index.html', 'profile.html', 'blocked-users.html', 'contact-permissions.js', 'supabase/**', 'beauty-*', 'tests/**', 'package*.json', '.github/workflows/beauty-regression.yml']
   pull_request:
-    paths: ['call.html', 'beauty-*', 'tests/**', 'package*.json', '.github/workflows/beauty-regression.yml']
+    paths: ['call.html', 'chat.html', 'index.html', 'profile.html', 'blocked-users.html', 'contact-permissions.js', 'supabase/**', 'beauty-*', 'tests/**', 'package*.json', '.github/workflows/beauty-regression.yml']
 permissions:
   contents: read
 jobs:
