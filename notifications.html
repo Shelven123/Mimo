@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Mimo — Notifications</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./notification-center.js?v=20261010-notify1"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f7f7f9;color:#222;font-family:Arial,sans-serif}header{position:sticky;top:0;background:#fff;display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid #eee}h1{font-size:21px;flex:1;margin:0}a{color:#d83e68;text-decoration:none}main{max-width:720px;margin:auto;padding:16px 14px calc(35px + env(safe-area-inset-bottom))}button{font:inherit;background:#fff0f5;color:#b72f53;border:0;border-radius:18px;padding:11px 14px;cursor:pointer}button:disabled{opacity:.5}.toolbar,.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.toolbar{margin-bottom:16px}.notification{padding:16px;background:#fff;border-radius:16px;margin:12px 0;border-left:4px solid transparent}.notification.unread{border-left-color:#ff4f81}h2{font-size:16px;margin:0 0 8px}p{line-height:1.5;overflow-wrap:anywhere}time{font-size:12px;color:#777}.actions{margin-top:12px}#status{color:#777}#more[hidden]{display:none}.note{font-size:13px;color:#777}
+</style></head><body>
+<header><a href="index.html" aria-label="Home">‹</a><h1>Notifications <span id="badge"></span></h1><a href="notification-settings.html">Settings</a></header>
+<main><div class="toolbar"><button id="refresh">Refresh</button><button id="read" disabled>Mark loaded read</button></div><p class="note">In-app updates. Call notifications are history entries; use the incoming-call screen to answer. Reading here does not mark chat messages seen.</p><p id="status" role="status">Loading notifications…</p><div id="list"></div><button id="more" hidden>Load more</button></main>
+<script>
+const sb=window.supabase.createClient('https://zhhgiwqehwuwzxnqbnth.supabase.co','sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ');
+const list=document.getElementById('list'),status=document.getElementById('status'),refresh=document.getElementById('refresh'),read=document.getElementById('read'),more=document.getElementById('more'),badge=document.getElementById('badge');
+let uid=null,pages=1,rows=[],busy=false,disposed=false,poll=null,subscription=null;
+function controls(){refresh.disabled=busy||!uid;read.disabled=busy||!rows.some(r=>!r.is_read);more.disabled=busy;}
+async function load(extra=false){
+ if(disposed||busy||!uid)return;busy=true;controls();const requested=pages+(extra?1:0),result=[],seen=new Set();
+ try{let batch=[];for(let page=0;page<requested;page++){batch=await MimoNotifications.list(sb,uid,page*30);if(disposed)return;for(const row of batch)if(!seen.has(row.id)){seen.add(row.id);result.push(row);}if(batch.length<30)break;}
+ const count=await MimoNotifications.unread(sb,uid);if(disposed)return;rows=result;pages=requested;list.replaceChildren(MimoNotifications.render(document,rows,mark));badge.textContent=count?'('+count+')':'';more.hidden=batch.length<30;status.textContent=rows.length?'':'No notifications yet.';
+ }catch(error){if(!disposed)status.textContent='Unable to load notifications. Tap Refresh to retry.';}finally{busy=false;if(!disposed)controls();}
+}
+async function mark(ids){if(disposed||busy||!uid)return;busy=true;controls();try{await MimoNotifications.mark(sb,uid,ids);if(disposed)return;busy=false;await load();}catch(error){if(!disposed)status.textContent='Could not mark read. Retry.';}finally{busy=false;if(!disposed)controls();}}
+function cleanup(){disposed=true;uid=null;rows=[];clearInterval(poll);subscription?.unsubscribe();list.replaceChildren();badge.textContent='';more.hidden=true;controls();}
+async function init(){try{
+ subscription=sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||(uid&&session&&session.user.id!==uid)){cleanup();status.textContent='Session changed. Reload or sign in again.';}}).data.subscription;
+ const {data,error}=await sb.auth.getUser();if(error)throw error;if(disposed)return;
+ if(!data.user){status.textContent='Sign in to see notifications. ';const link=document.createElement('a');link.href='login.html';link.textContent='Sign in';status.append(link);controls();return;}
+ uid=data.user.id;await load();if(!disposed)poll=setInterval(()=>{if(document.visibilityState!=='hidden')load();},15000);
+ }catch(error){if(!disposed){status.textContent='Unable to check login. Reload to retry.';controls();}}}
+refresh.onclick=()=>load();more.onclick=()=>load(true);read.onclick=()=>mark(rows.filter(r=>!r.is_read).map(r=>r.id));document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='hidden')load();});window.addEventListener('pagehide',cleanup);window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});init();
+</script></body></html>
