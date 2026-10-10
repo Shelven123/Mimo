@@ -91,3 +91,5 @@ Messaging presentation checkpoint: 153 checks pass. Added loaded inbox search/un
 Media upload checks (`tests/media-uploads.test.cjs`) verify isolated Storage RLS and real referenced post/message guards, same-ID duplicate suppression, missing/oversized/tokenized files, participant and block restrictions, JPEG resize/resource cleanup, selected-file drafts, transient signing, separate Reel/cover signing and actual page retry wiring. The suite does not make customer writes or claim real Storage HTTP, codecs or Safari acceptance.
 
 Reel follow-up: alias/missing MIME normalization rejects contradictory content types; explicit metadata load/cleanup and canonical upload MIME are checked. Real page selection with missing-MIME MOV survives a simulated feed refresh and reaches the media publish API after caption entry. Native Safari album UI itself is not automated.
+
+`tests/reel-picker.test.cjs` checks explicit confirmation, retained prior selection on cancellation, visible validation/timeouts, late metadata cleanup and confirmed-file preparation without reopening a second decoder. Native iCloud import is not simulated as passed.

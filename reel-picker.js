@@ -1,0 +1,23 @@
+(function(global){
+'use strict';
+function create({input,dialog,preview,message,confirm,cancel,chooseAgain,summary,getAlive=()=>true,canChange=()=>true,onChange=()=>{},onImport=()=>{}}){
+ let committed=null,pending=null,url=null,generation=0,timer=null,picking=false,disposed=false;
+ const video=preview.querySelector('video');
+ function alive(){return !disposed&&getAlive();}
+ function release(){generation++;clearTimeout(timer);video.onloadedmetadata=video.ondurationchange=video.onerror=null;video.pause();video.removeAttribute('src');video.load();if(url)URL.revokeObjectURL(url);url=null;confirm.disabled=true;}
+ function close(){dialog.close?.();dialog.removeAttribute('open');release();pending=null;picking=false;}
+ function draw(){summary.replaceChildren();if(!committed)return;const card=document.createElement('div');card.className='reel-selected';const label=document.createElement('span');label.textContent='✓ '+committed.file.name+' · '+Math.round(committed.duration)+'s · '+(committed.file.size/1048576).toFixed(1)+' MB';const edit=document.createElement('button');edit.type='button';edit.textContent='Preview';edit.onclick=()=>{if(canChange())show(committed.file);};const remove=document.createElement('button');remove.type='button';remove.textContent='×';remove.setAttribute('aria-label','Remove confirmed Reel');remove.onclick=()=>{if(!canChange())return;committed=null;draw();onChange();};card.append(label,edit,remove);summary.append(card);}
+ function show(file){if(!alive())return;release();pending={file,duration:null};message.textContent='Preparing video preview… Keep this page open.';if(!dialog.open){if(dialog.showModal)dialog.showModal();else dialog.setAttribute('open','');}try{MimoMedia.validate(file,true);}catch(error){message.textContent=error.message;return;}const version=generation;
+ function metadata(){if(!alive()||version!==generation)return;const duration=video.duration;if(!Number.isFinite(duration)||duration<=0)return;clearTimeout(timer);pending.duration=duration;if(duration>90){confirm.disabled=true;message.textContent='This video is '+Math.ceil(duration)+' seconds. Choose one up to 90 seconds.';return;}confirm.disabled=false;message.textContent=file.name+' · '+Math.ceil(duration)+'s · '+(file.size/1048576).toFixed(1)+' MB. Tap ✓ Use this video to confirm.';}
+ video.onloadedmetadata=video.ondurationchange=metadata;video.onerror=()=>{if(!alive()||version!==generation)return;clearTimeout(timer);confirm.disabled=true;message.textContent='This video cannot be previewed. Export as MP4 or choose another video.';};timer=setTimeout(()=>{if(!alive()||version!==generation)return;confirm.disabled=true;message.textContent='Preview is taking too long. Your selection is retained. Choose a downloaded MP4 or try again.';},45000);video.preload='metadata';video.playsInline=true;video.muted=true;url=URL.createObjectURL(file);video.src=url;video.load();
+ }
+ input.addEventListener('click',()=>{if(!alive()||!canChange())return;picking=true;onImport('Opening Photos… Cloud videos must finish downloading before preview appears.');});
+ input.oncancel=()=>{picking=false;if(dialog.open&&!pending)close();onImport(committed?'Confirmed video retained.':'Video selection cancelled.');};
+ input.onchange=()=>{picking=false;if(!alive()||!canChange())return;const file=input.files?.[0];input.value='';if(file)show(file);else {if(dialog.open&&!pending)close();onImport(committed?'Confirmed video retained.':'No video selected.');}};
+ confirm.onclick=()=>{if(!alive()||!canChange()||confirm.disabled||!pending)return;try{MimoMedia.markVideoPrepared(pending.file,pending.duration);committed={...pending};close();draw();onChange();}catch(error){message.textContent=error.message;}};
+ if(chooseAgain)chooseAgain.onclick=()=>{if(!alive()||!canChange())return;release();pending=null;message.textContent='Opening Photos… Wait for the selected video to download.';input.click();};
+ cancel.onclick=close;dialog.addEventListener('cancel',event=>{event.preventDefault();close();});dialog.addEventListener('click',event=>{if(event.target===dialog)close();});
+ return {files:()=>committed?[committed.file]:[],isPicking:()=>picking,hasPending:()=>!!pending,showPending:()=>{if(pending&&!dialog.open)show(pending.file);},clear(){close();committed=null;input.value='';draw();},dispose(){disposed=true;close();committed=null;summary.replaceChildren();message.textContent='';input.value='';}};
+}
+global.MimoReelPicker={create};
+})(window);
