@@ -74,3 +74,6 @@ Supersedes the prepared status above: the approved migration is deployed. Produc
 
 ## Wallet reads
 96 checks include exact bigint text, own-user/anonymous/no-UID reads, pagination, rollback retaining records, safe display, unavailable instead of zero on failures, and account-switch/logout cleanup in Wallet and Me. Production metadata and no-UID read verified; physical-phone and production cross-user transaction Not Verified. Financial writes are not implemented. See docs/WALLET_READ_REVIEW.md.
+
+## Recharge foundation
+107 checks include server package snapshots/idempotent keys, raw client forgery and service-only confirmation denial, exact cents, mismatched payments, duplicate/cross-order receipts, missing-wallet/overflow/ledger-failure atomic rollback, terminal/legacy rejection, API rollback retaining evidence and DOM/account cleanup. Tests use PGlite, not real provider payments or concurrent production callbacks. Production permission/RLS/zero-active-package metadata checked; transactional settlement, provider signature integration and phone acceptance Not Verified. Purchase UI remains disabled. See docs/RECHARGE_FOUNDATION_REVIEW.md.

@@ -1,0 +1,10 @@
+(function(global){
+ 'use strict';
+ function decimal(value){if(typeof value!=='string'||!/^\d+(\.\d+)?$/.test(value))throw Error('Invalid price');const [whole,fraction='']=value.split('.');return MimoWallet.format(whole)+'.'+fraction.replace(/0+$/,'').padEnd(2,'0');}
+ function minor(value){if(typeof value!=='string'||!/^\d+$/.test(value))throw Error('Invalid price');const digits=value.padStart(3,'0');return decimal(digits.slice(0,-2)+'.'+digits.slice(-2));}
+ async function packages(client){const {data,error}=await client.rpc('mimo_recharge_packages');if(error||!Array.isArray(data))throw error||Error('Packages unavailable');return data;}
+ async function history(client,offset=0){const {data,error}=await client.rpc('mimo_recharge_history',{page_size:30,page_offset:offset});if(error||!Array.isArray(data))throw error||Error('Orders unavailable');return data;}
+ function renderPackages(document,rows){const f=document.createDocumentFragment();for(const row of rows){const card=document.createElement('article');card.className='card';const name=document.createElement('h3');name.textContent=row.name;const value=document.createElement('p');value.textContent=MimoWallet.format(row.diamonds)+' diamonds · '+row.currency+' '+minor(row.amount_minor);const button=document.createElement('button');button.disabled=true;button.textContent='Payment setup pending';card.append(name,value,button);f.append(card);}return f;}
+ function renderOrders(document,rows){const f=document.createDocumentFragment();for(const row of rows){const card=document.createElement('article');card.className='card';const heading=document.createElement('h3');heading.textContent='Recorded status: '+row.status;const value=document.createElement('p');value.textContent=MimoWallet.format(row.diamonds)+' diamonds · '+row.currency+' '+decimal(row.amount);const time=document.createElement('time');time.textContent=new Date(row.created_at).toLocaleString();card.append(heading,value,time);f.append(card);}return f;}
+ global.MimoRecharge={decimal,minor,packages,history,renderPackages,renderOrders};
+})(window);
