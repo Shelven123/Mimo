@@ -170,8 +170,12 @@ body {
   .contact-actions{display:flex;margin-left:auto;padding-left:12px;flex-shrink:0}
   .block-contact{border:1px solid #ef5b82;border-radius:999px;background:#fff;color:#d83e68;padding:8px 18px;font-weight:700;font-size:14px}
   .block-contact:disabled{opacity:.45}
+  .message-row.me{flex-direction:column;align-items:flex-end}
+  .receipt{font-size:11px;color:#888;margin-top:4px}
+  #readStatus{font-size:10px;color:#b72f53}
 </style>
 <script src="./contact-permissions.js?v=20261010-contact1"></script>
+<script src="./message-center.js?v=20261010-inbox1"></script>
 </head>
 
 <body>
@@ -203,6 +207,7 @@ body {
       >
         Offline
       </div>
+      <div id="readStatus" role="status"></div>
 
     </div>
 
@@ -284,6 +289,9 @@ let hostProfile = null;
 let conversationId = null;
 let realtimeChannel = null;
 let messageSending = false;
+let readTracker = null;
+let receiptPoll = null;
+let receiptRefreshing = false;
 
 
 /* =========================
@@ -576,10 +584,15 @@ async function loadConversation() {
   }
 
 
+  readTracker=MimoMessages.readTracker({client:supabaseClient,userId:currentUser.id,conversationId,
+    visible:()=>document.visibilityState!=='hidden',
+    onError:()=>{document.getElementById('readStatus').textContent='Read status unavailable. Retrying…';},
+    onSuccess:()=>{document.getElementById('readStatus').textContent='';}});
   await loadMessages();
 
 
   subscribeToMessages();
+  receiptPoll=setInterval(refreshReceipts,15000);
 
 }
 
@@ -760,6 +773,7 @@ async function loadMessages() {
         conversation_id,
         sender_id,
         content,
+        is_read,
         created_at
       `)
       .eq(
@@ -792,6 +806,7 @@ async function loadMessages() {
   renderMessages(
     data || []
   );
+  if(readTracker)readTracker.queue(data||[]);
 
 }
 
@@ -858,6 +873,8 @@ function addMessageToScreen(
   message
 ) {
 
+  if(document.getElementById('message-'+message.id))return;
+
   const area =
     document.getElementById(
       "chatArea"
@@ -882,6 +899,8 @@ function addMessageToScreen(
         ? "me"
         : "host"
     );
+  row.id='message-'+message.id;
+  row.dataset.sender=message.sender_id;
 
 
   const bubble =
@@ -906,6 +925,7 @@ function addMessageToScreen(
   row.appendChild(
     bubble
   );
+  if(isMe){const receipt=document.createElement('span');receipt.className='receipt';receipt.textContent=message.is_read?'Seen':'Sent';row.appendChild(receipt);}
 
 
   area.appendChild(
@@ -990,6 +1010,7 @@ async function sendMessage() {
         conversation_id,
         sender_id,
         content,
+        is_read,
         created_at
       `)
       .single();
@@ -1098,14 +1119,41 @@ function subscribeToMessages() {
             );
 
             scrollToBottom();
+            if(readTracker)readTracker.queue([payload.new]);
 
           }
 
         }
       )
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'messages',filter:'conversation_id=eq.'+conversationId},payload=>{
+        updateReceipt(payload.new);
+      })
       .subscribe();
 
 }
+
+function updateReceipt(message){
+  if(!message.is_read||message.sender_id!==currentUser?.id)return;
+  const receipt=document.getElementById('message-'+message.id)?.querySelector('.receipt');
+  if(receipt)receipt.textContent='Seen';
+}
+async function refreshReceipts(){
+  if(document.visibilityState==='hidden'||!currentUser||!conversationId||receiptRefreshing)return;
+  receiptRefreshing=true;
+  try{
+    if(readTracker)await readTracker.flush();
+    const ids=Array.from(document.querySelectorAll('.message-row')).filter(row=>row.dataset.sender===currentUser.id&&row.querySelector('.receipt')?.textContent==='Sent').map(row=>row.id.slice(8));
+    for(let i=0;i<ids.length;i+=200){
+      const {data,error}=await supabaseClient.from('messages').select('id,sender_id,is_read').eq('conversation_id',conversationId).eq('sender_id',currentUser.id).in('id',ids.slice(i,i+200));
+      if(error)throw error;
+      (data||[]).forEach(updateReceipt);
+    }
+  }catch(error){console.warn('Receipt refresh failed',error);}
+  finally{receiptRefreshing=false;}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='hidden')refreshReceipts();});
+window.addEventListener('pagehide',()=>{clearInterval(receiptPoll);if(readTracker)readTracker.dispose();if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);});
+window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
 
 
 /* =========================
