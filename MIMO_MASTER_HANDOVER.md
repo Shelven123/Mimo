@@ -1,6 +1,6 @@
 # Mimo Master Handover
 
-Current checkpoint: Beauty Engine v2.7 independent preview, implemented and regression-tested but NOT fully user-accepted on iPhone. Inherited checkpoint: v2.6; v2.6.1 was merged and deployed before this continuation. This document is the canonical handover for ChatGPT Work.
+Current Beauty checkpoint: v2.7.2, with standalone preview and Video Call integration USER VERIFIED in the later acceptance checkpoint below. Latest product work: Help & Support, following wallet/recharge foundations; real payments remain disabled. Inherited checkpoint: v2.6. This document is the canonical handover for ChatGPT Work; dated continuations supersede historical status statements.
 
 ## Rules
 Inspect current repository code before editing. Preserve working features. Do not equate implemented with user-verified. Prefer small reversible changes. The owner prefers direct execution with few unnecessary questions.
@@ -70,7 +70,7 @@ V2.4: 84b1055f647a1679012409970ee44d1e62e5ad6b portrait/background segmentation 
 V2.5: b2cd33536419c19e41c0000edc7a140bb74dd183 landmark stabilization/performance allocation improvement; ccceac8d61bf89a9616aa29680425078ac58448c UI.
 V2.6: ec7119ec881b35469c4e073ba0bd6c5f1f650134 adaptive iPhone processing width/performance; 6ac7788ade61d355874b0a4a2f6602b3b41015dc UI.
 
-## Verification matrix
+## Inherited verification matrix (historical; see later acceptance checkpoints)
 User-verified:
 - unified live Beauty camera
 - camera/mirror direction acceptable
@@ -95,7 +95,7 @@ beauty-engine.js outputs canvas.captureStream, but DO NOT integrate Beauty into 
 ## Remaining roadmap
 Database foundations do not mean end-to-end features are complete. Remaining work includes auth/role polish, full permission enforcement, Plaza production/moderation, unread messaging, appointments, diamonds/recharge payment flow, gifts, host earnings/withdrawals, VIP 1-10, VIP2+ Who Viewed Me enforcement, rankings, official/system messages, support UI, drift bottle, diamond fishing mini-game, referrals, backpack/inventory, profile impressions, check-ins/new-user tasks, shop flow, notification delivery, privacy/block enforcement, call-setting enforcement, admin/moderation, production security/RLS review, and TURN only if network testing proves necessary.
 
-## Next steps
+## Inherited next steps (historical; see dated continuations)
 1. Inspect current beauty-engine.js and beauty-settings.html.
 2. Sanity-review V2.6, especially ImageSegmenter lifecycle/mask semantics and iPhone Safari performance.
 3. Preserve Face Landmarker and camera/mirror behavior.
@@ -248,3 +248,8 @@ Wallet PR #16 merged and CI/Pages succeeded; three live frontend files matched. 
 Implemented: Recharge information/history page, server-owned package catalog, Auth-derived idempotent pending orders and exact monetary snapshots. Raw client INSERT into recharges is denied: inherited own-user INSERT allowed forged paid statuses. Service-only private atomic accounting verifies order/provider/amount/currency, unique receipt, locks wallet/order and commits credit/ledger/paid state together. Duplicate matching callback is a no-op. Purchase UI is disabled, no prices seeded and zero active production packages. No real financial rows changed by deployment.
 Verified: 107 isolated PostgreSQL/DOM/media tests; syntax/whitespace, production migration/grant/RLS metadata and no-UID history/zero active-package checks. Receipt store has explicit restrictive deny-all client RLS, privileged helpers private and public wrappers invoker. See docs/RECHARGE_FOUNDATION_REVIEW.md and rollback SQL.
 Not Verified/Incomplete: production transactional settlement, real provider checkout/signature validation, production callback concurrency, refunds/reconciliation, physical-phone recharge acceptance, merchant setup, approved prices, Host split and payout rules. Accounting assumes a trusted external backend verified payment; NO such backend is deployed. Never claim real payment is functional or enable checkout merely because packages exist. Existing Beauty/call frontend unchanged.
+
+## 2026-10-10 Help & Support checkpoint
+Recharge PR #17 merged; PR/main CI and Pages succeeded, four live frontend files matched. Real checkout remains disabled awaiting merchant/packages; generic continue is not pricing or admin-account approval.
+Implemented: Settings → Help & Customer Service now opens own-ticket creation/history/replies/close with atomic first message and retry UUIDs. Existing admin-role queue can reply, adjust priority, review/resume/resolve/close. Existing support RLS retained and lifecycle/identity/sender/timestamp/terminal-message guards added; client history deletion/TRUNCATE prevented. Settings Wallet placeholder corrected. No role assignment or customer data changes. Production currently has ZERO admin accounts; owner must identify an account before real support queue handling can begin.
+Verified: 119 isolated PostgreSQL/DOM/media checks; syntax/whitespace; production migration/functions/triggers/grants, no-UID read isolation and unchanged advisors. Not Verified: production transactional lifecycle/concurrency, phone/two-account flows and actual admin operation. Support replies have no notification/email/push yet; attachments, spam limits and moderation/admin operations remain Incomplete. See docs/SUPPORT_CENTER_REVIEW.md and safe API rollback. Accepted call/Beauty files unchanged.

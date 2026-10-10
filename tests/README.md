@@ -77,3 +77,5 @@ Supersedes the prepared status above: the approved migration is deployed. Produc
 
 ## Recharge foundation
 107 checks include server package snapshots/idempotent keys, raw client forgery and service-only confirmation denial, exact cents, mismatched payments, duplicate/cross-order receipts, missing-wallet/overflow/ledger-failure atomic rollback, terminal/legacy rejection, API rollback retaining evidence and DOM/account cleanup. Tests use PGlite, not real provider payments or concurrent production callbacks. Production permission/RLS/zero-active-package metadata checked; transactional settlement, provider signature integration and phone acceptance Not Verified. Purchase UI remains disabled. See docs/RECHARGE_FOUNDATION_REVIEW.md.
+
+Support checkpoint: `npm test` now passes 119 checks. `support-center.test.cjs` adds isolated PostgreSQL atomic create/retry/ownership/admin/state/append-only/rollback checks and DOM safe rendering, login/logout cleanup and failed-submit retry-ID retention. These are not physical-phone or production transactional verification. See docs/SUPPORT_CENTER_REVIEW.md.
