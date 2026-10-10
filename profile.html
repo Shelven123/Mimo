@@ -913,9 +913,7 @@ function videoCall() {
 
 function makeAppointment() {
 
-  alert(
-    "Appointment system will be connected next."
-  );
+  location.href = "appointments.html?host=" + encodeURIComponent(hostId);
 
 }
 

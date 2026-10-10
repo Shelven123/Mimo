@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Mimo — Appointments</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./appointments.js?v=20261010-book1"></script><script src="./contact-permissions.js?v=20261010-contact1"></script>
+<style>*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f7f7f9;color:#222}header{display:flex;align-items:center;gap:16px;padding:18px;background:#fff;position:sticky;top:0;border-bottom:1px solid #eee}h1{font-size:22px;margin:0;flex:1}h2{font-size:17px}a{color:#d83e68;text-decoration:none}main{max-width:720px;margin:auto;padding:14px 14px calc(35px + env(safe-area-inset-bottom))}button{border:0;border-radius:16px;padding:12px;font:inherit;background:#fff0f5;color:#b72f53;cursor:pointer}button:disabled{opacity:.5}form,.appointment{padding:16px;background:#fff;border-radius:16px;margin-bottom:14px}label{display:block;margin:12px 0}input,textarea{display:block;font:inherit;width:100%;padding:12px;border:1px solid #ddd;border-radius:12px;margin-top:8px}textarea{min-height:85px}.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}p{line-height:1.5;overflow-wrap:anywhere}.note,#status{color:#777;font-size:14px}#more[hidden],form[hidden]{display:none}</style></head><body>
+<header><a href="me.html">‹</a><h1>Appointments</h1><button id="refresh">Refresh</button></header>
+<main><p class="note">Request a time to talk. This does not charge diamonds or reserve a paid service. Host confirmation is required; calls do not start automatically.</p>
+<form id="request" hidden><h2 id="hostName">Request an appointment</h2><p id="zone" class="note"></p><label>Time<input id="time" type="datetime-local" required></label><label>Note (optional)<textarea id="note" maxlength="500"></textarea></label><button id="submit" type="submit">Send request</button></form>
+<p id="requestHint" class="note" hidden>Requesting this host is unavailable because of account roles, blocking, or an invalid host. You can still view your existing appointments.</p><p id="status" role="status">Loading appointments…</p><div id="list"></div><button id="more" hidden>Load more</button></main>
+<script>
+const sb=window.supabase.createClient('https://zhhgiwqehwuwzxnqbnth.supabase.co','sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ');
+const status=document.getElementById('status'),list=document.getElementById('list'),form=document.getElementById('request'),submit=document.getElementById('submit'),refresh=document.getElementById('refresh'),more=document.getElementById('more');
+const hostId=new URLSearchParams(location.search).get('host');let uid=null,pages=1,busy=false,disposed=false,poll=null,subscription=null,requestAllowed=false;
+function controls(){refresh.disabled=busy||!uid;more.disabled=busy;submit.disabled=busy||!requestAllowed;}
+async function load(extra=false){if(disposed||busy||!uid)return;busy=true;controls();const requested=pages+(extra?1:0),rows=[],seen=new Set();try{let batch=[];for(let page=0;page<requested;page++){batch=await MimoAppointments.list(sb,uid,page*30);if(disposed)return;for(const row of batch)if(!seen.has(row.id)){seen.add(row.id);rows.push(row);}if(batch.length<30)break;}
+ list.replaceChildren(MimoAppointments.render(document,rows,uid,change));pages=requested;more.hidden=batch.length<30;status.textContent=rows.length?'':'No appointments yet. Open a host profile and tap Meet.';
+ }catch(error){if(!disposed)status.textContent='Unable to load appointments. Tap Refresh to retry.';}finally{busy=false;if(!disposed)controls();}}
+async function change(row,state){if(disposed||busy||!uid)return;busy=true;controls();try{await MimoAppointments.change(sb,row,state,uid);if(disposed)return;busy=false;await load();}catch(error){if(!disposed)status.textContent='Could not update. The time may be taken, expired or blocked, or the status changed. Refresh and retry.';}finally{busy=false;if(!disposed)controls();}}
+form.onsubmit=async event=>{event.preventDefault();if(disposed||busy||!uid||!requestAllowed)return;busy=true;controls();try{
+ const payload=MimoAppointments.request(uid,hostId,document.getElementById('time').value,document.getElementById('note').value);
+ const permissions=await MimoContacts.permissions(sb,hostId);if(disposed)return;if(!permissions.call)throw Error('Appointment unavailable because of blocking or account roles.');
+ const {error}=await sb.from('appointments').insert(payload);if(error)throw error;if(disposed)return;form.reset();busy=false;await load();if(!disposed)status.textContent='Request sent. Waiting for Host confirmation.';
+ }catch(error){if(!disposed)status.textContent=error.message||'Could not send request.';}finally{busy=false;if(!disposed)controls();}};
+function cleanup(){disposed=true;uid=null;requestAllowed=false;clearInterval(poll);subscription?.unsubscribe();list.replaceChildren();form.hidden=true;more.hidden=true;controls();}
+async function init(){try{
+ subscription=sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||(uid&&session&&session.user.id!==uid)){cleanup();status.textContent='Session changed. Reload or sign in again.';}}).data.subscription;
+ const {data,error}=await sb.auth.getUser();if(error)throw error;if(disposed)return;if(!data.user){status.textContent='Sign in to see appointments. ';const link=document.createElement('a');link.href='login.html';link.textContent='Sign in';status.append(link);controls();return;}uid=data.user.id;
+ if(hostId){
+  const {data:host,error:hostError}=await sb.from('profiles').select('id,role,display_name,username').eq('id',hostId).maybeSingle();if(hostError)throw hostError;if(disposed)return;
+  const permissions=host?.role==='host'?await MimoContacts.permissions(sb,hostId):null;if(disposed)return;
+  if(permissions?.call){requestAllowed=true;form.hidden=false;document.getElementById('hostName').textContent='Request with '+(host.display_name||host.username||'Host');document.getElementById('zone').textContent='Times use your device timezone: '+Intl.DateTimeFormat().resolvedOptions().timeZone+'. Choose a future time within 90 days.';}else document.getElementById('requestHint').hidden=false;
+ }
+ await load();if(!disposed)poll=setInterval(()=>{if(document.visibilityState!=='hidden')load();},15000);
+ }catch(error){if(!disposed){status.textContent='Unable to load account or host details. Reload to retry.';controls();}}}
+refresh.onclick=()=>load();more.onclick=()=>load(true);document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='hidden')load();});window.addEventListener('pagehide',cleanup);window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});init();
+</script></body></html>
