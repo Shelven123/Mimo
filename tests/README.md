@@ -71,3 +71,6 @@ Supersedes the prepared status above: the approved migration is deployed. Produc
 
 ## Appointments
 88 automatic checks include request bounds, role/participant authorization, immutable identity, Host-only acceptance, early completion denial, exact-start conflict, terminal states, blocks/preferences/notification behavior, rollback, stale-status detection, signed-out UI and logout during a read. Production metadata verified; production transaction and phone acceptance Not Verified. See docs/APPOINTMENTS_REVIEW.md.
+
+## Wallet reads
+96 checks include exact bigint text, own-user/anonymous/no-UID reads, pagination, rollback retaining records, safe display, unavailable instead of zero on failures, and account-switch/logout cleanup in Wallet and Me. Production metadata and no-UID read verified; physical-phone and production cross-user transaction Not Verified. Financial writes are not implemented. See docs/WALLET_READ_REVIEW.md.
