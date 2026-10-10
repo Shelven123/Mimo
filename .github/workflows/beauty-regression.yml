@@ -2,9 +2,9 @@ name: Beauty regression
 on:
   push:
     branches: [main]
-    paths: ['support.html', 'support-center.js', 'settings.html', 'recharge.html', 'recharge.js', 'wallet.html', 'wallet.js', 'appointments.html', 'appointments.js', 'me.html', 'notifications.html', 'notification-center.js', 'notification-settings.html', 'call.html', 'call-settings.html', 'call-preferences.js', 'chat.html', 'messages.html', 'message-center.js', 'index.html', 'profile.html', 'blocked-users.html', 'contact-permissions.js', 'supabase/**', 'beauty-*', 'tests/**', 'package*.json', '.github/workflows/beauty-regression.yml']
+    paths: ['plaza.html', 'plaza.js', 'support.html', 'support-center.js', 'settings.html', 'recharge.html', 'recharge.js', 'wallet.html', 'wallet.js', 'appointments.html', 'appointments.js', 'me.html', 'notifications.html', 'notification-center.js', 'notification-settings.html', 'call.html', 'call-settings.html', 'call-preferences.js', 'chat.html', 'messages.html', 'message-center.js', 'index.html', 'profile.html', 'blocked-users.html', 'contact-permissions.js', 'supabase/**', 'beauty-*', 'tests/**', 'package*.json', '.github/workflows/beauty-regression.yml']
   pull_request:
-    paths: ['support.html', 'support-center.js', 'settings.html', 'recharge.html', 'recharge.js', 'wallet.html', 'wallet.js', 'appointments.html', 'appointments.js', 'me.html', 'notifications.html', 'notification-center.js', 'notification-settings.html', 'call.html', 'call-settings.html', 'call-preferences.js', 'chat.html', 'messages.html', 'message-center.js', 'index.html', 'profile.html', 'blocked-users.html', 'contact-permissions.js', 'supabase/**', 'beauty-*', 'tests/**', 'package*.json', '.github/workflows/beauty-regression.yml']
+    paths: ['plaza.html', 'plaza.js', 'support.html', 'support-center.js', 'settings.html', 'recharge.html', 'recharge.js', 'wallet.html', 'wallet.js', 'appointments.html', 'appointments.js', 'me.html', 'notifications.html', 'notification-center.js', 'notification-settings.html', 'call.html', 'call-settings.html', 'call-preferences.js', 'chat.html', 'messages.html', 'message-center.js', 'index.html', 'profile.html', 'blocked-users.html', 'contact-permissions.js', 'supabase/**', 'beauty-*', 'tests/**', 'package*.json', '.github/workflows/beauty-regression.yml']
 permissions:
   contents: read
 jobs:

@@ -13,3 +13,5 @@ Device checklist: submit a request, retry after network failure, view its saved 
 Rollback: revert frontend and apply database/rollback-support-center.sql to disable the new APIs. Keep support history and lifecycle/append-only protections; do not restore unsafe grants. Migration file was prepared directly, continuing the established safer repository/MCP workflow after the earlier CLI telemetry rejection, without retrying the telemetry request.
 
 Docs consulted: [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security) and changelog index (2026-10-10; no applicable breaking changes to this invoker/RLS implementation).
+
+User verification update (2026-10-10 22:18 Malaysia): owner inspected the support page and reported no problem. This accepts the page inspection only; it does not prove every ticket operation, admin workflow, two-account isolation or concurrency.
