@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +7,7 @@
 <title>Mimo - Me</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./wallet.js?v=20261010-wallet1"></script>
 
 <style>
 
@@ -737,42 +737,14 @@ async function loadProfile(userId) {
    WALLET
 ========================= */
 
+let walletEpoch=0,walletOwner=null;
 async function loadWallet(userId) {
-
-
-  const {
-    data,
-    error
-  } = await supabaseClient
-    .from("wallets")
-    .select(`
-      diamonds
-    `)
-    .eq("user_id", userId)
-    .maybeSingle();
-
-
-  if (error) {
-
-    console.error(error);
-
-    return;
-
-  }
-
-
-  if (data) {
-
-    document.getElementById(
-      "diamond"
-    ).textContent =
-      Number(data.diamonds || 0)
-        .toLocaleString();
-
-  }
-
+ walletOwner=userId;const epoch=++walletEpoch,element=document.getElementById('diamond');element.textContent='Loading…';
+ try{const value=await MimoWallet.balance(supabaseClient);const{data,error}=await supabaseClient.auth.getUser();if(epoch!==walletEpoch)return;if(error||data.user?.id!==userId)throw Error('Session changed');element.textContent=MimoWallet.format(value);}catch(error){if(epoch===walletEpoch)element.textContent='Unavailable';}
 }
-
+const walletAuthSubscription=supabaseClient.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||(walletOwner&&session&&session.user.id!==walletOwner)){walletEpoch++;walletOwner=null;document.getElementById('diamond').textContent='Unavailable';}}).data.subscription;
+window.addEventListener('pagehide',()=>{walletEpoch++;walletAuthSubscription.unsubscribe();});
+window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
 
 /* =========================
    VIP
@@ -829,18 +801,14 @@ function editProfile() {
 
 function recharge() {
 
-  alert(
-    "Recharge will be connected next."
-  );
+  location.href = "wallet.html";
 
 }
 
 
 function openWallet() {
 
-  alert(
-    "Wallet will be connected next."
-  );
+  location.href = "wallet.html";
 
 }
 
@@ -960,4 +928,3 @@ init();
 
 </body>
 </html>
-```
