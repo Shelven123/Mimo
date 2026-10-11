@@ -28,3 +28,12 @@ Reference-style rounded white SVG play triangle on dark circle; center button fu
 Implemented: centered tabs, compact real follow control, bottom comment entry, dark existing comment composer under the same reduced player. Follow writes require existing privacy/block permission and verify persisted state. Errors show Retry; logout/closed-generation responses cannot restore private rows. Comments pin the selected video across resize and social refresh; closing restores its feed position. Outside-Reels comments keep their modal behavior.
 
 Automated verification: 209 full-suite checks including shared follow state/retry/late logout response, nonfirst Reel shrinking, unchanged player/time/sound and nested Escape behavior. Physical Safari keyboard layout, live-account follow and comment submission still need phone acceptance.
+
+### Gift controls and keyboard stability correction (2026-10-11)
+User phone evidence: compact Follow visible; comment discussion wrongly white; focusing input pans the Reels overlay away and exposes underlying feed. Scope this as a confirmed failure.
+
+Implemented: Reels actions Like/Comments/Gift/Share with existing gift handler; no Repost/Save or duplicate visible gift. Comment section explicitly transparent over dark sheet, stronger text contrast, muted metadata and restrained pink input accents. 16px actual input text prevents Safari automatic input zoom.
+
+Opening comments captures a fixed preview height in pixels. VisualViewport resize/scroll updates overlay height/top and remaining discussion area, never preview height; keyboard mode hides emoji shortcuts. Fixed body prevents background page scroll and restores original styles/scroll on viewer close. Playback remains pinned to the same video.
+
+Verified: 212 full-suite checks; viewport resize/pan/input/close, unchanged player/time/sound, computed dark background/input font and gift callback after refresh. Not verified: physical Safari behavior and live gift sending. Attempted Chromium rendering could not run because browser archive download failed; no visual-render success claimed.
