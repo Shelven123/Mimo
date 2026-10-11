@@ -16,6 +16,7 @@
     }
   }
   function destination(row){
+    if(row.notification_type==='support')return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(row.related_id||'')?'support.html?ticket='+encodeURIComponent(row.related_id):null;
     if(row.notification_type==='appointment')return 'appointments.html';
     const id=row.related_user_id;
     if(!id||!/^[0-9a-f-]{36}$/i.test(id))return null;
