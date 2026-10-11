@@ -346,3 +346,9 @@ Verified: 188 automated checks, including 120/179/180-second confirmation and >1
 ## 2026-10-11 Reels center icon correction
 - Implemented: reference-style white rounded SVG play triangle on dark circular background, visible only when paused. Playing hides the center button completely; picture tap/hold, sound and seeking retained.
 - Verified: 206 automatic checks, including hidden during playing / shown paused / hidden on resume. Not Verified: current appearance on physical phone. No DB/call/Beauty change.
+
+## 2026-10-11 Reels centered tabs / Follow / visible-video comments
+- Implemented: centered Reels/Following switcher; compact Follow/Following beside author with actual Supabase follows read/write/read-back, privacy/block checks, no self-follow, retry and session guards. Existing follow RLS retained.
+- Implemented: bottom comment entry opens the existing composer as a dark panel inside Reels; existing video shrinks above it (38% / 62%), retains player/source/time/sound and manual-pause state. Playback pins the current Reel while comments are open; close restores the same scroll index. ResizeObserver handles viewport/keyboard reflow; nested Escape closes comments only. Normal Plaza comments remain modal.
+- Verified: 209 automated checks, including real component state/read/write mocks, failure retry, shared author state, stale follow response after logout, later-Reel comment opening/closing with no player reset or mute. Existing upload, follow database/RLS and playback tests retained; syntax and whitespace checks pass.
+- Not Verified: physical phone appearance, keyboard/reflow, production-account follow/unfollow and commenting for this release. DOM tests are not phone acceptance. No call/Beauty/database schema changes.

@@ -23,3 +23,8 @@ Not Verified: physical phone center-button appearance, touch hold/swipe, native 
 
 ## Center icon correction
 Reference-style rounded white SVG play triangle on dark circle; center button fully hidden while playing, shown paused. Picture gestures and timeline retained. 206 checks pass including visibility transitions. Physical-phone appearance pending.
+
+### Centered tabs and visible-video comments (2026-10-11)
+Implemented: centered tabs, compact real follow control, bottom comment entry, dark existing comment composer under the same reduced player. Follow writes require existing privacy/block permission and verify persisted state. Errors show Retry; logout/closed-generation responses cannot restore private rows. Comments pin the selected video across resize and social refresh; closing restores its feed position. Outside-Reels comments keep their modal behavior.
+
+Automated verification: 209 full-suite checks including shared follow state/retry/late logout response, nonfirst Reel shrinking, unchanged player/time/sound and nested Escape behavior. Physical Safari keyboard layout, live-account follow and comment submission still need phone acceptance.
