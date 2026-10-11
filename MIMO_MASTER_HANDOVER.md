@@ -314,3 +314,10 @@ Verified: 187 automated checks plus JS/inline syntax/whitespace, including autom
 ## 2026-10-11 Owner-approved three-minute Reel limit
 Owner explicitly requested increasing local video duration to 3 minutes. Implemented: metadata confirmation, prepared-file gate, fallback upload decoder validation and composer guidance now allow up to 180 seconds; 30 MB bucket/client size limit and formats remain unchanged. Prior 90-second statements are historical and superseded for local uploads. Confirm/cancel, automatic/manual covers, draft retry, private permissions and continuous playback preserved. No database, call/Beauty or financial changes.
 Verified: 188 automated checks, including 120/179/180-second confirmation and >180-second denial; syntax/whitespace pass. This is client duration validation, not server video-duration enforcement or transcoding. Not Verified: physical-phone upload/playback of a three-minute file. PR #29 cover release succeeded and four live frontend files matched; cover phone acceptance remains pending.
+
+## 2026-10-11 Plaza visible muted autoplay
+
+- Implemented: `reel-playback.js` controls only Plaza feed videos. Scroll-visible playback is muted by default, one active video at a time, looped. Tap video or Sound button for audio. Scroll-away/new activation/background resets mute. Native selection/detail/external previews suspend feed; comments and sharing preserve it.
+- Verified (automated): visibility, gesture, stable player/time, background, picker, external preview, readiness, removal/session cleanup, rejected/late promise fallback. Prior continuous like/comment playback, three-minute upload limit and opening cover tests retained. See `docs/REEL_AUTOPLAY_REVIEW.md`.
+- Not Verified: production media autoplay/audio on real iPhone/Android, browser power/settings restrictions. Explicit Play fallback exists. Do not mark physical acceptance until user confirms.
+- Calls/Beauty/database unchanged. Composer video retains its confirmation and native controls.
