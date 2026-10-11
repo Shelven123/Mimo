@@ -406,3 +406,9 @@ Automated Verified: 234 checks including notification authority, preference supp
 ## 2026-10-11 — Fixed Home layout
 
 User Verified: the earlier mobile anti-zoom/layout improvement was explicitly accepted as satisfactory. User requested the Home page also remain fixed. Implemented: Home uses a fixed viewport grid with stationary header and bottom navigation, safe-area spacing, and a separate middle content scroller. Stories and filters retain horizontal scrolling; host actions, call routing and incoming-call behavior remain unchanged. Automated verification uses the existing regression suite and script syntax checks. Actual iPhone Home scrolling/keyboard acceptance is Not Verified.
+
+## 2026-10-11 — Home accepted; Plaza interaction notifications
+
+User Verified: user explicitly checked the fixed Home layout and is completely satisfied. This supersedes the pending Home acceptance above.
+
+Implemented: new post likes/comments notify the post author, with a validated direct post link and a generic private preview. Activity Posts controls delivery, missing settings default enabled. Self and blocked interactions are excluded. Matching retries do not duplicate notifications; unlike/re-like does not repeatedly notify the same author for the same post/actor while notice history exists. No backfill. Existing playback/UI untouched. Automated checks and production metadata verification accompany deployment. User Verified: none for this batch. Not Verified: real two-account/phone acceptance. Incomplete: follower new-post broadcasts, comment-author reply notifications, push/email.
