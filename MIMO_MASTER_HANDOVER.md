@@ -424,3 +424,10 @@ Automated Verified: 236 checks, including actual composer mode/draft/permission/
 Implemented: voice bubbles now show sound waves and seconds with tap playback. Recording displays a central real microphone-level meter, elapsed time and slide-cancel feedback. Own messages of all types support Recall; text supports Edit. Payload/media references are cleared on recall, text edits use optimistic revisions, retry drafts are retained, and receipt-only updates do not restart players. Gift recall does not refund ledger transfers. Fixed historical chat reads missing video/audio fields. Realtime plus foreground polling synchronizes edits/recalls.
 
 Automated Verified: 242 checks, syntax/diff and production API metadata/advisors. User Verified: none for this batch. Not Verified: physical phone appearance/meter/recording and real two-account acceptance. See docs/CHAT_MESSAGE_ACTIONS_REVIEW.md for permissions, rollback and signed-URL expiry limits. Existing call/Beauty code untouched.
+
+
+## 2026-10-12 — Smaller voice messages and quiet sending UI
+
+Implemented: idle voice mode and normal uploads no longer show the bottom status/native audio/retry panel. Failed sends retain the recording and show recovery controls; retry hides the panel during upload, and success/discard clears it. Recorder errors remain visible. Sound-wave icons reduced from 26px to 18px, short voice bubbles narrowed, and the old own-message column layout corrected so message options/receipts do not create large vertical gaps. Shared assets cache versions updated.
+
+Automated Verified: 242 regression checks, including hidden pending/success UI and visible failed-send recovery, plus JavaScript syntax and diff checks. User Verified: none for this batch. Not Verified: physical iPhone appearance and recording acceptance. Call/Beauty/Reels/Home code unchanged.
