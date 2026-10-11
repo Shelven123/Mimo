@@ -18,7 +18,7 @@ function create({input,dialog,preview,message,confirm,cancel,chooseAgain,summary
  confirm.onclick=()=>{if(!alive()||!canChange()||confirm.disabled||!pending)return;try{MimoMedia.markVideoPrepared(pending.file,pending.duration);committed={...pending};close(false);draw();onChange();}catch(error){message.textContent=error.message;}};
  if(chooseAgain)chooseAgain.onclick=()=>{if(!alive()||!canChange())return;release();pending=null;message.textContent='Opening Photos… Wait for the selected video to download.';input.click();};
  cancel.onclick=close;dialog.addEventListener('cancel',event=>{event.preventDefault();close();});dialog.addEventListener('click',event=>{if(event.target===dialog)close();});
- return {files:()=>committed?[committed.file]:[],isPicking:()=>picking,hasPending:()=>!!pending,showPending:()=>{if(pending&&!dialog.open)show(pending.file);},clear(){committed=null;close();input.value='';},dispose(){disposed=true;close();committed=null;releaseSummary();message.textContent='';input.value='';}};
+ return {cover:()=>committed?MimoMedia.captureCover(committed.file,summary.querySelector('video'),alive):Promise.reject(Error('Confirm your Reel first.')),files:()=>committed?[committed.file]:[],isPicking:()=>picking,hasPending:()=>!!pending,showPending:()=>{if(pending&&!dialog.open)show(pending.file);},clear(){committed=null;close();input.value='';},dispose(){disposed=true;close();committed=null;releaseSummary();message.textContent='';input.value='';}};
 }
 global.MimoReelPicker={create};
 })(window);
