@@ -42,3 +42,10 @@ Verified: 212 full-suite checks; viewport resize/pan/input/close, unchanged play
 Shared Plaza/Reels renderer now exposes Like, Comments, Gift and Share, removing overlay gift and Repost/Save controls; existing records retained. Shared SVG uses explicit pink/gold/lavender fills. Comments header has equal-width side columns, and the handle is an accessible button with captured pointer drag dismissal (64px), short/cancel retention and generated-click suppression. Busy and disposed gestures cannot dismiss.
 
 Verified: 213 automated checks, including pointer lifecycle, shared gift callback after refresh and existing playback/keyboard continuity. Phone icon/layout/drag and live gift transaction pending. Previous screenshots confirm dark styling appears on phone; no assumption of keyboard acceptance.
+
+### Keyboard correction after phone rejection (2026-10-11)
+User accepted other changes but explicitly rejected keyboard fixation. Evidence shows the comment list effectively collapsed above Safari keyboard/accessory; do not label earlier layout as User Verified.
+
+Now the stage height is captured, keyboard shifts only sheet bottom inset, and preview opens smaller (22%, 96–176px) and stays fixed. Compact header/composer, hidden duplicate caption and no persistent Saved feedback free up scrolling space. Comment list is explicitly a zero-basis flex scroll area with pan-y and iOS momentum; input stays at visible bottom. Error feedback remains visible.
+
+213 checks pass, including retained stage/preview/player/time and scrollTop through keyboard resize/pan/input, overflow scrolling and hidden duplicate caption. Physical Safari stable layout and list touch scrolling remain unverified.
