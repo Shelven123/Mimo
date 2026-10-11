@@ -336,3 +336,9 @@ Verified: 188 automated checks, including 120/179/180-second confirmation and >1
 - Implemented: viewer starts audible via synchronous gesture playback; existing signed source/position adopted on entry. Full-screen Sound, Pause/Resume and picture tap controls. Mute choice persists across viewer swipes; each fresh entry resets sound on. Outer Plaza stays muted by default. Manual pause retained across metadata, late promises, refresh and background. Signed-source renewal preserves paused position and rejects stale/late replacements.
 - Verified: 201 automated checks plus JS/inline syntax and diff. Prior Plaza/Reels continuity, upload, follow RLS and session tests retained. Database/call/Beauty unchanged.
 - Not Verified: this correction on physical phone (audio policy fallback retained). See updated `docs/REELS_VIEWER_REVIEW.md`. Do not label real-phone acceptance based on automated tests.
+
+## 2026-10-11 Reels center controls / hold / seek
+
+- Implemented: `reel-controls.js` viewer-only center Pause/Resume, hold-to-pause/release-to-resume (200 ms), native vertical swipe cancellation, release-click suppression, m:ss range seeking (0.1 sec). Manual pause retained on hold/release, seek and social refresh. Inactive/background/disposed player cannot be resumed by stale release. Listener/timer/DOM cleanup integrated.
+- Verified: 205 automatic checks; actual Plaza/Reels tests load the controls module; lifecycle/gesture/seek tests plus syntax and diff pass. No database/call/Beauty modifications. Outer muted Plaza unchanged.
+- Not Verified: current release on phone (center visual/touch swipe/slider/production media seeking). See updated `docs/REELS_VIEWER_REVIEW.md`.
