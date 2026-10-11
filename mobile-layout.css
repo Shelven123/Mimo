@@ -1,0 +1,8 @@
+/* Keep mobile forms at a readable size and avoid accidental page gestures.
+   Browser-level zoom/accessibility settings remain outside the site's control. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@media(any-pointer:coarse){
+ html,body,main,dialog,nav,a,button,input,textarea,select,.chat-area,.comments-scroll,.reels-stream,.post-media,.share-grid,.share-people{touch-action:pan-x pan-y}
+ input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button]):not([type=submit]):not([type=reset]):not([type=color]):not([type=hidden]),textarea,select{font-size:16px!important}
+ .chat-area,.comments-scroll{overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
+}
