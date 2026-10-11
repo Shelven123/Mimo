@@ -321,3 +321,11 @@ Verified: 188 automated checks, including 120/179/180-second confirmation and >1
 - Verified (automated): visibility, gesture, stable player/time, background, picker, external preview, readiness, removal/session cleanup, rejected/late promise fallback. Prior continuous like/comment playback, three-minute upload limit and opening cover tests retained. See `docs/REEL_AUTOPLAY_REVIEW.md`.
 - Not Verified: production media autoplay/audio on real iPhone/Android, browser power/settings restrictions. Explicit Play fallback exists. Do not mark physical acceptance until user confirms.
 - Calls/Beauty/database unchanged. Composer video retains its confirmation and native controls.
+
+## 2026-10-11 Immersive Reels and Following
+
+- User Verified: previous Plaza muted autoplay accepted (user: “都可以了”). New requirement: outside Sound button toggles audio; picture opens Reels with vertical swiping and Following mode.
+- Implemented: `reels-viewer.js` uses scroll-snap, one player, automatic next-page fetch, back/retry/empty states, generation/session guards. Selected position/sound transferred on entry; browser Play fallback retained. Shared keyed media/actions preserve like/comment playback. Following added to Plaza and Reels top bar.
+- Database: additive following filter in existing `mimo_plaza_feed_v3` before limit/offset; existing modes/shape/SECURITY INVOKER/RLS/permissions retained. Production `20261011060905_mimo_following_reels.sql` applied; live own-follow/auth guard metadata verified. Security/performance advisors unchanged. No customer data modified. Rollback: `database/rollback-following-reels.sql` after frontend rollback.
+- Verified: 198 automatic checks, actual Plaza/immersive interaction continuity, independent viewer lifecycle/paging/race tests and isolated follow/block/auth SQL checks. See `docs/REELS_VIEWER_REVIEW.md`.
+- Not Verified: current release physical-phone swipe/layout/audio handoff and actual-account Following/production video stream. Do not mark tested on phone based on DOM mocks. Beauty/call and upload confirmation/cover/3-minute constraints retained.
