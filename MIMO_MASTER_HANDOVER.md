@@ -402,3 +402,7 @@ Verified: 188 automated checks, including 120/179/180-second confirmation and >1
 Implemented: administrator replies and status changes now notify the requester, with a direct authorized ticket link. System Messages controls delivery; no settings defaults enabled. Generic notification body avoids copying private replies. Matching retries, self messages and priority-only updates do not duplicate notices. No historical backfill.
 
 Automated Verified: 234 checks including notification authority, preference suppression, retry safety and direct ticket opening beyond the first list page. See docs/SUPPORT_NOTIFICATIONS_REVIEW.md. User Verified: none for this batch. Not Verified: real admin/user production workflow and phone acceptance. Incomplete: administrator identity assignment, push/email and support attachments. Existing call and Beauty code untouched.
+
+## 2026-10-11 — Fixed Home layout
+
+User Verified: the earlier mobile anti-zoom/layout improvement was explicitly accepted as satisfactory. User requested the Home page also remain fixed. Implemented: Home uses a fixed viewport grid with stationary header and bottom navigation, safe-area spacing, and a separate middle content scroller. Stories and filters retain horizontal scrolling; host actions, call routing and incoming-call behavior remain unchanged. Automated verification uses the existing regression suite and script syntax checks. Actual iPhone Home scrolling/keyboard acceptance is Not Verified.
