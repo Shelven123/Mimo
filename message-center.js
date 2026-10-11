@@ -32,11 +32,11 @@
       const avatar=document.createElement('img');avatar.className='avatar';avatar.alt='';const url=safeAvatar(row.avatar_url);if(url)avatar.src=url;else avatar.hidden=true;
       const info=document.createElement('div');info.className='info';
       const name=document.createElement('div');name.className='name';name.textContent=row.display_name||row.username||'Mimo member';
-      const preview=document.createElement('div');preview.className='preview';preview.textContent=row.last_content||(row.last_type==='image'?'Photo':'Start a conversation');
+      const preview=document.createElement('div');preview.className='preview';preview.textContent=row.last_content||(row.last_type==='image'?'Photo':row.last_type==='video'?'Video':'Start a conversation');
       info.append(name,preview);const meta=document.createElement('div');meta.className='meta';
       const date=document.createElement('time');const value=new Date(row.activity_at);date.textContent=Number.isNaN(value.getTime())?'':value.toLocaleDateString(undefined,{month:'short',day:'numeric'});meta.append(date);
       const unread=Number(row.unread_count);if(unread>0){const badge=document.createElement('span');badge.className='unread';badge.textContent=unread>99?'99+':String(unread);badge.setAttribute('aria-label',unread+' unread messages');meta.append(badge);}
-      if(global.MimoMessagingUI){const UI=global.MimoMessagingUI;const shell=UI.avatar(document,row.avatar_url,name.textContent);const unread=Number(row.unread_count);link.classList.toggle('has-unread',unread>0);if(unread>0)preview.textContent=(unread>99?'99+':String(unread))+' new messages · '+(row.last_type==='image'?'Photo':row.last_content||'Open conversation');date.textContent=UI.relative(row.activity_at);date.dateTime=Number.isNaN(value.getTime())?'':value.toISOString();link.append(shell,info,meta);}else link.append(avatar,info,meta);fragment.append(link);
+      if(global.MimoMessagingUI){const UI=global.MimoMessagingUI;const shell=UI.avatar(document,row.avatar_url,name.textContent);const unread=Number(row.unread_count);link.classList.toggle('has-unread',unread>0);if(unread>0)preview.textContent=(unread>99?'99+':String(unread))+' new messages · '+(row.last_type==='image'?'Photo':row.last_type==='video'?'Video':row.last_content||'Open conversation');date.textContent=UI.relative(row.activity_at);date.dateTime=Number.isNaN(value.getTime())?'':value.toISOString();link.append(shell,info,meta);}else link.append(avatar,info,meta);fragment.append(link);
     }
     return fragment;
   }
