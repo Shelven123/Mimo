@@ -8,3 +8,9 @@ Verified: 198 automated checks pass. Actual Plaza interactions with viewer loade
 
 User Verified: user accepted previous muted-autoplay release before this request.
 Not Verified: this release's real-phone swipe/snap, native-dialog visual appearance, fullscreen audio transfer under browser policy, production signed media/network loading and real-account Following acceptance. The supplied Instagram recording is a behavioral/layout reference; no Instagram assets or APIs used. No call/Beauty/payment changes.
+
+## Entry audio and manual pause — 2026-10-11 follow-up
+
+Implemented: explicit video-picture entry requests playback with sound synchronously inside the click gesture, using the existing signed source when available and carrying its position. Sound button toggles mute; viewer picture and a dedicated Pause/Resume button toggle playback. Viewer mute preference carries to the next Reel; every new entry starts with sound. Outer Plaza remains muted by default. Manual pause survives source readiness, metadata, social refresh, late play completion and background re-entry. Adopted signed sources retain resolver renewal/session cleanup; superseded signing cannot reset an entry, late renewal cannot replace a now-playing video, and paused renewal restores its position.
+Verified: 201 automatic tests, including muted-to-audible gesture entry, pause/resume/mute and delayed-media races, signed-source adoption/renewal, plus prior actual-page like/comment continuity. Syntax/diff checks pass. No database change.
+Not Verified: this follow-up on physical Safari/Android. Browser audio policy may still require the retained Play fallback; this is not a claim of real-phone acceptance.

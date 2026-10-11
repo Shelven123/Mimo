@@ -329,3 +329,10 @@ Verified: 188 automated checks, including 120/179/180-second confirmation and >1
 - Database: additive following filter in existing `mimo_plaza_feed_v3` before limit/offset; existing modes/shape/SECURITY INVOKER/RLS/permissions retained. Production `20261011060905_mimo_following_reels.sql` applied; live own-follow/auth guard metadata verified. Security/performance advisors unchanged. No customer data modified. Rollback: `database/rollback-following-reels.sql` after frontend rollback.
 - Verified: 198 automatic checks, actual Plaza/immersive interaction continuity, independent viewer lifecycle/paging/race tests and isolated follow/block/auth SQL checks. See `docs/REELS_VIEWER_REVIEW.md`.
 - Not Verified: current release physical-phone swipe/layout/audio handoff and actual-account Following/production video stream. Do not mark tested on phone based on DOM mocks. Beauty/call and upload confirmation/cover/3-minute constraints retained.
+
+## 2026-10-11 Reels entry sound / pause correction
+
+- User request after viewing Reels release: enter with sound, support manual mute and pause.
+- Implemented: viewer starts audible via synchronous gesture playback; existing signed source/position adopted on entry. Full-screen Sound, Pause/Resume and picture tap controls. Mute choice persists across viewer swipes; each fresh entry resets sound on. Outer Plaza stays muted by default. Manual pause retained across metadata, late promises, refresh and background. Signed-source renewal preserves paused position and rejects stale/late replacements.
+- Verified: 201 automated checks plus JS/inline syntax and diff. Prior Plaza/Reels continuity, upload, follow RLS and session tests retained. Database/call/Beauty unchanged.
+- Not Verified: this correction on physical phone (audio policy fallback retained). See updated `docs/REELS_VIEWER_REVIEW.md`. Do not label real-phone acceptance based on automated tests.
