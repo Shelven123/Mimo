@@ -412,3 +412,9 @@ User Verified: the earlier mobile anti-zoom/layout improvement was explicitly ac
 User Verified: user explicitly checked the fixed Home layout and is completely satisfied. This supersedes the pending Home acceptance above.
 
 Implemented: new post likes/comments notify the post author, with a validated direct post link and a generic private preview. Activity Posts controls delivery, missing settings default enabled. Self and blocked interactions are excluded. Matching retries do not duplicate notifications; unlike/re-like does not repeatedly notify the same author for the same post/actor while notice history exists. No backfill. Existing playback/UI untouched. Automated checks and production metadata verification accompany deployment. User Verified: none for this batch. Not Verified: real two-account/phone acceptance. Incomplete: follower new-post broadcasts, comment-author reply notifications, push/email.
+
+## 2026-10-12 — Text / voice composer switch
+
+Implemented: a microphone/keyboard toggle beside the chat composer switches between typing and the existing hold-to-talk recorder in the same input position. Text drafts remain intact; failed voice drafts are preserved across modes. Switching mode alone never requests microphone access. Startup does not focus the keyboard; explicit return to text focuses with preventScroll. Recording/upload work blocks accidental mode changes; cancellation remains available. The existing plus-menu voice shortcut now selects voice mode. Logout disables the mode switch. Existing media upload/RPC and call code unchanged.
+
+Automated Verified: 236 checks, including actual composer mode/draft/permission/busy behavior plus existing recording/upload regressions. User Verified: none for this batch. Not Verified: iPhone keyboard transition and physical recording acceptance.
