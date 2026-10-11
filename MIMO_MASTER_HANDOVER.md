@@ -431,3 +431,10 @@ Automated Verified: 242 checks, syntax/diff and production API metadata/advisors
 Implemented: idle voice mode and normal uploads no longer show the bottom status/native audio/retry panel. Failed sends retain the recording and show recovery controls; retry hides the panel during upload, and success/discard clears it. Recorder errors remain visible. Sound-wave icons reduced from 26px to 18px, short voice bubbles narrowed, and the old own-message column layout corrected so message options/receipts do not create large vertical gaps. Shared assets cache versions updated.
 
 Automated Verified: 242 regression checks, including hidden pending/success UI and visible failed-send recovery, plus JavaScript syntax and diff checks. User Verified: none for this batch. Not Verified: physical iPhone appearance and recording acceptance. Call/Beauty/Reels/Home code unchanged.
+
+
+## 2026-10-12 — Voice bubble height follow-up
+
+User report: voice bubbles remained too large after the first icon reduction. Implemented: dedicated compact voice-message layout with timestamp beside playback instead of underneath, 6px vertical padding, 16px waves, 13px duration and narrower duration-dependent width. Normal short voice bubbles target 44px height; text/image/video styling and playback logic unchanged. Cache versions advanced.
+
+Automated Verified: 242 regression checks and JavaScript syntax/diff checks. User Verified: none for this follow-up. Not Verified: actual iPhone visual acceptance. Earlier screenshot confirms the previous appearance was not accepted; do not mark voice styling as User Verified.
