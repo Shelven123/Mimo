@@ -438,3 +438,12 @@ Automated Verified: 242 regression checks, including hidden pending/success UI a
 User report: voice bubbles remained too large after the first icon reduction. Implemented: dedicated compact voice-message layout with timestamp beside playback instead of underneath, 6px vertical padding, 16px waves, 13px duration and narrower duration-dependent width. Normal short voice bubbles target 44px height; text/image/video styling and playback logic unchanged. Cache versions advanced.
 
 Automated Verified: 242 regression checks and JavaScript syntax/diff checks. User Verified: none for this follow-up. Not Verified: actual iPhone visual acceptance. Earlier screenshot confirms the previous appearance was not accepted; do not mark voice styling as User Verified.
+
+
+## 2026-10-12 — Parent-commenter reply notifications
+
+Implemented: new comment replies notify the parent commenter independently of the existing post-author notice. Host replies to a viewer now notify that viewer. Self replies and parent/post-author overlap do not create duplicate parent notices. Activity Posts preferences and actor/post-owner block visibility apply independently. Generic body, existing direct post link, no historical backfill. Existing playback/layout unchanged.
+
+Automated Verified: 243 regression checks including PostgreSQL authorization, recipients, retries, independent settings, visibility and rollback. Production metadata/advisors are checked during deployment; no customer interactions inserted for testing. User Verified: none for this batch; the latest voice bubble appearance also still awaits explicit acceptance. Not Verified: real two-account phone reply notification workflow. Incomplete: follower new-post broadcasts, push/email. See docs/PLAZA_NOTIFICATIONS_REVIEW.md.
+
+Production Verified (metadata): reply migration applied, both comment notification triggers enabled, client execution denied, empty search path confirmed, security/performance advisors unchanged. This is not a real two-account workflow acceptance.
