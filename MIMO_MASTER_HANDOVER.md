@@ -418,3 +418,9 @@ Implemented: new post likes/comments notify the post author, with a validated di
 Implemented: a microphone/keyboard toggle beside the chat composer switches between typing and the existing hold-to-talk recorder in the same input position. Text drafts remain intact; failed voice drafts are preserved across modes. Switching mode alone never requests microphone access. Startup does not focus the keyboard; explicit return to text focuses with preventScroll. Recording/upload work blocks accidental mode changes; cancellation remains available. The existing plus-menu voice shortcut now selects voice mode. Logout disables the mode switch. Existing media upload/RPC and call code unchanged.
 
 Automated Verified: 236 checks, including actual composer mode/draft/permission/busy behavior plus existing recording/upload regressions. User Verified: none for this batch. Not Verified: iPhone keyboard transition and physical recording acceptance.
+
+## 2026-10-12 — Compact voice bubbles, recording meter, recall/edit
+
+Implemented: voice bubbles now show sound waves and seconds with tap playback. Recording displays a central real microphone-level meter, elapsed time and slide-cancel feedback. Own messages of all types support Recall; text supports Edit. Payload/media references are cleared on recall, text edits use optimistic revisions, retry drafts are retained, and receipt-only updates do not restart players. Gift recall does not refund ledger transfers. Fixed historical chat reads missing video/audio fields. Realtime plus foreground polling synchronizes edits/recalls.
+
+Automated Verified: 242 checks, syntax/diff and production API metadata/advisors. User Verified: none for this batch. Not Verified: physical phone appearance/meter/recording and real two-account acceptance. See docs/CHAT_MESSAGE_ACTIONS_REVIEW.md for permissions, rollback and signed-URL expiry limits. Existing call/Beauty code untouched.

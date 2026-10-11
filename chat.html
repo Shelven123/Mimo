@@ -176,7 +176,7 @@ body {
 </style>
 <script src="./contact-permissions.js?v=20261010-contact1"></script>
 <script src="./message-center.js?v=20261011-voice1"></script>
-<link rel="stylesheet" href="./messaging.css?v=20261012-mode1"><script src="./media-uploads.js?v=20261011-voice1"></script><script src="./messaging-ui.js?v=20261011-fixed1"></script><script src="./reel-picker.js?v=20261011-chat-video1"></script><script src="./chat-voice.js?v=20261011-voice1"></script><link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script></head>
+<link rel="stylesheet" href="./messaging.css?v=20261012-actions1"><script src="./media-uploads.js?v=20261011-voice1"></script><script src="./messaging-ui.js?v=20261012-actions1"></script><script src="./reel-picker.js?v=20261011-chat-video1"></script><script src="./chat-voice.js?v=20261012-actions1"></script><script src="./chat-actions.js?v=20261012-actions1"></script><link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script></head>
 
 <body class="chat-page" data-chat-theme="midnight">
 
@@ -231,6 +231,8 @@ body {
 </div>
 
 
+<div id="recordingOverlay" hidden aria-live="polite"><div class="recording-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg><div class="recording-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><strong id="recordingTime">0:00</strong><p id="recordingHint">Slide up to cancel</p></div></div>
+<dialog id="messageActions" aria-labelledby="messageActionTitle"><div class="tool-head"><h2 id="messageActionTitle">Message options</h2><button id="closeMessageActions" type="button" aria-label="Close message options">✕</button></div><button id="editMessage" class="tool-row" type="button">Edit text</button><button id="recallMessage" class="tool-row" type="button">Recall message</button><form id="messageEditForm" hidden><label for="messageEditText">Edit message</label><textarea id="messageEditText" maxlength="1000" rows="3" required></textarea><button type="submit">Save changes</button></form><p id="messageActionStatus" role="status"></p></dialog>
 <section id="voiceDraft" hidden aria-label="Voice message"><div class="voice-record-row"><button id="closeVoice" type="button" aria-label="Close voice recorder">✕</button><button id="cancelRecording" type="button" disabled>Cancel recording</button></div><p id="voiceStatus" role="status">Hold to record, release to send. Slide up to cancel. Up to 60 seconds.</p><small>Keyboard: activate to start, activate again to send.</small><div id="voicePreview" hidden><audio id="voicePlayback" controls preload="metadata"></audio><button id="retryVoice" type="button">Retry send</button><button id="discardVoice" type="button">Discard</button></div></section>
 <input id="chatVideoFile" type="file" accept="video/*" hidden>
 <div id="videoDraft" hidden><div id="chatVideoSummary"></div><p id="videoStatus" role="status"></p><button id="sendVideo" type="button">Send video</button><button id="cancelVideo" type="button">Cancel</button></div>
@@ -298,6 +300,7 @@ let realtimeChannel = null;
 let messageSending = false;
 let readTracker = null;
 let receiptPoll = null;
+const chatMessages=new Map();let messageActions=null;
 let receiptRefreshing = false;
 
 
@@ -783,6 +786,12 @@ async function loadMessages() {
         content,
         message_type,
         image_url,
+        video_url,
+        audio_url,
+        audio_duration_ms,
+        recalled_at,
+        edited_at,
+        action_revision,
         is_read,
         created_at
       `)
@@ -837,6 +846,7 @@ function renderMessages(
 
 
   area.innerHTML = "";
+  chatMessages.clear();
 
 
   if (
@@ -885,6 +895,7 @@ function addMessageToScreen(
 ) {
 
   if(chatDisposed||!currentUser||document.getElementById('message-'+message.id))return;
+  chatMessages.set(message.id,message);
   const UI=window.MimoMessagingUI,date=new Date(message.created_at);if(UI&&Number.isFinite(date.getTime())){const last=document.querySelector('.message-row:last-of-type');if(!last||last.dataset.day!==date.toLocaleDateString()){const heading=document.createElement('div');heading.className='chat-day';heading.textContent=date.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});document.getElementById('chatArea').append(heading);}}
 
   const area =
@@ -918,22 +929,17 @@ function addMessageToScreen(
   const bubble =UI?UI.bubble(document,message):document.createElement("div");
 
 
-  bubble.className =
-    "message " +
-    (
-      isMe
-        ? "me"
-        : "host"
-    );
+  bubble.classList.add('message',isMe?'me':'host');
 
 
   if(!UI)bubble.textContent=message.content;
-  if(UI&&Number.isFinite(date.getTime())){row.dataset.day=date.toLocaleDateString();const time=document.createElement('time');time.className='message-time';time.textContent=date.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});time.dateTime=date.toISOString();bubble.append(time);}if(UI&&!isMe){const avatar=document.getElementById('hostAvatar');if(!avatar.hidden&&avatar.src){const img=document.createElement('img');img.className='mini-avatar';img.src=avatar.src;img.alt='';img.onerror=()=>img.remove();row.append(img);}else{const initial=document.createElement('span');initial.className='mini-avatar';initial.textContent=(hostProfile?.display_name||hostProfile?.username||'M').slice(0,1);row.append(initial);}}
+  if(UI&&Number.isFinite(date.getTime())){row.dataset.day=date.toLocaleDateString();const time=document.createElement('time');time.className='message-time';time.textContent=date.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});time.dateTime=date.toISOString();bubble.append(time);}if(message.edited_at&&!message.recalled_at){const label=document.createElement('small');label.className='edited-label';label.textContent='Edited';bubble.append(label);}if(UI&&!isMe){const avatar=document.getElementById('hostAvatar');if(!avatar.hidden&&avatar.src){const img=document.createElement('img');img.className='mini-avatar';img.src=avatar.src;img.alt='';img.onerror=()=>img.remove();row.append(img);}else{const initial=document.createElement('span');initial.className='mini-avatar';initial.textContent=(hostProfile?.display_name||hostProfile?.username||'M').slice(0,1);row.append(initial);}}
 
 
   row.appendChild(
     bubble
   );
+  if(isMe&&!message.recalled_at){const options=document.createElement('button');options.type='button';options.className='message-options';options.textContent='⋯';options.setAttribute('aria-label','Message options');options.onclick=()=>messageActions?.open(message.id);row.append(options);messageActions?.bind(bubble,message.id);}
   if(isMe){const receipt=document.createElement('span');receipt.className='receipt';receipt.textContent=message.is_read?'Seen':'Sent';row.appendChild(receipt);}
 
 
@@ -1021,6 +1027,12 @@ async function sendMessage() {
         content,
         message_type,
         image_url,
+        video_url,
+        audio_url,
+        audio_duration_ms,
+        recalled_at,
+        edited_at,
+        action_revision,
         is_read,
         created_at
       `)
@@ -1138,12 +1150,23 @@ function subscribeToMessages() {
         }
       )
       .on('postgres_changes',{event:'UPDATE',schema:'public',table:'messages',filter:'conversation_id=eq.'+conversationId},payload=>{
-        updateReceipt(payload.new);
+        applyMessageUpdate(payload.new);
       })
       .subscribe();
 
 }
 
+function applyMessageUpdate(message){
+ if(chatDisposed||!currentUser||message.conversation_id&&message.conversation_id!==conversationId)return;
+ const previous=chatMessages.get(message.id),row=document.getElementById('message-'+message.id);if(!previous||!row)return;
+ if(Number(message.action_revision||0)<Number(previous.action_revision||0))return;
+ const next={...previous,...message};chatMessages.set(message.id,next);
+ if(next.content!==previous.content||next.recalled_at!==previous.recalled_at||next.edited_at!==previous.edited_at||next.message_type!==previous.message_type){
+  const old=row.querySelector('.message');for(const media of old.querySelectorAll('audio,video')){media.pause();media.removeAttribute('src');media.load();}
+  const bubble=MimoMessagingUI.bubble(document,next);bubble.classList.add(next.sender_id===currentUser.id?'me':'host');const time=old.querySelector('.message-time');if(time)bubble.append(time.cloneNode(true));if(next.edited_at&&!next.recalled_at){const label=document.createElement('small');label.className='edited-label';label.textContent='Edited';bubble.append(label);}old.replaceWith(bubble);if(next.recalled_at)row.querySelector('.message-options')?.remove();else messageActions?.bind(bubble,next.id);
+ }
+ updateReceipt(next);
+}
 function updateReceipt(message){
   if(!message.is_read||message.sender_id!==currentUser?.id)return;
   const receipt=document.getElementById('message-'+message.id)?.querySelector('.receipt');
@@ -1154,11 +1177,11 @@ async function refreshReceipts(){
   receiptRefreshing=true;
   try{
     if(readTracker)await readTracker.flush();
-    const ids=Array.from(document.querySelectorAll('.message-row')).filter(row=>row.dataset.sender===currentUser.id&&row.querySelector('.receipt')?.textContent==='Sent').map(row=>row.id.slice(8));
+    const ids=Array.from(document.querySelectorAll('.message-row')).map(row=>row.id.slice(8));
     for(let i=0;i<ids.length;i+=200){
-      const {data,error}=await supabaseClient.from('messages').select('id,sender_id,is_read').eq('conversation_id',conversationId).eq('sender_id',currentUser.id).in('id',ids.slice(i,i+200));
+      const {data,error}=await supabaseClient.from('messages').select('id,conversation_id,sender_id,content,message_type,image_url,video_url,audio_url,audio_duration_ms,recalled_at,edited_at,action_revision,is_read').eq('conversation_id',conversationId).in('id',ids.slice(i,i+200));
       if(error)throw error;
-      (data||[]).forEach(updateReceipt);
+      (data||[]).forEach(applyMessageUpdate);
     }
   }catch(error){console.warn('Receipt refresh failed',error);}
   finally{receiptRefreshing=false;}
@@ -1289,11 +1312,12 @@ function setInputMode(mode,focus=true){
  if(voice)el('messageInput').blur();else if(focus)el('messageInput').focus({preventScroll:true});
  return true;
 }
-function setupVoice(){if(!window.MimoVoice||voiceUI)return;const el=id=>document.getElementById(id);voiceUI=MimoVoice.create({button:el('recordVoice'),cancel:el('cancelRecording'),status:el('voiceStatus'),alive:()=>!chatDisposed&&!!currentUser,canUse:()=>!chatDisposed&&!messageSending&&!voiceDraft&&!!conversationId,beforeStart:()=>MimoContacts.allow(supabaseClient,hostId,'message'),onBusy:busy=>{messageSending=busy;if(busy)for(const player of document.querySelectorAll('audio,video'))if(!player.paused)player.pause();voiceButtons(busy);el('recordVoice').disabled=chatDisposed||!!voiceDraft;},onRecorded:draft=>{voiceDraft=draft;voiceAttempt=null;voicePreviewURL=URL.createObjectURL(draft.blob);el('voicePlayback').src=voicePreviewURL;el('voicePreview').hidden=false;sendVoiceMessage();}});el('closeVoice').onclick=()=>{if(messageSending&&!voiceUI.isBusy())return;if(voiceUI.isBusy())voiceUI.cancel();setInputMode('text');};el('inputMode').disabled=false;el('inputMode').onclick=()=>setInputMode(document.body.dataset.inputMode==='voice'?'text':'voice');el('recordVoice').disabled=chatDisposed||!!voiceDraft;setInputMode('text',false);el('retryVoice').onclick=sendVoiceMessage;el('discardVoice').onclick=()=>{if(messageSending)return;clearVoiceDraft();el('recordVoice').disabled=chatDisposed;el('voiceStatus').textContent='Recording discarded. Hold to talk again.';};}
+function recordingVisual(state){const overlay=document.getElementById('recordingOverlay');overlay.hidden=!state.active;if(!state.active)return;if(state.phase==='preparing')document.getElementById('recordingTime').textContent='0:00';overlay.classList.toggle('recording-cancel',!!state.cancel);document.getElementById('recordingHint').textContent=state.phase==='preparing'?'Preparing microphone…':state.cancel?'Release to cancel':'Slide up to cancel';if(state.elapsed!==undefined)document.getElementById('recordingTime').textContent=Math.floor(state.elapsed/60000)+':'+String(Math.floor(state.elapsed/1000)%60).padStart(2,'0');if(state.level!==undefined)for(const [i,bar] of Array.from(overlay.querySelectorAll('i')).entries())bar.style.height=(6+Math.max(0,Math.min(1,state.level))*(14+i*5))+'px';}
+function setupVoice(){if(!window.MimoVoice||voiceUI)return;const el=id=>document.getElementById(id);voiceUI=MimoVoice.create({button:el('recordVoice'),cancel:el('cancelRecording'),status:el('voiceStatus'),alive:()=>!chatDisposed&&!!currentUser,canUse:()=>!chatDisposed&&!messageSending&&!voiceDraft&&!!conversationId,beforeStart:()=>MimoContacts.allow(supabaseClient,hostId,'message'),onVisual:recordingVisual,onBusy:busy=>{messageSending=busy;if(busy)for(const player of document.querySelectorAll('audio,video'))if(!player.paused)player.pause();voiceButtons(busy);el('recordVoice').disabled=chatDisposed||!!voiceDraft;},onRecorded:draft=>{voiceDraft=draft;voiceAttempt=null;voicePreviewURL=URL.createObjectURL(draft.blob);el('voicePlayback').src=voicePreviewURL;el('voicePreview').hidden=false;sendVoiceMessage();}});el('closeVoice').onclick=()=>{if(messageSending&&!voiceUI.isBusy())return;if(voiceUI.isBusy())voiceUI.cancel();setInputMode('text');};el('inputMode').disabled=false;el('inputMode').onclick=()=>setInputMode(document.body.dataset.inputMode==='voice'?'text':'voice');el('recordVoice').disabled=chatDisposed||!!voiceDraft;setInputMode('text',false);el('retryVoice').onclick=sendVoiceMessage;el('discardVoice').onclick=()=>{if(messageSending)return;clearVoiceDraft();el('recordVoice').disabled=chatDisposed;el('voiceStatus').textContent='Recording discarded. Hold to talk again.';};}
 async function sendVoiceMessage(){if(chatDisposed||messageSending||!voiceDraft||!currentUser||!conversationId)return;messageSending=true;voiceButtons(true);const el=id=>document.getElementById(id),actor=currentUser.id,chat=conversationId,draft=voiceDraft,alive=()=>!chatDisposed&&currentUser?.id===actor&&conversationId===chat;voiceAttempt=voiceAttempt||MimoMedia.attempt();const state=voiceAttempt;try{if(!await MimoContacts.allow(supabaseClient,hostId,'message'))throw Error('Sending is unavailable for this contact.');if(!alive())return;const path=actor+'/chats/'+chat+'/'+state.id+'.'+draft.ext;await MimoVoice.upload(supabaseClient,state,path,draft.blob,alive,text=>{if(alive())el('voiceStatus').textContent=text;});if(!alive())return;const {data,error}=await supabaseClient.rpc('mimo_send_voice',{request_id:state.id,target_chat:chat,media_path:path,duration_ms:draft.duration});if(error)throw error;if(!alive())return;if(!Array.isArray(data)||data.length!==1)throw Error('Send could not be confirmed.');addMessageToScreen(data[0]);scrollToBottom();clearVoiceDraft();el('voiceStatus').textContent='Voice message sent. Hold to record another.';}catch(error){if(alive())el('voiceStatus').textContent=(error.message||'Send failed.')+' Recording retained. Tap Retry send.';}finally{messageSending=false;voiceButtons(false);el('recordVoice').disabled=chatDisposed||!!voiceDraft;}}
 
-async function configureChatUI(){if(!window.MimoMessagingUI||!currentUser||chatDisposed)return;setupPhotoUploads();setupVideoUploads();setupVoice();chatUI=MimoMessagingUI.setupChat({d:document,getUser:()=>currentUser,canUse:()=>!chatDisposed&&!!currentUser&&!!hostProfile&&!messageSending,getContact:()=>hostProfile,onBlock:toggleChatBlock,onPhoto:()=>{if(conversationId)document.getElementById('chatPhotoFile').click();else alert('Conversation is not ready yet.');},onVideo:()=>{if(conversationId)document.getElementById('chatVideoFile').click();else alert('Conversation is not ready yet.');},onVoice:()=>{if(conversationId){setInputMode('voice');}else alert('Conversation is not ready yet.');},onCall:async type=>{if(chatDisposed||!currentUser||messageSending)return;if(!await MimoContacts.allow(supabaseClient,hostId,'call'))return;if(!chatDisposed)location.href='call.html?user='+encodeURIComponent(hostId)+(type==='video'?'&type=video':'');}});for(const id of ['chatMore','emojiButton','chatPlus'])document.getElementById(id).disabled=false;try{const permissions=await MimoContacts.permissions(supabaseClient,hostId);if(chatDisposed)return;for(const id of ['voiceCall','videoCall']){document.getElementById(id).disabled=permissions.call!==true;document.getElementById(id).title=permissions.call?'Start call':'Calls are available from User to Host only, subject to blocking';}}catch{} }
-function disposeChat(){chatDisposed=true;voiceUI?.dispose();if(voiceDraft||voicePreviewURL)clearVoiceDraft();document.getElementById('voiceDraft').hidden=true;window.mimoMediaResolver?.dispose();photoSelection?.dispose();photoAttempt=null;videoSelection?.dispose();videoAttempt=null;document.getElementById('videoDraft').hidden=true;document.getElementById('photoDraft').hidden=true;clearInterval(receiptPoll);readTracker?.dispose();if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);chatAuthSubscription?.unsubscribe();chatUI?.dispose();document.getElementById('messageInput').value='';document.getElementById('chatArea').replaceChildren();document.getElementById('hostName').textContent='Chat';document.getElementById('hostStatus').textContent='';document.getElementById('readStatus').textContent='';document.getElementById('hostAvatar').hidden=true;document.getElementById('hostAvatar').removeAttribute('src');document.getElementById('hostInitial').textContent='M';document.getElementById('chatProfile').removeAttribute('href');for(const id of ['voiceCall','videoCall','chatMore','emojiButton','chatPlus','sendButton','blockContact','inputMode'])document.getElementById(id).disabled=true;currentUser=null;hostProfile=null;}
+async function configureChatUI(){if(!window.MimoMessagingUI||!currentUser||chatDisposed)return;if(window.MimoChatActions&&!messageActions)messageActions=MimoChatActions.create({document,client:supabaseClient,getUser:()=>currentUser,getMessage:id=>chatMessages.get(id),canUse:()=>!chatDisposed&&!messageSending&&!!currentUser,onChange:applyMessageUpdate});setupPhotoUploads();setupVideoUploads();setupVoice();chatUI=MimoMessagingUI.setupChat({d:document,getUser:()=>currentUser,canUse:()=>!chatDisposed&&!!currentUser&&!!hostProfile&&!messageSending,getContact:()=>hostProfile,onBlock:toggleChatBlock,onPhoto:()=>{if(conversationId)document.getElementById('chatPhotoFile').click();else alert('Conversation is not ready yet.');},onVideo:()=>{if(conversationId)document.getElementById('chatVideoFile').click();else alert('Conversation is not ready yet.');},onVoice:()=>{if(conversationId){setInputMode('voice');}else alert('Conversation is not ready yet.');},onCall:async type=>{if(chatDisposed||!currentUser||messageSending)return;if(!await MimoContacts.allow(supabaseClient,hostId,'call'))return;if(!chatDisposed)location.href='call.html?user='+encodeURIComponent(hostId)+(type==='video'?'&type=video':'');}});for(const id of ['chatMore','emojiButton','chatPlus'])document.getElementById(id).disabled=false;try{const permissions=await MimoContacts.permissions(supabaseClient,hostId);if(chatDisposed)return;for(const id of ['voiceCall','videoCall']){document.getElementById(id).disabled=permissions.call!==true;document.getElementById(id).title=permissions.call?'Start call':'Calls are available from User to Host only, subject to blocking';}}catch{} }
+function disposeChat(){chatDisposed=true;messageActions?.dispose();chatMessages.clear();document.getElementById('recordingOverlay').hidden=true;voiceUI?.dispose();if(voiceDraft||voicePreviewURL)clearVoiceDraft();document.getElementById('voiceDraft').hidden=true;window.mimoMediaResolver?.dispose();photoSelection?.dispose();photoAttempt=null;videoSelection?.dispose();videoAttempt=null;document.getElementById('videoDraft').hidden=true;document.getElementById('photoDraft').hidden=true;clearInterval(receiptPoll);readTracker?.dispose();if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);chatAuthSubscription?.unsubscribe();chatUI?.dispose();document.getElementById('messageInput').value='';document.getElementById('chatArea').replaceChildren();document.getElementById('hostName').textContent='Chat';document.getElementById('hostStatus').textContent='';document.getElementById('readStatus').textContent='';document.getElementById('hostAvatar').hidden=true;document.getElementById('hostAvatar').removeAttribute('src');document.getElementById('hostInitial').textContent='M';document.getElementById('chatProfile').removeAttribute('href');for(const id of ['voiceCall','videoCall','chatMore','emojiButton','chatPlus','sendButton','blockContact','inputMode'])document.getElementById(id).disabled=true;currentUser=null;hostProfile=null;}
 document.addEventListener('play',event=>{if(['AUDIO','VIDEO'].includes(event.target.tagName))for(const player of document.querySelectorAll('audio,video'))if(player!==event.target&&!player.paused)player.pause();},true);
 window.MimoMessagingUI?.hydrate(document);
 if(supabaseClient.auth?.onAuthStateChange)chatAuthSubscription=supabaseClient.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||(currentUser&&session&&session.user.id!==currentUser.id)){disposeChat();showError('Your session changed. Reload or sign in again.');}}).data.subscription;
