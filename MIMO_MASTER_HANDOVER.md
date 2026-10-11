@@ -447,3 +447,10 @@ Implemented: new comment replies notify the parent commenter independently of th
 Automated Verified: 243 regression checks including PostgreSQL authorization, recipients, retries, independent settings, visibility and rollback. Production metadata/advisors are checked during deployment; no customer interactions inserted for testing. User Verified: none for this batch; the latest voice bubble appearance also still awaits explicit acceptance. Not Verified: real two-account phone reply notification workflow. Incomplete: follower new-post broadcasts, push/email. See docs/PLAZA_NOTIFICATIONS_REVIEW.md.
 
 Production Verified (metadata): reply migration applied, both comment notification triggers enabled, client execution denied, empty search path confirmed, security/performance advisors unchanged. This is not a real two-account workflow acceptance.
+
+
+## 2026-10-12 — Followed Host post notifications
+
+Implemented: new authenticated Host posts notify current followers, respecting Activity Posts and blocks, excluding self. Generic preview links to the post. No old-post replay when following, no edit/retry duplication. Synchronous set-based insert; no push/email/background fan-out. Automated Verified: 244 regression checks and syntax/diff checks. User Verified: none. Not Verified: production two-account phone workflow and large fan-out latency. Reply and follower in-app notification producers are now implemented; physical acceptance remains pending.
+
+Production metadata verified: follower producer migration applied; enabled INSERT trigger, private empty-search-path definer and denied client EXECUTE confirmed. Advisors unchanged. No real customer publish/follow actions were created for testing.
