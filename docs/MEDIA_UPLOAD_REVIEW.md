@@ -30,3 +30,5 @@ Automatic refresh is suppressed during native selection or the preview modal; ex
 User acceptance continuation: owner said “有了” after the explicit Reel confirmation release around 01:57 Malaysia. USER VERIFIED requested confirmation flow availability; exhaustive iCloud/codec/upload acceptance is not inferred.
 
 Upload management continuation: owner can inspect uploaded media and explicitly discard/remove old unreferenced files in Settings → Uploads & Storage. The earlier simple DELETE policy is superseded by permanent discard claims protecting publication races and retries. See UPLOAD_MANAGER_REVIEW.md for the contract and verification limits. No automatic deletion after an ambiguous publish/send response.
+
+Selected-preview continuation (2026-10-11): owner now requests playable inline preview rather than filename/size/duration + Preview summary. Implemented one active preview-source handoff between modal and inline player; checkmark, cached preparation, explicit Publish and cancellation retention remain. Earlier text-only summary is superseded. See REEL_PLAYBACK_REVIEW.md; phone acceptance is pending.
