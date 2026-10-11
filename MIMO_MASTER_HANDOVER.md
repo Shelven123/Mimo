@@ -342,3 +342,7 @@ Verified: 188 automated checks, including 120/179/180-second confirmation and >1
 - Implemented: `reel-controls.js` viewer-only center Pause/Resume, hold-to-pause/release-to-resume (200 ms), native vertical swipe cancellation, release-click suppression, m:ss range seeking (0.1 sec). Manual pause retained on hold/release, seek and social refresh. Inactive/background/disposed player cannot be resumed by stale release. Listener/timer/DOM cleanup integrated.
 - Verified: 205 automatic checks; actual Plaza/Reels tests load the controls module; lifecycle/gesture/seek tests plus syntax and diff pass. No database/call/Beauty modifications. Outer muted Plaza unchanged.
 - Not Verified: current release on phone (center visual/touch swipe/slider/production media seeking). See updated `docs/REELS_VIEWER_REVIEW.md`.
+
+## 2026-10-11 Reels center icon correction
+- Implemented: reference-style white rounded SVG play triangle on dark circular background, visible only when paused. Playing hides the center button completely; picture tap/hold, sound and seeking retained.
+- Verified: 206 automatic checks, including hidden during playing / shown paused / hidden on resume. Not Verified: current appearance on physical phone. No DB/call/Beauty change.
