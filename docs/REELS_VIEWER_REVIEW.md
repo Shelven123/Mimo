@@ -37,3 +37,8 @@ Implemented: Reels actions Like/Comments/Gift/Share with existing gift handler; 
 Opening comments captures a fixed preview height in pixels. VisualViewport resize/scroll updates overlay height/top and remaining discussion area, never preview height; keyboard mode hides emoji shortcuts. Fixed body prevents background page scroll and restores original styles/scroll on viewer close. Playback remains pinned to the same video.
 
 Verified: 212 full-suite checks; viewport resize/pan/input/close, unchanged player/time/sound, computed dark background/input font and gift callback after refresh. Not verified: physical Safari behavior and live gift sending. Attempted Chromium rendering could not run because browser archive download failed; no visual-render success claimed.
+
+### Shared colored gift and working comment handle (2026-10-11)
+Shared Plaza/Reels renderer now exposes Like, Comments, Gift and Share, removing overlay gift and Repost/Save controls; existing records retained. Shared SVG uses explicit pink/gold/lavender fills. Comments header has equal-width side columns, and the handle is an accessible button with captured pointer drag dismissal (64px), short/cancel retention and generated-click suppression. Busy and disposed gestures cannot dismiss.
+
+Verified: 213 automated checks, including pointer lifecycle, shared gift callback after refresh and existing playback/keyboard continuity. Phone icon/layout/drag and live gift transaction pending. Previous screenshots confirm dark styling appears on phone; no assumption of keyboard acceptance.
