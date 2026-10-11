@@ -16,3 +16,10 @@ Rollback: database/rollback-plaza-notifications.sql preserves all interaction an
 Automated Verified: 243 checks, covering two recipients, Host reply, self/owner overlap, retry, owner-only reads, independent settings, both block directions, parent recipient unable to view the post, no-auth imports, denied client trigger execution, anonymous denial and rollback. User Verified: none for reply delivery. Not Verified: real two-account production transactions and phone workflow. Follower broadcasts and push/email remain incomplete.
 
 Production deployment: migration applied successfully; the new reply INSERT trigger and original post-comment trigger are enabled. Private producer has an empty search path and no anon/authenticated EXECUTE privileges. Security and performance advisors are unchanged from the pre-deploy baseline. No customer data was mutated for verification.
+
+
+2026-10-12 follower publishing: authenticated new Host posts now notify current eligible followers under Activity & Posts. Self follows, either-direction blocks and disabled preferences are skipped. Generic notification content does not copy post text. Insert retries and post edits do not replay notices; new follows do not replay prior posts. Existing follows.following_id index is used; delivery is one set-based INSERT inside publishing, with no background queue, browser push or email. Large fan-out performance remains Not Verified. Rollback database/rollback-followed-post-notifications.sql preserves history.
+
+Automated Verified: 244 checks including actual PostgreSQL follower membership, settings, both block directions, self exclusion, private read ownership, retry/edit suppression, anonymous import suppression and rollback, plus validated activity destinations. User Verified: none for follower notices. Not Verified: real two-account phone workflow and production fan-out latency.
+
+Production metadata verified: follower producer migration applied; enabled INSERT trigger, private empty-search-path definer and denied client EXECUTE confirmed. Advisors unchanged. No real customer publish/follow actions were created for testing.
