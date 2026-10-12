@@ -201,3 +201,7 @@ body[data-mimo-page=index] .filters,body[data-mimo-page=index] .filters .filter{
 body[data-mimo-page=index] .bottom-nav,body[data-mimo-page=index] .nav-inner{background:linear-gradient(105deg,#78455bdc,#352033f5)!important}
 body[data-mimo-page=index] .filters{background:linear-gradient(100deg,#bd74a343,#72506b8c)!important}
 body[data-mimo-page=index] .filter.active{color:white!important;text-shadow:0 0 12px #ff62bf}
+/* Keep the reference logo/cover clear beneath the transparent Home controls. */
+body[data-mimo-page=index]>header{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+body[data-mimo-page=index] .filters .filter{color:#e5bfdb!important}
+body[data-mimo-page=index] .filters .filter.active{color:#fff!important}
