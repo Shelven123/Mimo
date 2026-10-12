@@ -20,3 +20,5 @@ body[data-mimo-page=chat] .demo-voice{display:flex;gap:13px;align-items:center;f
 body[data-mimo-page=chat] .chat-area{padding-top:180px!important}
 body[data-mimo-page=chat] .message-row{margin-bottom:12px}
 #previewToast{position:fixed;z-index:9999;bottom:100px;left:50%;transform:translateX(-50%);width:max-content;max-width:90%;background:#3a223bf5;color:#ffe3f6;border:1px solid #d49bb9;border-radius:15px;padding:12px 16px;font:12px/1.5 system-ui;box-shadow:0 8px 25px #0005}
+body[data-mimo-page=index]>.container{grid-row:2;min-height:0}
+body[data-mimo-page=index]>.bottom-nav{grid-row:3;min-height:58px;background:linear-gradient(105deg,#79445eda,#352033f5)}
