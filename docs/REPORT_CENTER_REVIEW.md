@@ -26,7 +26,7 @@ User Verified: earlier notification banner/chime explicitly accepted; no accepta
 
 ## Remaining and operational dependencies
 
-Production currently has zero admin profiles. The owner must name an existing registered email before any role elevation; no account is chosen automatically. Until then, users can track submissions but nobody has been configured to perform real reviews. Review notifications, sanctions/takedown/appeals, internal-only notes, legacy generic reports-table UI and evidence retention/rate limiting remain separate work. Existing customer reports and evidence are retained. This release does not complete moderation operations or payments.
+The owner-designated, email-confirmed registered account was promoted on 2026-10-12 after an exact identity/profile match. Backend role and support/report administrator checks are verified. The account identity is intentionally omitted from the public repository. Real login/phone/review acceptance is still pending; no other account was elevated. Review notifications, sanctions/takedown/appeals, internal-only notes, legacy generic reports-table UI and evidence retention/rate limiting remain separate work. Existing customer reports and evidence are retained. This release does not complete moderation operations or payments.
 
 ## Safe rollback
 
