@@ -22,7 +22,7 @@ test('Live pages preserve unique controller targets and exclude the simulated pr
   const dom=new JSDOM(fs.readFileSync(page+'.html','utf8')),d=dom.window.document,ids=[...d.querySelectorAll('[id]')].map(n=>n.id);
   assert.equal(new Set(ids).size,ids.length,page);
   assert.equal(d.querySelectorAll('script[src*="design-review-v2"]').length,0,page);
-  assert.ok(d.querySelector('link[href*="mimo-live-v2.css"]'),page);
+  assert.ok(d.querySelector('link[href*="mimo-replica.css"]'),page);
   if(page==='call'){
    for(const id of ['remoteVideo','localVideo','remoteAudio','cameraButton','muteButton','speakerButton','beautyButton','timer'])assert.ok(d.getElementById(id),id);
    assert.ok(d.getElementById('timer').closest('.top-bar'));

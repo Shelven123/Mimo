@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mimo</title>
@@ -534,40 +532,34 @@
 
 </style>
 <script src="./contact-permissions.js?v=20261010-contact1"></script>
-<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./mimo-app-icon-192.png"><link rel="stylesheet" href="./foreground-notices.css?v=20261012-alert2"><link rel="stylesheet" href="./host-experience.css?v=20261012-host1"><script src="./media-uploads.js?v=20261011-voice1"></script><script src="./plaza-social.js?v=20261010-social1"></script><script src="./host-experience.js?v=20261012-host1"></script><link rel="stylesheet" href="./mimo-theme.css?v=20261012-rose1"><link rel="stylesheet" href="./mimo-live-v2.css?v=20261013-live3"></head>
+<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./mimo-app-icon-192.png"><link rel="stylesheet" href="./foreground-notices.css?v=20261012-alert2"><link rel="stylesheet" href="./host-experience.css?v=20261012-host1"><script src="./media-uploads.js?v=20261011-voice1"></script><script src="./plaza-social.js?v=20261010-social1"></script><script src="./host-experience.js?v=20261012-host1"></script><link rel="stylesheet" href="./mimo-replica.css?v=20261013-exact1"></head>
 
-<body data-mimo-page="index">
+<body data-mimo-page="index" class="mimo-replica">
 
 <header>
   <div class="mimo-art mimo-logo-art" aria-label="Mimo"><span></span></div>
-  <div class="reference-header-actions"><button type="button" aria-label="Search hosts" onclick="document.getElementById('searchInput').focus()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="m15 15 6 6"/></svg></button><a href="notifications.html" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5Zm5 3h4"/></svg></a></div>
+  <div class="reference-header-actions"><button type="button" aria-label="Search hosts" onclick="document.getElementById('searchInput').focus()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10" cy="10" r="7"></circle><path d="m15 15 6 6"></path></svg></button><a href="notifications.html" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5Zm5 3h4"></path></svg></a></div>
 </header>
 
 <main class="container">
 
-  <div class="hello mimo-art mimo-hero-art" aria-label="Find someone who understands"><span></span><img id="mimoHeroPhoto" hidden alt="Featured Host"></div>
+  <div class="hello mimo-art mimo-hero-art" aria-label="Find someone who understands"><span></span><img id="mimoHeroPhoto" hidden="" alt="Featured Host"></div>
 
   <div class="search-box">
     <span class="search-icon">🔍</span>
 
-    <input
-      id="searchInput"
-      class="search"
-      type="text"
-      placeholder="Find your favourite Host…"
-      oninput="filterHosts()"
-    >
+    <input id="searchInput" class="search" type="text" placeholder="Find your favourite Host…" oninput="filterHosts()">
   </div>
 
 
   <!-- FILTER -->
 
-  <div class="filters"><button class="filter active" onclick="setFilter('all', this)"><span class="rail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21S2 15 2 8a5 5 0 0 1 10-2 5 5 0 0 1 10 2c0 7-10 13-10 13Z"/></svg></span><span>推荐</span></button><button class="filter " onclick="setFilter('online', this)"><span class="rail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21S2 15 2 8a5 5 0 0 1 10-2 5 5 0 0 1 10 2c0 7-10 13-10 13Z"/></svg></span><span>在线</span></button><button class="filter " onclick="setFilter('video', this)"><span class="rail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 21v-3a8 8 0 0 1 16 0v3"/></svg></span><span>新人</span></button><button class="filter " onclick="setFilter('popular', this)"><span class="rail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11a9 9 0 0 1-13 8L3 21l2-6a9 9 0 1 1 16-4Z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg></span><span>人气</span></button><button class="filter" aria-label="Search hosts" onclick="document.getElementById('searchInput').focus()"><span class="rail-icon">▦</span><span>分类</span></button></div>
+  <div class="filters"><button class="filter active" onclick="setFilter('all', this)"><span class="rail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21S2 15 2 8a5 5 0 0 1 10-2 5 5 0 0 1 10 2c0 7-10 13-10 13Z"></path></svg></span><span>推荐</span></button><button class="filter " onclick="setFilter('online', this)"><span class="rail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21S2 15 2 8a5 5 0 0 1 10-2 5 5 0 0 1 10 2c0 7-10 13-10 13Z"></path></svg></span><span>在线</span></button><button class="filter " onclick="setFilter('video', this)"><span class="rail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="4"></circle><path d="M4 21v-3a8 8 0 0 1 16 0v3"></path></svg></span><span>新人</span></button><button class="filter " onclick="setFilter('popular', this)"><span class="rail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11a9 9 0 0 1-13 8L3 21l2-6a9 9 0 1 1 16-4Z"></path><path d="M8 10h.01M12 10h.01M16 10h.01"></path></svg></span><span>人气</span></button><button class="filter" aria-label="Search hosts" onclick="document.getElementById('searchInput').focus()"><span class="rail-icon">▦</span><span>分类</span></button></div>
 
 
   <!-- STORIES -->
 
-  <section class="story-section" hidden>
+  <section class="story-section" hidden="">
 
     <div class="section-head">
       <div class="section-title">推荐主播</div>
@@ -604,7 +596,7 @@
 
 <!-- BOTTOM NAV -->
 
-<nav class="mimo-unified-nav" aria-label="Main navigation"><a class="mimo-tab active" href="index.html" aria-current="page"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-7 9 7v11h-6v-7H9v7H3Z"/></svg></span><span>首页</span></a><a class="mimo-tab " href="plaza.html"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="4"/><path d="m8 8 4 5 4-5"/></svg></span><span>广场</span></a><a class="mimo-tab center " href="messages.html"><span class="nav-heart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21S2 15 2 8a5 5 0 0 1 10-2 5 5 0 0 1 10 2c0 7-10 13-10 13Z"/></svg></span><span>消息</span></a><a class="mimo-tab " href="notifications.html"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11a9 9 0 0 1-13 8L3 21l2-6a9 9 0 1 1 16-4Z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg></span><span>通知</span></a><a class="mimo-tab " href="me.html"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 21v-3a8 8 0 0 1 16 0v3"/></svg></span><span>我</span></a></nav>
+<nav class="mimo-unified-nav" aria-label="Main navigation"><a class="mimo-tab active " href="index.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v11h-6v-7H9v7H3Z"></path></svg><span>首页</span></a><a class="mimo-tab  " href="plaza.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4Zm1 5 4 5 4-5"></path></svg><span>广场</span></a><a class="mimo-tab  center" href="messages.html"><span class="nav-heart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21S2 15 2 8a5 5 0 0 1 10-2A5 5 0 0 1 22 8c0 7-10 13-10 13Z"></path></svg></span><span>消息</span></a><a class="mimo-tab  " href="notifications.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 1-11 8l-6 2 2-6A8 8 0 1 1 20 11ZM8 11h.1M12 11h.1M16 11h.1"></path></svg><span>通知</span></a><a class="mimo-tab  " href="me.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-3a8 8 0 0 1 16 0v3"></path></svg><span>我</span></a></nav>
 
 
 
@@ -1335,5 +1327,6 @@ init();
 
 </script>
 
-<script src="./foreground-notices.js?v=20261012-alert2"></script></body>
-</html>
+<script src="./foreground-notices.js?v=20261012-alert2"></script>
+
+<script src="./replica-ui.js?v=20261013-exact1"></script></body></html>

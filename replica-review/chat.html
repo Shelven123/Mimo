@@ -1,0 +1,228 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mimo Chat</title>
+
+
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f7f7f9;
+  color: #222;
+}
+
+.header {
+  height: 64px;
+  background: white;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid #eee;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.back {
+  border: none;
+  background: none;
+  font-size: 25px;
+  cursor: pointer;
+  margin-right: 12px;
+}
+
+.host-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.host-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.host-name {
+  font-size: 16px;
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.host-info > div { min-width: 0; }
+.host-avatar { flex-shrink: 0; }
+
+.host-status {
+  font-size: 12px;
+  color: #999;
+  margin-top: 3px;
+}
+
+.chat-area {
+  position: fixed;
+  top: 64px;
+  bottom: 76px;
+  left: 0;
+  right: 0;
+  overflow-y: auto;
+  padding: 18px 14px;
+}
+
+.message-row {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.message-row.me {
+  justify-content: flex-end;
+}
+
+.message-row.host {
+  justify-content: flex-start;
+}
+
+.message {
+  max-width: 75%;
+  padding: 11px 14px;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.message.me {
+  background: #ff4f81;
+  color: white;
+  border-bottom-right-radius: 5px;
+}
+
+.message.host {
+  background: white;
+  color: #222;
+  border-bottom-left-radius: 5px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.empty {
+  text-align: center;
+  color: #aaa;
+  margin-top: 35vh;
+  font-size: 14px;
+}
+
+.input-area {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 76px;
+  background: white;
+  border-top: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+}
+
+.input-area input {
+  flex: 1;
+  height: 46px;
+  border: 1px solid #ddd;
+  border-radius: 23px;
+  padding: 0 16px;
+  font-size: 15px;
+  outline: none;
+}
+
+.input-area input:focus {
+  border-color: #ff4f81;
+}
+
+.send-btn {
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 50%;
+  background: #ff4f81;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+  .contact-actions{display:flex;margin-left:auto;padding-left:12px;flex-shrink:0}
+  .block-contact{border:1px solid #ef5b82;border-radius:999px;background:#fff;color:#d83e68;padding:8px 18px;font-weight:700;font-size:14px}
+  .block-contact:disabled{opacity:.45}
+  .message-row.me{flex-direction:row;align-items:flex-end}
+  .receipt{font-size:11px;color:#888;margin-top:4px}
+  #readStatus{font-size:10px;color:#b72f53}
+</style>
+
+
+<link rel="stylesheet" href="../messaging.css?v=20261012-compact2"><link rel="stylesheet" href="../mobile-layout.css?v=20261011-fixed1"><link rel="stylesheet" href="../foreground-notices.css?v=20261012-alert2"><link rel="stylesheet" href="../mimo-replica.css?v=20261013-exact1"></head>
+
+<body data-mimo-page="chat" class="chat-page mimo-replica" data-chat-theme="midnight">
+
+<div class="header">
+
+  <button class="back" aria-label="Back to messages" data-message-icon="back">‹</button>
+
+  <div class="host-info"><a id="chatProfile" aria-label="View contact profile">
+
+    <span class="host-avatar-frame"><span id="hostInitial"><div role="img" aria-label="参考照片" class="photo " style="--src:url('../design-review-v2/assets/plaza.png');--sw:310;--sh:502;--cx:23;--cy:178;--cw:77;--ch:71"><i class="photo-art"></i></div></span><img id="hostAvatar" class="host-avatar" alt="" hidden=""></span>
+
+    <div>
+
+      <div id="hostName" class="host-name">Amy ♡</div>
+
+      <div id="hostStatus" class="host-status">● 在线</div>
+      <div id="readStatus" role="status"></div>
+
+    </div>
+
+  </a></div>
+
+<div class="contact-actions" aria-label="Contact actions"><button id="chatMore" class="ui-icon" type="button" aria-label="Conversation options" data-message-icon="more" disabled=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h.1M12 12h.1M20 12h.1"></path></svg></button>
+  <button id="blockContact" class="block-contact" hidden="" type="button" disabled="">Block</button>
+</div>
+
+</div><div class="chat-toolbar"><button type="button" id="replicaContactProfile">主播主页</button><button id="voiceCall" class="" type="button" aria-label="Voice call" disabled="">语音通话</button><button id="videoCall" class="" type="button" aria-label="Video call" disabled="">视频通话</button></div>
+
+<div id="chatArea" class="chat-area"><div class="message-row host"><div role="img" aria-label="参考照片" class="photo avatar" style="--src:url('../design-review-v2/assets/plaza.png');--sw:310;--sh:502;--cx:23;--cy:178;--cw:77;--ch:71"><i class="photo-art"></i></div><div class="bubble">Hey～很高兴见到你<br>有什么想聊的吗？♡</div></div><div class="message-time">21:20</div><div class="message-row me"><div class="bubble">你好呀 Amy～今晚有空吗？ 😊</div></div><div class="message-time">21:21</div><div class="message-row host"><div role="img" aria-label="参考照片" class="photo avatar" style="--src:url('../design-review-v2/assets/plaza.png');--sw:310;--sh:502;--cx:23;--cy:178;--cw:77;--ch:71"><i class="photo-art"></i></div><div class="bubble">我刚拍完一组照片～<br>现在在休息呢，要不要看看？♡</div></div><div class="message-time">21:22</div><div class="message-row me"><button class="bubble voice-message" data-toast="语音播放外观演示"><span class="play">▶</span><span class="waveform" aria-hidden="true"><i style="--h:7px"></i><i style="--h:12px"></i><i style="--h:18px"></i><i style="--h:8px"></i><i style="--h:14px"></i><i style="--h:20px"></i><i style="--h:11px"></i><i style="--h:5px"></i><i style="--h:12px"></i><i style="--h:17px"></i><i style="--h:9px"></i><i style="--h:13px"></i><i style="--h:5px"></i><i style="--h:10px"></i></span><span>0:12</span></button><div role="img" aria-label="参考照片" class="photo avatar" style="--src:url('../design-review-v2/assets/me.png');--sw:266;--sh:319;--cx:23;--cy:64;--cw:36;--ch:36"><i class="photo-art"></i></div></div><div class="message-row host"><div role="img" aria-label="参考照片" class="photo avatar" style="--src:url('../design-review-v2/assets/plaza.png');--sw:310;--sh:502;--cx:23;--cy:178;--cw:77;--ch:71"><i class="photo-art"></i></div><div role="img" aria-label="参考照片" class="photo message-photo" style="--src:url('../design-review-v2/assets/plaza.png');--sw:310;--sh:502;--cx:23;--cy:178;--cw:77;--ch:71"><i class="photo-art"></i></div></div></div>
+
+
+<div id="recordingOverlay" hidden="" aria-live="polite"><div class="recording-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="9" y="2" width="6" height="13" rx="3"></rect><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"></path></svg><div class="recording-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><strong id="recordingTime">0:00</strong><p id="recordingHint">Slide up to cancel</p></div></div>
+<dialog id="messageActions" aria-labelledby="messageActionTitle"><div class="tool-head"><h2 id="messageActionTitle">Message options</h2><button id="closeMessageActions" type="button" aria-label="Close message options">✕</button></div><button id="editMessage" class="tool-row" type="button">Edit text</button><button id="recallMessage" class="tool-row" type="button">Recall message</button><form id="messageEditForm" hidden=""><label for="messageEditText">Edit message</label><textarea id="messageEditText" maxlength="1000" rows="3" required=""></textarea><button type="submit">Save changes</button></form><p id="messageActionStatus" role="status"></p></dialog>
+<section id="voiceDraft" hidden="" aria-label="Voice message"><div class="voice-record-row"><button id="closeVoice" type="button" aria-label="Close voice recorder">✕</button><button id="cancelRecording" type="button" disabled="">Cancel recording</button></div><p id="voiceStatus" role="status">Hold to record, release to send. Slide up to cancel. Up to 60 seconds.</p><small>Keyboard: activate to start, activate again to send.</small><div id="voicePreview" hidden=""><audio id="voicePlayback" controls="" preload="metadata"></audio><button id="retryVoice" type="button">Retry send</button><button id="discardVoice" type="button">Discard</button></div></section>
+<input id="chatVideoFile" type="file" accept="video/*" hidden="">
+<div id="videoDraft" hidden=""><div id="chatVideoSummary"></div><p id="videoStatus" role="status"></p><button id="sendVideo" type="button">Send video</button><button id="cancelVideo" type="button">Cancel</button></div>
+<dialog id="chatVideoPicker" class="chat-video-picker" aria-labelledby="chatVideoTitle"><div class="chat-video-head"><h2 id="chatVideoTitle">Confirm your video</h2><button id="chatVideoCancel" type="button" aria-label="Cancel video selection">✕</button></div><div id="chatVideoPreview"><video controls="" playsinline="" muted="" preload="none"></video></div><p id="chatVideoPickerStatus" role="status"></p><button id="chatVideoChooseAgain" type="button">Choose another video</button><button id="chatVideoConfirm" type="button" disabled="">✓ Use this video</button><p class="tool-note">Up to 3 minutes and 30 MB. Confirm first, then tap Send video.</p></dialog>
+<input id="chatPhotoFile" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" hidden=""><div id="photoDraft" hidden=""><div id="chatPhotoPreview" class="upload-previews"></div><p id="photoStatus" role="status"></p><button id="sendPhoto" type="button">Send photo</button><button id="cancelPhoto" type="button">Cancel</button></div>
+<div class="input-area"><button id="inputMode" class="ui-icon input-mode" type="button" aria-label="Switch to voice messages" title="Switch to voice messages" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3ZM16 8a6 6 0 0 1 0 8M19 5a10 10 0 0 1 0 14"></path></svg></button><div class="composer-pill"><input id="messageInput" type="text" placeholder="输入消息…" maxlength="1000" autocomplete="off"><button id="recordVoice" type="button" hidden="" disabled="" aria-pressed="false">Hold to talk</button>
+
+
+
+  <button id="sendButton" class="send-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 18-7-7 18-3-8Zm8 3 10-10"></path></svg></button><button id="chatPlus" class="ui-icon replica-hidden" type="button" aria-label="Chat tools" data-message-icon="plus" disabled="" hidden=""></button>
+
+<button id="emojiButton" class="ui-icon" type="button" aria-label="Insert emoji" data-message-icon="smile"></button><button type="button" id="replicaChatPhoto" aria-label="照片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3h18v18H3ZM4 16l5-5 4 4 4-6 4 5M8 7h.1"></path></svg></button><button type="button" id="replicaChatGift" aria-label="礼物"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h18v5H3ZM5 13h14v9H5ZM12 8v14M12 8C0 8 5-3 12 8c7-11 12 0 0 0Z"></path></svg></button></div></div><dialog id="chatTools" aria-labelledby="chatToolTitle"><div class="tool-head"><h2 id="chatToolTitle">Chat tools</h2><button class="ui-icon" id="chatToolClose" type="button" aria-label="Close tools">✕</button></div><div id="chatToolPanel"></div></dialog>
+
+
+
+
+
+</body></html>
