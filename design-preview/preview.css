@@ -1,0 +1,22 @@
+
+.demo-photo{position:relative;overflow:hidden;container-type:inline-size;background:#503346}
+.demo-photo img{position:absolute!important;max-width:none!important;width:var(--photo-width)!important;height:auto!important;left:var(--photo-left);top:var(--photo-top);object-fit:initial!important;border-radius:0!important}
+.host-portrait.demo-photo{width:100%;height:100%;border-radius:0}
+.demo-photo.photo-wrap{display:block}
+.demo-photo>.photo-info,.demo-photo>.status,.demo-photo>.photo-gradient{z-index:1}
+.demo-photo .photo-gradient{position:absolute;inset:0;pointer-events:none}
+body[data-mimo-page=index] .host-card .photo-info{bottom:32px}
+body[data-mimo-page=index] .demo-follow{position:absolute;z-index:2;right:8px;top:7px;background:none;color:#ff9ed9;padding:0;font-size:22px;text-shadow:0 0 9px #ff5fbf}
+body[data-mimo-page=index] .demo-host-actions{position:absolute;z-index:2;bottom:7px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;font-size:9px;color:#dfc0d7}
+.demo-host-actions button{background:linear-gradient(#ffb1df,#ed60b8);color:white;border-radius:20px;padding:4px 9px;font-size:12px}
+body[data-mimo-page=plaza] #feed .demo-media{height:160px;order:1;width:100%;aspect-ratio:304/220}
+body[data-mimo-page=plaza] #feed .post-body{white-space:pre-wrap}
+body[data-mimo-page=plaza] #feed .actions button{background:none;border:0;font-size:16px;color:#ebc2dc;padding:0;min-width:20px}
+body[data-mimo-page=plaza] #feed .actions button:first-child{color:#ff74c4}
+body[data-mimo-page=profile] .host-gallery .demo-photo{position:relative;inset:auto}
+body[data-mimo-page=chat] .demo-chat-image{width:215px;aspect-ratio:304/180;border-radius:12px}
+body[data-mimo-page=chat] .demo-voice{display:flex;gap:13px;align-items:center;font-size:12px;min-width:140px;min-height:25px}
+.demo-voice .wave{font-size:17px;letter-spacing:1px;opacity:.75}
+body[data-mimo-page=chat] .chat-area{padding-top:180px!important}
+body[data-mimo-page=chat] .message-row{margin-bottom:12px}
+#previewToast{position:fixed;z-index:9999;bottom:100px;left:50%;transform:translateX(-50%);width:max-content;max-width:90%;background:#3a223bf5;color:#ffe3f6;border:1px solid #d49bb9;border-radius:15px;padding:12px 16px;font:12px/1.5 system-ui;box-shadow:0 8px 25px #0005}
