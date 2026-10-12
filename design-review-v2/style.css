@@ -5,3 +5,4 @@
 .logo-art{width:108px;height:36px;mix-blend-mode:screen;background:transparent}.nav-item[data-go=home].active svg{fill:currentColor;stroke:none}
 
 .call-stage-incoming>.call-photo{height:47%;inset:0 0 auto}.call-stage-connected>.call-photo{height:70%;inset:0 0 auto}.call-stage-incoming .incoming-label{top:52%;bottom:auto}.incoming-actions{left:65px;right:65px;bottom:80px}.incoming-actions .call-button>span{width:78px;height:78px}.incoming-actions .call-button svg{width:32px;height:32px}.connected-controls .call-button>span{width:72px;height:72px}.call-end .call-button>span{width:78px;height:78px}.call-pip{width:85px;height:141px;right:15px}.connected-controls{bottom:145px}.call-end{bottom:28px}
+.logo-art{filter:contrast(2.3);mix-blend-mode:screen}.call-page>.call-photo:after{content:'';position:absolute;inset:62% 0 0;background:linear-gradient(transparent,#0e0d11);pointer-events:none}
