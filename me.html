@@ -277,7 +277,7 @@ body {
 }
 
 </style>
-<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script></head>
+<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script><script src="./push-client.js?v=20261012-push1"></script></head>
 
 
 <body>
@@ -869,6 +869,7 @@ function openSettings() {
 ========================= */
 
 async function logout() {
+  try{await Promise.race([window.MimoPush?.disable(supabaseClient),new Promise((_,reject)=>setTimeout(()=>reject(Error('Push cleanup timeout')),5000))]);}catch{}
 
 
   await supabaseClient

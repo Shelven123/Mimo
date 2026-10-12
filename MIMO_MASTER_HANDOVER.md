@@ -466,3 +466,14 @@ Production metadata verified: private 3 MiB JPEG bucket, Storage policies, invok
 ## 2026-10-12 — Support navigation feedback
 
 User Verified: owner reports support submissions work. Do not infer attachment viewing/admin workflows or comprehensive lifecycle acceptance. User Verified: followed Host publishing generates a station/in-app notice. User requests phone system push/sound, which is a separate incomplete capability. Implemented: support header now has a clear Home link directly to index.html, independent of loading/saving handlers. User Verified: none for navigation fix.
+
+
+## 2026-10-12 — Phone system push
+
+Implemented: Home Screen manifest/icons, explicit device enable/disable in Notifications settings, push-only service worker, authenticated subscriptions and Supabase Edge encrypted sender. Generic system notices link to supported app destinations. Existing notification categories/read status/blocks enforced at dispatch; active Auth session required, logout/session revocation stops future queued delivery. Vault-held VAPID/private wake secret; no secret keys exposed. Instant asynchronous wake plus minute retries with bounded queue lifetime. Worker does not cache/fetch-intercept app/call/media.
+
+Automated Verified: 256 checks, JS/inline/diff; production 401 denial and metadata/cron verified. User Verified: support submission and followed-post in-app delivery accepted (not system push). Not Verified: real iPhone install/consent, real-session VAPID initialization, provider delivery, sound/banner and logout acceptance. Sounds and notification priority remain controlled by OS/Focus settings. Incomplete: unsupported provider hosts, subscription-change automation, high-volume operations. See docs/WEB_PUSH_REVIEW.md and safe rollback.
+
+Managed migration 20261012005350 recorded by MCP; CLI telemetry not retried. Security advisors include deliberate default-deny private-table INFO and pg_net public-registration WARN; net remains outside Data API (406 probe), restricted application wake functions cannot be called by clients. Automatic approval rejected optional pg_net relocation as potentially disruptive; no bypass/retry, current working placement retained.
+
+Delivery failure isolation: managed migration 20261012010405 locks subscription references during enqueue and catches optional wake/network failures, preserving ordinary notification/message/post saves. Mocked unavailable net.http_post test confirms in-app history survives; retry queue remains available. This strengthens core-flow protection without changing notification permissions.
