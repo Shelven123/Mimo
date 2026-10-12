@@ -217,7 +217,7 @@
   </style>
 
 
-<link rel="stylesheet" href="../mimo-replica.css?v=20261013-exact1"></head>
+<link rel="stylesheet" href="../mimo-replica.css?v=20261013-exact2"></head>
 
 <body data-mimo-page="call" class="mimo-replica">
 
@@ -229,7 +229,7 @@
 
     <div id="timer" class="timer">01:07</div>
 
-    <button class="replica-call-sound" type="button" disabled="" aria-label="切换通话声音"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3ZM16 8a6 6 0 0 1 0 8M19 5a10 10 0 0 1 0 14"></path></svg></button>
+    <button class="replica-call-sound" type="button" aria-label="切换通话声音"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3ZM16 8a6 6 0 0 1 0 8M19 5a10 10 0 0 1 0 14"></path></svg></button>
 
   </div>
 
@@ -237,7 +237,7 @@
   <div class="profile">
 
     <div class="avatar-wrap">
-      <img id="avatar" class="avatar" src="../design-review-v2/assets/call.png" alt="Profile">
+      <div role="img" aria-label="参考照片" class="photo " style="--src:url('/Mimo/design-review-v2/assets/call.png');--sw:336;--sh:313;--cx:172;--cy:54;--cw:104;--ch:140" id="avatar"><i class="photo-art"></i></div>
     </div>
 
     <div id="name" class="name">Amy · 语音通话中</div>
@@ -289,7 +289,7 @@
 
     <div id="cameraControl" class="control" style="display:none">
 
-      <button id="cameraButton" disabled="" class="circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h12v12H3ZM15 10l6-4v12l-6-4"></path></svg></button>
+      <button id="cameraButton" class="circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h12v12H3ZM15 10l6-4v12l-6-4"></path></svg></button>
 
       <div id="cameraText">
         Camera
