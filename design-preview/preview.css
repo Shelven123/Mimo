@@ -24,3 +24,8 @@ body[data-mimo-page=index]>.container{grid-row:2;min-height:0}
 body[data-mimo-page=index]>.bottom-nav{grid-row:3;min-height:58px;background:linear-gradient(105deg,#79445eda,#352033f5)}
 .demo-photo img{max-height:none!important;min-height:0!important}
 body[data-mimo-page=plaza]>header{background:transparent!important}
+body[data-mimo-page=chat] .input-area input{background:transparent!important;color:#ffe6f7!important}
+body[data-mimo-page=chat] .input-area input::placeholder{color:#cfadc6!important}
+body[data-mimo-page=chat] .input-area .ui-icon,body[data-mimo-page=chat] .contact-actions .ui-icon{background:#55324b66!important;color:#f2c0df!important}
+body[data-mimo-page=chat] .input-mode{background:linear-gradient(#ffa2dd,#fa68bf)!important;color:white!important}
+body[data-mimo-page=chat] :is(.ui-icon,.back,.send-btn) svg{width:20px;height:20px;display:block}
