@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mimo Voice Call</title>
@@ -224,27 +222,19 @@
   </style>
 <script src="./contact-permissions.js?v=20261010-contact1"></script>
 <script src="./call-preferences.js?v=20261010-prefs1"></script>
-<link rel="stylesheet" href="./mimo-theme.css?v=20261012-rose1"><link rel="stylesheet" href="./mimo-live-v2.css?v=20261013-live2"></head>
+<link rel="stylesheet" href="./mimo-replica.css?v=20261013-exact1"></head>
 
-<body data-mimo-page="call">
+<body data-mimo-page="call" class="mimo-replica">
 
 <div class="call-page">
 
   <div class="top-bar">
 
-    <button
-      class="back"
-      onclick="leavePage()"
-    >
-      ‹
-    </button>
+    <button class="back" onclick="leavePage()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 4-8 8 8 8"></path></svg></button>
 
-    <div
-      id="timer"
-      class="timer"
-    ></div>
+    <div id="timer" class="timer"></div>
 
-    <div class="spacer"></div>
+    <button class="replica-call-sound" type="button" disabled aria-label="切换通话声音" onclick="toggleSpeaker()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3ZM16 8a6 6 0 0 1 0 8M19 5a10 10 0 0 1 0 14"></path></svg></button>
 
   </div>
 
@@ -252,34 +242,20 @@
   <div class="profile">
 
     <div class="avatar-wrap">
-      <img
-  id="avatar"
-  class="avatar"
-  src="https://zhhgiwqehwuwzxnqbnth.supabase.co/storage/v1/object/public/avatars/amy.jpg"
-  alt="Profile"
->
+      <img id="avatar" class="avatar" src="https://zhhgiwqehwuwzxnqbnth.supabase.co/storage/v1/object/public/avatars/amy.jpg" alt="Profile">
     </div>
 
-    <div
-      id="name"
-      class="name"
-    >
+    <div id="name" class="name">
       Loading...
     </div>
 
-    <div
-      id="status"
-      class="status"
-    >
+    <div id="status" class="status">
       Preparing call...
     </div>
 
 
 
-    <div
-      id="wave"
-      class="wave"
-    >
+    <div id="wave" class="wave">
       <span></span>
       <span></span>
       <span></span>
@@ -287,10 +263,7 @@
       <span></span>
     </div>
 
-    <div
-      id="errorText"
-      class="error"
-    ></div>
+    <div id="errorText" class="error"></div>
 
   </div>
 
@@ -299,62 +272,33 @@
 
     <div class="control">
 
-      <button
-        id="muteButton" disabled
-        class="circle"
-        onclick="toggleMute()"
-      >
-        🎙️
-      </button>
+      <button id="muteButton" disabled="" class="circle" onclick="toggleMute()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5a3 3 0 0 1 6 0v7a3 3 0 0 1-6 0ZM5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"></path></svg></button>
 
-      <div id="muteText">
-        Mute
-      </div>
+      <div id="muteText">麦克风</div>
 
     </div>
 
 
     <div class="control">
 
-      <button
-        class="circle end"
-        onclick="endCall()"
-      >
-        📞
-      </button>
+      <button class="circle end" onclick="endCall()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 16c-1-9 19-9 18 0l-5 1-1-4H9l-1 4Z"></path></svg></button>
 
-      <div>
-        End
-      </div>
+      <div>结束</div>
 
     </div>
 
 
     <div class="control">
 
-      <button
-        id="speakerButton" disabled
-        class="circle"
-        onclick="toggleSpeaker()"
-      >
-        🔊
-      </button>
+      <button id="speakerButton" disabled="" class="circle" onclick="toggleSpeaker()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3ZM16 8a6 6 0 0 1 0 8M19 5a10 10 0 0 1 0 14"></path></svg></button>
 
-      <div id="speakerText">
-        Speaker
-      </div>
+      <div id="speakerText">扬声器</div>
 
     </div>
 
     <div id="cameraControl" class="control" style="display:none">
 
-      <button
-        id="cameraButton" disabled
-        class="circle"
-        onclick="toggleCamera()"
-      >
-        📷
-      </button>
+      <button id="cameraButton" disabled="" class="circle" onclick="toggleCamera()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h12v12H3ZM15 10l6-4v12l-6-4"></path></svg></button>
 
       <div id="cameraText">
         Camera
@@ -370,10 +314,7 @@
 
     <div id="flipControl" class="control" style="display:none">
 
-      <button
-        class="circle"
-        onclick="switchCamera()"
-      >
+      <button class="circle" onclick="switchCamera()">
         🔄
       </button>
 
@@ -388,19 +329,15 @@
 </div>
 
 
-<audio
-  id="remoteAudio"
-  autoplay
-  playsinline
-></audio>
+<audio id="remoteAudio" autoplay="" playsinline=""></audio>
 
 <div id="videoStage" style="display:none;position:fixed;inset:0;background:#111;z-index:2;pointer-events:auto;">
-  <video id="remoteVideo" autoplay playsinline style="width:100%;height:100%;object-fit:cover;background:#111;"></video>
-  <video id="localVideo" autoplay muted playsinline style="position:absolute;right:16px;top:24px;width:110px;height:155px;object-fit:cover;border-radius:16px;background:#222;box-shadow:0 4px 20px rgba(0,0,0,.35);z-index:5;cursor:pointer;"></video>
+  <video id="remoteVideo" autoplay="" playsinline="" style="width:100%;height:100%;object-fit:cover;background:#111;"></video>
+  <video id="localVideo" autoplay="" muted="" playsinline="" style="position:absolute;right:16px;top:24px;width:110px;height:155px;object-fit:cover;border-radius:16px;background:#222;box-shadow:0 4px 20px rgba(0,0,0,.35);z-index:5;cursor:pointer;"></video>
 </div>
 
 
-<section id="callBeautyPanel" hidden style="position:fixed;left:12px;right:12px;bottom:12px;max-height:48dvh;overflow-y:auto;z-index:30;padding:16px;border-radius:16px;background:#17171f;color:white;box-shadow:0 4px 20px #0008">
+<section id="callBeautyPanel" hidden="" style="position:fixed;left:12px;right:12px;bottom:12px;max-height:48dvh;overflow-y:auto;z-index:30;padding:16px;border-radius:16px;background:#17171f;color:white;box-shadow:0 4px 20px #0008">
   <div style="display:flex;justify-content:space-between;align-items:center"><b>Beauty · this call</b><button type="button" onclick="closeCallBeautyPanel()">Close</button></div>
   <p id="callBeautyStatus" style="font-size:12px;line-height:1.5" role="status"></p>
   <label><input id="callBeautyEnabled" type="checkbox"> Beauty On</label>
@@ -2330,5 +2267,6 @@ init();
 
 </script>
 
-</body>
-</html>
+
+
+<script src="./replica-ui.js?v=20261013-exact1"></script></body></html>

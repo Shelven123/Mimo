@@ -28,7 +28,7 @@
   function render(document,rows,onRead){
     const fragment=document.createDocumentFragment();
     for(const row of rows){
-      const card=document.createElement('article');card.className='notification'+(row.is_read?'':' unread');
+      const card=document.createElement('article');card.className='notification'+(row.is_read?'':' unread');card.dataset.noticeType=row.notification_type||'';
       const title=document.createElement('h2');title.textContent=row.title||'Notification';
       const body=document.createElement('p');body.textContent=row.content||'';
       const time=document.createElement('time'),date=new Date(row.created_at);time.textContent=Number.isNaN(date.getTime())?'':date.toLocaleString();
