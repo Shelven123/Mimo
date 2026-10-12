@@ -534,20 +534,20 @@
 
 </style>
 <script src="./contact-permissions.js?v=20261010-contact1"></script>
-<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./mimo-app-icon-192.png"><link rel="stylesheet" href="./foreground-notices.css?v=20261012-alert2"><link rel="stylesheet" href="./host-experience.css?v=20261012-host1"><script src="./media-uploads.js?v=20261011-voice1"></script><script src="./plaza-social.js?v=20261010-social1"></script><script src="./host-experience.js?v=20261012-host1"></script></head>
+<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./mimo-app-icon-192.png"><link rel="stylesheet" href="./foreground-notices.css?v=20261012-alert2"><link rel="stylesheet" href="./host-experience.css?v=20261012-host1"><script src="./media-uploads.js?v=20261011-voice1"></script><script src="./plaza-social.js?v=20261010-social1"></script><script src="./host-experience.js?v=20261012-host1"></script><link rel="stylesheet" href="./mimo-theme.css?v=20261012-rose1"></head>
 
-<body>
+<body data-mimo-page="index">
 
 <header>
-  <div class="logo">❤️ Mimo</div>
+  <div class="logo">Mimo ♡</div>
   <div class="diamond">💎 1,000</div>
 </header>
 
 <main class="container">
 
-  <div class="hello">
-    <div class="hello-small">Discover someone new</div>
-    <div class="hello-title">Meet & Connect ✨</div>
+  <div class="hello"><img id="mimoHeroPhoto" class="mimo-hero-photo" alt="Featured Host" hidden>
+    <div class="hello-small">Find Your Special Moment</div>
+    <div class="hello-title">Be Closer.<br>Be You.</div>
   </div>
 
   <div class="search-box">
@@ -557,7 +557,7 @@
       id="searchInput"
       class="search"
       type="text"
-      placeholder="Search people..."
+      placeholder="Find your favourite Host…"
       oninput="filterHosts()"
     >
   </div>
@@ -641,7 +641,7 @@
   <div class="nav-inner">
 
     <div class="nav-item active">
-      <span class="nav-icon">🏠</span>
+      <span class="nav-icon"><svg class="mimo-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-7 9 7v11h-6v-7H9v7H3Z"/></svg></span>
       Home
     </div>
 
@@ -649,7 +649,7 @@
       class="nav-item"
       onclick="goTo('plaza.html')"
     >
-      <span class="nav-icon">🌐</span>
+      <span class="nav-icon"><svg class="mimo-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm3 6-2 4-4 2 2-4Z"/></svg></span>
       Plaza
     </div>
 
@@ -657,7 +657,7 @@
       class="nav-item"
       onclick="goTo('messages.html')"
     >
-      <span class="nav-icon">💬</span>
+      <span class="nav-icon"><svg class="mimo-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 1-11 8L3 21l2-6A8 8 0 1 1 20 11Z"/></svg></span>
       Messages
     </div>
 
@@ -665,7 +665,7 @@
       class="nav-item"
       onclick="goTo('notifications.html')"
     >
-      <span class="nav-icon">🔔</span>
+      <span class="nav-icon"><svg class="mimo-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5Zm5 3h4"/></svg></span>
       Notifications
     </div>
 
@@ -673,7 +673,7 @@
       class="nav-item"
       onclick="goTo('me.html')"
     >
-      <span class="nav-icon">👤</span>
+      <span class="nav-icon"><svg class="mimo-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-3a8 8 0 0 1 16 0v3"/></svg></span>
       Me
     </div>
 
@@ -897,6 +897,10 @@ function renderStories() {
 ========================= */
 
 function renderHosts(hosts) {
+  const photo=document.getElementById('mimoHeroPhoto');
+  const featured=hosts.find(host=>MimoHosts.url(host.avatar_url));
+  if(photo){photo.hidden=!featured;if(featured){photo.src=MimoHosts.url(featured.avatar_url);photo.alt=featured.display_name||featured.username||'Featured Host';}}
+
 
   const hostList =
     document.getElementById("hostList");
