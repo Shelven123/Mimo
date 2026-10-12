@@ -29,3 +29,8 @@ body[data-mimo-page=chat] .input-area input::placeholder{color:#cfadc6!important
 body[data-mimo-page=chat] .input-area .ui-icon,body[data-mimo-page=chat] .contact-actions .ui-icon{background:#55324b66!important;color:#f2c0df!important}
 body[data-mimo-page=chat] .input-mode{background:linear-gradient(#ffa2dd,#fa68bf)!important;color:white!important}
 body[data-mimo-page=chat] :is(.ui-icon,.back,.send-btn) svg{width:20px;height:20px;display:block}
+body[data-mimo-page=index]>header{background:transparent!important}
+body[data-mimo-page=index] .filters,body[data-mimo-page=index] .filters .filter{background:transparent!important}
+body[data-mimo-page=index] .bottom-nav,body[data-mimo-page=index] .nav-inner{background:linear-gradient(105deg,#78455bdc,#352033f5)!important}
+body[data-mimo-page=index] .filters{background:linear-gradient(100deg,#bd74a343,#72506b8c)!important}
+body[data-mimo-page=index] .filter.active{color:white!important;text-shadow:0 0 12px #ff62bf}
