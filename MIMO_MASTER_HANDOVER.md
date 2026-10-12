@@ -491,3 +491,14 @@ Automated Verified: 263 checks including seven focused foreground tests; JS/HTML
 User Verified: notification banners appear. User reports no notification sound; previous Web Audio sound is NOT accepted. Implemented: dedicated self-contained PCM media chime replaces Web Audio; capture-phase touch/click/keyboard unlocking, retained media readiness on visibility return, explicit Test sound in Notifications settings and Enable sound on locked/failed banners. Failure keeps the notice and permits a gesture retry. Disabling sound stops its player; logout/navigation cancels pending unlock and unloads audio. No global audio-session type, call/Beauty code, Supabase grants or notification producer changed.
 
 Automated Verified: 266 checks including ten foreground tests for media PCM structure, rejection/retry, visible return and late cleanup, plus existing notification/preferences/media continuity checks. User Verified: sound still pending; actual iPhone audibility cannot be inferred from browser playback promises or DOM tests. Exact cause on the user's device remains unconfirmed. Sound still depends on page interaction and media volume/output. See docs/FOREGROUND_NOTIFICATIONS_REVIEW.md.
+
+
+## 2026-10-12 — Foreground notification acceptance
+
+User Verified: owner confirms notice appears, then confirms sound works after the media-chime correction (Malaysia 15:23). This accepts foreground banner/chime on the tested device only; it does not verify installed/background/lock-screen system push or all browsers.
+
+## 2026-10-12 — Plaza Report Center
+
+Implemented: Settings → Report Center, submitted-report link, own paginated report/status/snapshot/private-evidence history and filtered admin queue. Admin review has public response, guarded status transitions, expected-revision updates and append-only audit history. Terminal reviews do not reopen; failed response drafts retained. Fixed old report-author INSERT policy name resolution without editing historical reports. Post deletion still detaches only the original link, preserving report/snapshot/review history. No automatic post removal or account sanction added.
+
+Automated Verified: 278 checks, JS/three inline scripts/diff and production migration 20261012075303/RLS/grant/trigger metadata. Security advisors unchanged; performance removes one initplan warning and adds one unused admin-FK index. User Verified: none for this batch. Not Verified: physical phone page, real signed image HTTP, actual admin workflow/parallel sessions. Production admin count is still zero; owner must supply an existing registered email before promotion. No customer report/review/files were mutated for testing. Remaining moderation sanctions/appeals/notifications and legacy generic reports UI are separate. See docs/REPORT_CENTER_REVIEW.md and safe rollback. Existing Call/Beauty modules untouched.

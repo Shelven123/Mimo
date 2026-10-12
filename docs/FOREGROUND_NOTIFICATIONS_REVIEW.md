@@ -29,3 +29,7 @@ Rollback frontend asset includes and local settings card, or disable local banne
 ## Sound feedback follow-up
 
 User Verified: the foreground notice appears. User report: the previous Web Audio chime was not audible. Do not mark sound as accepted. The original tone was low-gain, page audio only unlocked through bubbling clicks, and hidden pages suspended the context without resuming on visible return. These are confirmed code limitations; the user's exact device cause cannot be determined here. The new media playback path, capture-phase touch handling, explicit test/retry and source-level amplitude address those limitations without changing call/recording audio session behavior. Sound preferences stop ongoing notification playback. Playback failures retain the banner and permit a gesture retry; no claim of speaker audibility is made from play() resolving.
+
+## User acceptance — 2026-10-12 Malaysia 15:23
+
+The owner confirms notice banners appear and the corrected sound works. Mark the tested foreground experience User Verified. Do not infer background/system push or universal device acceptance.
