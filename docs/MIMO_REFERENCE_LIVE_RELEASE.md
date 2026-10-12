@@ -1,0 +1,9 @@
+# Approved preview style promoted to live pages
+
+On 2026-10-12 Malaysia the owner explicitly approves the visual draft and asks to replace the formal website with it. Supersedes the earlier instruction to keep the candidate unreleased; it does not certify pixel-identical source matching or live feature/device acceptance.
+
+The four live pages adopt the candidate DOM/CSS and corrections found while reviewing the isolated preview: Home's explicit middle/footer grid rows, translucent headers/rail/navigation, readable chat input/icons, Host portrait-overlaid identity/gallery/detail tiles, compact two-column Plaza and reference portrait wallpaper. Decorative campaign/reference artwork uses the existing design-preview assets. Actual Host portraits, names, profile facts, follows, posts, counts, private messages and permissions remain live. Offline fixture/sample scripts and fabricated counts/messages are excluded.
+
+Scoped reference-ui adapters retain call permission gates and suppress late navigation after exit; feed-derived author images clear when the visible feed clears. Home hot cards reuse current visible Hosts rather than creating demo accounts. Existing account cleanup, incoming call listener, social keyed video/player continuity and private media/recording/read/recall/edit handlers are retained. No database, payments, role assignment or customer content changes. call.html, beauty-engine.js, beauty-call.js and beauty-settings.html unchanged.
+
+Automated Verified: 298 regression tests, four inline-script syntax/unique-ID checks, adapter syntax and whitespace. User Verified: owner likes the separate visual preview and authorizes promoting its style. Not Verified: actual four-page production phone appearance/keyboard/real-account transactions after promotion. Real names/photos/history naturally differ from offline examples. No strict 1:1 claim. Functional roadmap remains paused for visual feedback.
