@@ -471,13 +471,22 @@ async function loadHost() {
 ========================= */
 
 async function loadConversation() {
+  const requested=new URLSearchParams(location.search).get('conversation');
+  if(requested){
+    if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requested)){showError('Conversation unavailable.');return;}
+    const {data:chosen,error}=await supabaseClient.from('conversations').select('id,user_one_id,user_two_id').eq('id',requested).maybeSingle();
+    if(chatDisposed)return;
+    if(error||!chosen||!((chosen.user_one_id===currentUser.id&&chosen.user_two_id===hostId)||(chosen.user_two_id===currentUser.id&&chosen.user_one_id===hostId))){showError('Conversation unavailable.');return;}
+    conversationId=chosen.id;
+  }
+
 
   /*
     First direction:
     current user -> host
   */
 
-  const first =
+  const first = conversationId ? {data:[{id:conversationId}]} :
     await supabaseClient
       .from("conversations")
       .select("id")
