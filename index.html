@@ -534,7 +534,7 @@
 
 </style>
 <script src="./contact-permissions.js?v=20261010-contact1"></script>
-<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./mimo-app-icon-192.png"><link rel="stylesheet" href="./foreground-notices.css?v=20261012-alert2"></head>
+<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./mimo-app-icon-192.png"><link rel="stylesheet" href="./foreground-notices.css?v=20261012-alert2"><link rel="stylesheet" href="./host-experience.css?v=20261012-host1"><script src="./media-uploads.js?v=20261011-voice1"></script><script src="./plaza-social.js?v=20261010-social1"></script><script src="./host-experience.js?v=20261012-host1"></script></head>
 
 <body>
 
@@ -941,7 +941,8 @@ function renderHosts(hosts) {
         <article class="host-card">
 
           <div
-            class="photo-wrap"
+            class="photo-wrap" role="button" tabindex="0"
+            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
             onclick="openProfile('${host.id}')"
           >
 
@@ -1105,9 +1106,10 @@ function applyFilters() {
 
 function openProfile(hostId) {
 
-  window.location.href =
-    "profile.html?id=" +
-    encodeURIComponent(hostId);
+  return MimoHosts.preview(supabaseClient,hostId,{onFollow:(id,following)=>{
+    if(following)followedHostIds.add(id);else followedHostIds.delete(id);
+    applyFilters();
+  }});
 }
 
 
@@ -1271,7 +1273,7 @@ function escapeHtml(text) {
       ? ""
       : String(text);
 
-  return div.innerHTML;
+  return div.innerHTML.replaceAll('"','&quot;').replaceAll("'",'&#39;');
 }
 
 

@@ -31,3 +31,7 @@ The owner-designated, email-confirmed registered account was promoted on 2026-10
 ## Safe rollback
 
 Revert frontend entry/module/page changes and apply database/rollback-report-center.sql to revoke review API/status-response writes. Retain RLS, corrected submission policy, report columns and review history. Do not delete reports or evidence, drop private storage or remove unrelated policies/triggers. Two initial migration calls failed with expired requestState; metadata confirmed zero partial changes. The non-destructive ALTER POLICY version subsequently applied successfully.
+
+## 2026-10-12 Host-channel continuation
+
+The Hosts channel, guarded Host reporting/screenshots/review history and profile entry are now implemented; see docs/HOST_PROFILE_REVIEW.md. Admin queue is the default view. The old statement about generic report UI being pending is superseded for Host reports only; automatic sanctions and notifications still remain separate.
