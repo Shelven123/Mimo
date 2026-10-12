@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mimo</title>
+
+  
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+
+    body {
+      position: fixed;
+      inset: 0;
+      height: 100%;
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      overflow: hidden;
+      overscroll-behavior: none;
+      font-family: Arial, sans-serif;
+      background: #f8f8fb;
+      color: #222;
+      padding-bottom: 0;
+    }
+
+    button, input {
+      font: inherit;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+    }
+
+    /* HEADER */
+
+    header {
+      height: calc(64px + env(safe-area-inset-top));
+      background: rgba(255,255,255,.96);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: env(safe-area-inset-top) 18px 0;
+      border-bottom: 1px solid #f0f0f0;
+      position: relative;
+      z-index: 30;
+    }
+
+    .logo {
+      color: #ff4f81;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .diamond {
+      background: #fff0f5;
+      color: #ff4f81;
+      padding: 9px 13px;
+      border-radius: 22px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1050px;
+      margin: 0 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+      scroll-padding-block: 16px;
+      padding: 18px 16px 25px;
+    }
+
+    /* GREETING */
+
+    .hello {
+      margin-bottom: 16px;
+    }
+
+    .hello-small {
+      color: #999;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .hello-title {
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    /* SEARCH */
+
+    .search-box {
+      position: relative;
+      margin-bottom: 22px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 17px;
+    }
+
+    .search {
+      width: 100%;
+      border: 1px solid #eee;
+      background: white;
+      padding: 14px 16px 14px 45px;
+      border-radius: 16px;
+      outline: none;
+      font-size: 15px;
+      box-shadow: 0 3px 14px rgba(0,0,0,.035);
+    }
+
+    /* SECTION */
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 13px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .section-link {
+      color: #ff4f81;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* STORIES */
+
+    .story-section {
+      margin-bottom: 24px;
+    }
+
+    .stories {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      padding: 3px 1px 7px;
+      scrollbar-width: none;
+    }
+
+    .stories::-webkit-scrollbar {
+      display: none;
+    }
+
+    .story {
+      min-width: 68px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .story-ring {
+      width: 65px;
+      height: 65px;
+      margin: auto;
+      padding: 3px;
+      border-radius: 50%;
+      background: linear-gradient(135deg,#ff4f81,#ff9d5c);
+      position: relative;
+    }
+
+    .story-ring img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid white;
+      display: block;
+    }
+
+    .story-name {
+      font-size: 12px;
+      margin-top: 6px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .add-story-ring {
+      background: #f0f0f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .add-story-circle {
+      width: 59px;
+      height: 59px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 27px;
+      color: #ff4f81;
+    }
+
+    /* FILTERS */
+
+    .filters {
+      display: flex;
+      gap: 9px;
+      overflow-x: auto;
+      margin-bottom: 24px;
+      scrollbar-width: none;
+    }
+
+    .filters::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter {
+      white-space: nowrap;
+      padding: 10px 15px;
+      border-radius: 22px;
+      background: white;
+      color: #777;
+      border: 1px solid #eee;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .filter.active {
+      background: #ff4f81;
+      color: white;
+      border-color: #ff4f81;
+    }
+
+    /* HOST GRID */
+
+    .hosts {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 17px;
+    }
+
+    .host-card {
+      position: relative;
+      background: white;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 5px 20px rgba(0,0,0,.07);
+      cursor: pointer;
+    }
+
+    .photo-wrap {
+      position: relative;
+      aspect-ratio: 4 / 5;
+      background: #eee;
+      overflow: hidden;
+    }
+
+    .host-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .3s ease;
+    }
+
+    .host-card:hover .host-image {
+      transform: scale(1.025);
+    }
+
+    .photo-gradient {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 48%;
+      background: linear-gradient(
+        transparent,
+        rgba(0,0,0,.67)
+      );
+      pointer-events: none;
+    }
+
+    .status {
+      position: absolute;
+      top: 13px;
+      left: 13px;
+      background: rgba(255,255,255,.93);
+      border-radius: 20px;
+      padding: 6px 9px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .status.online {
+      color: #13a866;
+    }
+
+    .status.offline {
+      color: #777;
+    }
+
+    .photo-info {
+      position: absolute;
+      left: 15px;
+      right: 15px;
+      bottom: 14px;
+      color: white;
+    }
+
+    .host-name {
+      font-size: 21px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .host-bio {
+      font-size: 12px;
+      opacity: .92;
+      line-height: 1.35;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    /* ACTIONS */
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 4px;
+      padding: 11px 7px 12px;
+    }
+
+    .action {
+      background: transparent;
+      padding: 4px 2px;
+      min-width: 0;
+      color: #777;
+    }
+
+    .action-icon {
+      width: 39px;
+      height: 39px;
+      margin: auto;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background: #f6f6f8;
+    }
+
+    .action-text {
+      display: block;
+      margin-top: 5px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .chat-action .action-icon {
+      background: #fff0f5;
+      color: #ff4f81;
+    }
+
+    .call-action .action-icon {
+      background: #f0f8ff;
+    }
+
+    .video-action .action-icon {
+      background: #f3f0ff;
+    }
+
+    .follow-action .action-icon {
+      background: #fff0f5;
+      color: #ff4f81;
+    }
+
+    .follow-action.following .action-icon {
+      background: #ff4f81;
+      color: white;
+    }
+
+    .follow-action.following {
+      color: #ff4f81;
+    }
+
+    .action:disabled {
+      opacity: .6;
+      cursor: default;
+    }
+
+    /* EMPTY */
+
+    .empty,
+    .loading {
+      grid-column: 1 / -1;
+      background: white;
+      padding: 40px 20px;
+      border-radius: 18px;
+      color: #999;
+      text-align: center;
+    }
+
+    /* NAV */
+
+    .bottom-nav {
+      position: relative;
+      height: calc(70px + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background: rgba(255,255,255,.97);
+      border-top: 1px solid #eee;
+      z-index: 50;
+      display: flex;
+      justify-content: center;
+    }
+
+    .nav-inner {
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+    }
+
+    .nav-item {
+      color: #999;
+      font-size: 11px;
+      text-align: center;
+      cursor: pointer;
+      min-width: 55px;
+    }
+
+    .nav-icon {
+      display: block;
+      font-size: 21px;
+      margin-bottom: 3px;
+    }
+
+    .nav-item.active {
+      color: #ff4f81;
+      font-weight: 800;
+    }
+
+    @media (max-width: 800px) {
+      .hosts {
+        grid-template-columns: repeat(2,1fr);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .container {
+        padding: 16px 11px 22px;
+      }
+
+      .hosts {
+        gap: 11px;
+      }
+
+      .host-card {
+        border-radius: 18px;
+      }
+
+      .photo-wrap {
+        aspect-ratio: 3 / 4;
+      }
+
+      .host-name {
+        font-size: 18px;
+      }
+
+      .actions {
+        padding-left: 3px;
+        padding-right: 3px;
+      }
+
+      .action-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 16px;
+      }
+
+      .action-text {
+        font-size: 9px;
+      }
+    }
+  
+    .incoming-call {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(30,20,35,.62);
+      display: none; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .incoming-call.show { display: flex; }
+    .incoming-card {
+      width: min(92vw, 360px); background: white; border-radius: 28px;
+      padding: 28px 22px 24px; text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,.22);
+    }
+    .incoming-avatar {
+      width: 96px; height: 96px; border-radius: 50%;
+      object-fit: cover; background: #fff0f5;
+    }
+    .incoming-name { margin-top: 14px; font-size: 23px; font-weight: 800; }
+    .incoming-label { margin-top: 6px; color: #777; }
+    .incoming-actions { display: flex; gap: 28px; justify-content: center; margin-top: 24px; }
+    .incoming-btn {
+      width: 64px; height: 64px; border: 0; border-radius: 50%;
+      color: white; font-size: 25px; cursor: pointer;
+    }
+    .incoming-decline { background: #ff3b57; }
+    .incoming-accept { background: #28c76f; }
+
+</style>
+
+<link rel="stylesheet" href="../mobile-layout.css?v=20261011-fixed1"><link rel="manifest" href="../manifest.webmanifest"><link rel="apple-touch-icon" href="../mimo-app-icon-192.png"><link rel="stylesheet" href="../foreground-notices.css?v=20261012-alert2"><link rel="stylesheet" href="../host-experience.css?v=20261012-host1"><link rel="stylesheet" href="../mimo-theme.css?v=20261012-rose1"><link rel="stylesheet" href="./mimo-reference.css?v=20261012-ref1"><link rel="stylesheet" href="./preview.css"></head>
+
+<body data-mimo-page="index">
+
+<header>
+  <div class="logo">Mimo ♡</div>
+  <div class="reference-header-actions"><button type="button" class="reference-search" aria-label="Search hosts">⌕</button><a class="reference-vip" href="me.html" aria-label="My account">♛<small>VIP</small></a></div>
+</header>
+
+<main class="container">
+
+  <div class="hello"><div class="reference-home-cover" aria-hidden="true"><img src="./assets/reference/home.png" alt=""></div><img id="mimoHeroPhoto" class="mimo-hero-photo" alt="Featured Host" hidden>
+    <div class="hello-small">Find Your Special Moment</div>
+    <div class="hello-title">Be Closer.<br>Be You.</div>
+  </div>
+
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+
+    <input
+      id="searchInput"
+      class="search"
+      type="text"
+      placeholder="Find your favourite Host…"
+     
+    >
+  </div>
+
+
+  <!-- FILTER -->
+
+  <div class="filters">
+
+    <button
+      class="filter active"
+     
+    >
+      ⌂<span>推荐</span>
+    </button>
+
+    <button
+      class="filter"
+     
+    >
+      ♨<span>热门</span>
+    </button>
+
+    <button
+      class="filter"
+     
+    >
+      ♢<span>新人</span>
+    </button>
+
+    <button
+      class="filter"
+     
+    >
+      ♡<span>陪伴</span>
+    </button>
+
+    <a class="filter reference-ranking" href="me.html" aria-label="My profile">♧<span>我的</span></a>
+  </div>
+
+
+  <!-- STORIES -->
+
+  <section class="story-section" hidden>
+
+    <div class="section-head">
+      <div class="section-title">推荐主播</div>
+      <div class="section-link">See all</div>
+    </div>
+
+    <div id="storyList" class="stories">
+
+      <div class="story">
+        <div class="story-ring add-story-ring">
+          <div class="add-story-circle">＋</div>
+        </div>
+        <div class="story-name">Your Story</div>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <div class="section-head">
+    <div class="section-title">✦ 推荐主播</div><a class="section-link" href="plaza.html">查看更多 ›</a>
+  </div>
+
+  <div id="hostList" class="hosts">
+    <div class="loading">
+      Loading hosts...
+    </div>
+  </div>
+
+<a class="reference-gift-banner" href="wallet.html"><span class="reference-gift-art" aria-hidden="true"></span><span>送出礼物<br>遇见更特别的她 ♡</span><b>立即前往 →</b></a><div class="section-head reference-hot-heading"><div class="section-title">♨ 热门推荐</div><button type="button">换一批 ↻</button></div><div id="referenceHotHosts" class="reference-hot-hosts"></div>
+</main>
+
+
+<!-- BOTTOM NAV -->
+
+<nav class="bottom-nav">
+
+  <div class="nav-inner">
+
+    <div class="nav-item active">
+      <span class="nav-icon"><svg class="mimo-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-7 9 7v11h-6v-7H9v7H3Z"/></svg></span>
+      首页
+    </div>
+
+    <div
+      class="nav-item"
+     
+    >
+      <span class="nav-icon"><svg class="mimo-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm3 6-2 4-4 2 2-4Z"/></svg></span>
+      广场
+    </div>
+
+    <div
+      class="nav-item"
+     
+    >
+      <span class="nav-icon"><svg class="mimo-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 1-11 8L3 21l2-6A8 8 0 1 1 20 11Z"/></svg></span>
+      消息
+    </div>
+
+    <div
+      class="nav-item"
+     
+    >
+      <span class="nav-icon"><svg class="mimo-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5Zm5 3h4"/></svg></span>
+      通知
+    </div>
+
+    <div
+      class="nav-item"
+     
+    >
+      <span class="nav-icon"><svg class="mimo-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-3a8 8 0 0 1 16 0v3"/></svg></span>
+      我
+    </div>
+
+  </div>
+
+</nav>
+
+
+
+<div id="incomingCall" class="incoming-call">
+  <div class="incoming-card">
+    <img id="incomingAvatar" class="incoming-avatar" alt="Caller">
+    <div id="incomingName" class="incoming-name">Incoming call</div>
+    <div class="incoming-label">📞 Voice Call</div>
+    <div class="incoming-actions">
+      <button class="incoming-btn incoming-decline">📞</button>
+      <button class="incoming-btn incoming-accept">📞</button>
+    </div>
+  </div>
+</div>
+
+
+
+<div id="previewToast" role="status" hidden></div><script src="./preview.js"></script></body>
+</html>
