@@ -66,3 +66,7 @@ body.mimo-replica[data-mimo-page=index] .host-card .follow-action .action-icon{w
 body.mimo-replica[data-mimo-page=index] .host-card .follow-action svg{width:15px;height:15px}
 body.mimo-replica[data-mimo-page=index] .host-card .follow-action.following{color:#ff82bd}
 body.mimo-replica[data-mimo-page=index] .host-card .follow-action.following svg{fill:currentColor}
+
+/* Preserve the reference lettering while making its dark screenshot backing transparent. */
+body.mimo-replica[data-mimo-page=index] .mimo-logo-art{filter:none;mix-blend-mode:normal;background:transparent}
+body.mimo-replica[data-mimo-page=index] .mimo-logo-art>span{filter:url(#mimo-title-clear);background-color:transparent}

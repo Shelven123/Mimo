@@ -549,3 +549,7 @@ Final browser follow-up: corrected inherited absolute positioning on the relocat
 
 ## 2026-10-13 Malaysia — Continued reference geometry review
 Home follow controls still inherited four grid columns and 39px icon wrappers from the legacy inline stylesheet. Override with a single 25px circular control at the reviewed right/bottom 8px offsets and a 15px SVG, with the reviewed filled pink following state. Existing button nodes and follow callbacks are unchanged. Shared stylesheet consumer cache versions updated; no customer-data/database/call changes. Automated and public browser checks accompany release; physical phone and full reference acceptance remain pending.
+
+
+## 2026-10-15 Malaysia — Transparent Home title
+Owner requests removing the black rectangle behind the Mimo lettering. The existing source artwork and 108×36 title geometry are retained; an SVG luminance-to-alpha filter on the cropped artwork removes its dark backing so the real header background shows through. Removed parent contrast/blending that created an opaque black rectangle. Home stylesheet cache refreshed. No functional/data changes; browser verification accompanies publication.
