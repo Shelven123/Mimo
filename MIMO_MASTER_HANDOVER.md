@@ -553,3 +553,11 @@ Home follow controls still inherited four grid columns and 39px icon wrappers fr
 
 ## 2026-10-15 Malaysia — Transparent Home title
 Owner requests removing the black rectangle behind the Mimo lettering. The existing source artwork and 108×36 title geometry are retained; an SVG luminance-to-alpha filter on the cropped artwork removes its dark backing so the real header background shows through. Removed parent contrast/blending that created an opaque black rectangle. Home stylesheet cache refreshed. No functional/data changes; browser verification accompanies publication.
+
+
+## 2026-10-15 — Approved dark theme production activation
+Owner approved the separate image design and explicitly requested immediate publication. Native DOM adaptation activates dark purple/rose presentation on ten formal pages, four-tab navigation, illustrated Home shortcuts and the supplied voice/letter entries. Real identities/messages/balances and existing handlers are retained. Call has one five-control video row (flip/mute/hang up/local black/More); More contains gifts/effects/beauty/audio/report. Local black only covers the received video and never disables outgoing tracks or sends a signal. Existing RTC/Beauty inline scripts are unchanged.
+
+The accepted image prototype and native production rendering are distinct: no pixel-identical or physical-device acceptance claim. Voice introductions, daily letters, effects, unconfigured ranks/VIP benefits and gift settlement explicitly remain unavailable rather than supplying fictional business data. Audio hardware routing uses the device controls; no simulated Bluetooth/earpiece route. Report submits to the existing authenticated support endpoint only after explicit submit. No database/payment/customer-data mutation for release or tests.
+
+Automated: 311 regression tests passed before final CSS specificity/placement correction; final verification accompanies release. Browser fixtures cover Home/Chat/video More and exposed legacy CSS specificity and native dialog default-margin issues, corrected before activation. Signed-in device calling, phone keyboard and user acceptance of native rendering remain pending. Prep assets/code shipped in PR71 without activating the formal root pages. Rollback activation by reverting the release PR; old inline controllers remain intact.
