@@ -275,7 +275,7 @@ body {
 }
 
 </style>
-<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script><script src="./push-client.js?v=20261012-push2"></script><link rel="stylesheet" href="./foreground-notices.css?v=20261012-alert2"><link rel="stylesheet" href="./mimo-replica.css?v=20261013-exact4"><link rel="stylesheet" href="./mimo-neon.css?v=20261016-mefast1"></head>
+<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script><script src="./push-client.js?v=20261012-push2"></script><link rel="stylesheet" href="./foreground-notices.css?v=20261012-alert2"><link rel="stylesheet" href="./mimo-replica.css?v=20261013-exact4"><link rel="stylesheet" href="./mimo-neon.css?v=20261016-meidentity1"></head>
 
 
 <body data-mimo-page="me" class="mimo-replica mimo-neon">
@@ -416,7 +416,7 @@ const supabaseClient =
    INIT
 ========================= */
 
-let meAlive=true,meEpoch=0,meOwner=null,meObserved,meRefreshedAt=0;
+let meAlive=true,meEpoch=0,meOwner=null,meObserved,meRefreshedAt=0,meAuthRetry=null;
 function clearProfile(){
  document.getElementById('displayName').textContent='—';
  document.getElementById('username').textContent='';
@@ -436,6 +436,7 @@ async function init() {
   if(error)throw error;
   const user=data?.user;
   if(!user){clearProfile();window.top.location.replace('login.html');return;}
+  if(meObserved!==undefined&&meObserved!==user.id){profileStatus('登录状态已变化，请重试。');return;}
   meOwner=user.id;
   // Render the static page immediately; independent reads never gate one another.
   await Promise.allSettled([loadProfile(user.id,ticket),loadWallet(user.id),loadVIP(user.id,ticket)]);
@@ -482,17 +483,16 @@ async function loadProfile(userId,ticket=meEpoch) {
   }
 
 
-  if (!data) {
-
+  if (!data || data.id!==userId) {
+    profileStatus('暂时无法读取当前账号资料，请重试。');
     return;
-
   }
 
 
   document.getElementById(
     "displayName"
   ).textContent =
-    data.display_name ||
+    data.display_name || data.username ||
     "Mimo User";
 
 
@@ -526,11 +526,11 @@ async function loadWallet(userId) {
 }
 const walletAuthSubscription=supabaseClient.auth.onAuthStateChange((event,session)=>{
  const next=session?.user?.id||null;
- const changed=event==='SIGNED_OUT'||(meObserved!==undefined&&next!==meObserved)||(event==='SIGNED_IN'&&meObserved===undefined&&!meOwner)||(meOwner&&next!==meOwner)||(walletOwner&&next!==walletOwner);
+ const changed=event==='SIGNED_OUT'||(meObserved!==undefined&&next!==meObserved)||(meOwner&&next!==meOwner)||(walletOwner&&next!==walletOwner);
  meObserved=next;
- if(changed){meEpoch++;meOwner=null;walletEpoch++;walletOwner=null;clearProfile();profileStatus('');document.getElementById('diamond').textContent='Unavailable';document.getElementById('content').setAttribute('aria-busy','false');}
+ if(changed){meEpoch++;meOwner=null;walletEpoch++;walletOwner=null;clearProfile();profileStatus('');document.getElementById('diamond').textContent='Unavailable';document.getElementById('content').setAttribute('aria-busy','false');clearTimeout(meAuthRetry);if(next&&meAlive){const ticket=meEpoch;meAuthRetry=setTimeout(()=>{if(meAlive&&ticket===meEpoch)init();},0);}}
 }).data.subscription;
-window.addEventListener('pagehide',()=>{meAlive=false;meEpoch++;clearProfile();walletEpoch++;walletAuthSubscription.unsubscribe();});
+window.addEventListener('pagehide',()=>{meAlive=false;meEpoch++;clearTimeout(meAuthRetry);clearProfile();walletEpoch++;walletAuthSubscription.unsubscribe();});
 window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
 
 /* =========================
@@ -719,4 +719,4 @@ init();
 
 <script src="./foreground-notices.js?v=20261016-tabs1"></script>
 
-<script src="./replica-ui.js?v=20261013-exact3"></script><script src="./neon-ui.js?v=20261016-mefast1"></script><script src="./neon-navigation.js?v=20261015-navfeel1"></script><script src="./mimo-tabs.js?v=20261016-tabs2"></script></body></html>
+<script src="./replica-ui.js?v=20261013-exact3"></script><script src="./neon-ui.js?v=20261016-mefast1"></script><script src="./neon-navigation.js?v=20261015-navfeel1"></script><script src="./mimo-tabs.js?v=20261016-tabs3"></script></body></html>

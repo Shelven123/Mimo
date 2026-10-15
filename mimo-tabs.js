@@ -22,7 +22,7 @@ function start(w,client){
  function ready(key){const e=entries.get(key);if(!e||!e.loaded)return;e.ready=!!e.win.document.querySelector('.mimo-unified-nav');if(e.ready&&pending?.key===key)activate(key,pending.push);}
  function ensure(key){if(entries.has(key))return entries.get(key);const frame=d.createElement('iframe');frame.title={index:'首页',plaza:'广场',messages:'消息',me:'我'}[key];frame.hidden=true;frame.setAttribute('aria-hidden','true');frame.setAttribute('allow','autoplay');const e={frame,win:null,ready:false,loaded:false};entries.set(key,e);
   frame.addEventListener('load',()=>{if(!alive||!entries.has(key))return;try{const url=frame.contentWindow.location.href;if(route(url)!==key){exit(url);return;}e.win=frame.contentWindow;e.title=e.win.document.title;e.loaded=true;bind(e.win);visible(e,active===key);ready(key);}catch{frame.remove();entries.delete(key);if(pending?.key===key){pending=null;w.location.assign(new URL(key+'.html',directory).href);}}});
-  frame.src=new URL(key+'.html',directory).href;layer.append(frame);return e;
+  frame.src=new URL(key+'.html?v=20261016-tabs3',directory).href;layer.append(frame);return e;
  }
  function navigate(href,push=true){if(!enabled||!alive)return false;const key=route(href);if(!key)return false;if(key===active){pending=null;return true;}const e=ensure(key);if(!e.ready)return false;activate(key,push);return true;}
  function exit(href){try{const url=new URL(href,directory);if(url.origin!==directory.origin)return;w.location.assign(url.href);}catch{}}
