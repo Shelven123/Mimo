@@ -11,7 +11,7 @@ function info(title,text,href,label){const box=sheet(title);box.append(node('p',
 global.MimoNeon={icon,node,sheet,info};
 if(page==='index'){
  const header=d.querySelector('body>header'),logo=header.querySelector('.mimo-logo-art');header.querySelector('.mimo-logo-filter')?.remove();const country=node('button','neon-country','🇲🇾 马来西亚⌄');country.type='button';country.setAttribute('aria-label','浏览地区');country.onclick=()=>info('浏览地区','当前显示所有可浏览主播，地区筛选尚未启用。');logo.replaceWith(country);
- const right=header.querySelector('.reference-header-actions');right.classList.add('neon-header-links');right.append(link('','support.html','shield'));
+ const right=header.querySelector('.reference-header-actions');right.classList.add('neon-header-links');
  const hero=d.querySelector('.hello');hero.setAttribute('aria-label','魅力资产排行榜');const openRank=link('','neon-feature.html?view=ranking');openRank.setAttribute('aria-label','查看排行榜');hero.append(openRank);
  const shortcuts=node('div','neon-shortcuts');for(const [name,label]of [['checkin','签到'],['ranking','排行榜'],['shop','商城'],['event','活动']]){const a=link('',`neon-feature.html?view=${name}`),img=node('img');img.src=`assets/neon/${name}-hd.webp`;img.alt=label;a.append(img);shortcuts.append(a);}
  const meet=node('div','neon-meet');for(const [name,label]of [['voice','听声识人'],['letter','今日来信']]){const a=link('',`neon-feature.html?view=${name}`),img=node('img');img.src=`assets/neon/${name}-entry-hd.webp`;img.alt=label;a.append(img);meet.append(a);}hero.after(shortcuts,meet);d.querySelector('.section-title').textContent='在线主播推荐';

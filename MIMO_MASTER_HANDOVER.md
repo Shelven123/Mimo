@@ -569,3 +569,7 @@ Replace only the Home ranking artwork with the owner-supplied 1986×792 image, e
 
 ## 2026-10-15 — HD Home shortcut and discovery cards
 Owner rejects the blurred low-resolution Home shortcut/discovery crops and supplies a new HD six-card board. Replace the four shortcut assets and two discovery-entry assets with individually extracted high-resolution cards from that supplied board, preserving embedded lettering and native proportions. Existing links unchanged; no new functional/backend changes. Refresh Home CSS/adapter versions. Source upload untouched.
+
+
+## 2026-10-15 — Remove obstructing Home shield shortcut
+Owner requests fixing the oversized top-right shield that covers the banner. Remove only the extra Home support link added by the theme adapter; keep existing search and notifications. Settings → Help & Customer Service remains available. Refresh Home adapter cache. No other layout, call or backend changes.
