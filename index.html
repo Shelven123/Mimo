@@ -629,7 +629,9 @@ const supabaseClient =
 
 
 let allHosts = [];
+let lastHostRead=0;
 let currentUser = null;
+let homeIdentityReady=null;
 let currentProfile = null;
 let followedHostIds = new Set();
 let currentFilter = "all";
@@ -735,7 +737,7 @@ async function loadHosts() {
     return;
   }
 
-  allHosts = data || [];
+  allHosts = data || [];lastHostRead=Date.now();
 
   renderStories();
   applyFilters();
@@ -1042,7 +1044,7 @@ function openProfile(hostId) {
 
 function chatWithHost(hostId) {
 
-  window.location.href =
+  window.top.location.href =
     "chat.html?host=" +
     encodeURIComponent(hostId);
 }
@@ -1053,6 +1055,7 @@ function chatWithHost(hostId) {
 ========================= */
 
 async function followHost(hostId) {
+  if(homeIdentityReady)await homeIdentityReady;
 
   if (!currentUser) {
 
@@ -1158,7 +1161,7 @@ function storyComingSoon() {
 
 function callComingSoon(hostId) {
 
-  window.location.href =
+  window.top.location.href =
     "call.html?user=" +
     encodeURIComponent(hostId);
 }
@@ -1166,7 +1169,7 @@ function callComingSoon(hostId) {
 
 function videoComingSoon(hostId) {
 
-  window.location.href =
+  window.top.location.href =
     "call.html?user=" +
     encodeURIComponent(hostId) +
     "&type=video";
@@ -1178,7 +1181,7 @@ function videoComingSoon(hostId) {
 ========================= */
 
 function goTo(page) {
-  window.location.href = page;
+  window.top.location.href = page;
 }
 
 
@@ -1294,7 +1297,7 @@ function hideIncomingCall() {
 
 function acceptIncomingCall() {
   if (!incomingCallRecord) return;
-  window.location.href = "call.html?call=" +
+  window.top.location.href = "call.html?call=" +
     encodeURIComponent(incomingCallRecord.id);
 }
 
@@ -1314,20 +1317,17 @@ async function declineIncomingCall() {
 ========================= */
 
 async function init() {
-
-  await loadCurrentUser();
-
-  await loadFollowing();
-
-  await loadHosts();
-
-  await startIncomingCallListener();
+  const hosts=loadHosts();
+  const identity=homeIdentityReady=(async()=>{await loadCurrentUser();const following=loadFollowing();startIncomingCallListener().catch(console.error);await following;})();
+  await Promise.allSettled([hosts,identity]);
+  applyFilters();window.MimoPageDataReady=true;window.dispatchEvent(new Event('mimo:page-ready'));
 }
 
+window.addEventListener('mimo:tab-visibility',()=>{if(window.MimoTabVisible!==false&&lastHostRead&&Date.now()-lastHostRead>30000)loadHosts().catch(console.error);});
 init();
 
 </script>
 
-<script src="./foreground-notices.js?v=20261012-alert2"></script>
+<script src="./foreground-notices.js?v=20261016-tabs1"></script>
 
-<script src="./replica-ui.js?v=20261013-exact3"></script><script src="./neon-ui.js?v=20261015-nav1"></script><script src="./neon-navigation.js?v=20261015-navfeel1"></script></body></html>
+<script src="./replica-ui.js?v=20261013-exact3"></script><script src="./neon-ui.js?v=20261015-nav1"></script><script src="./neon-navigation.js?v=20261015-navfeel1"></script><script src="./mimo-tabs.js?v=20261016-tabs1"></script></body></html>

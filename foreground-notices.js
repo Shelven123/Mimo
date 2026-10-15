@@ -1,5 +1,6 @@
 (function(global){
 'use strict';
+try{if(global.parent!==global&&global.parent.MimoTabs)return;}catch{return;}
 const uuid=v=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v||'');
 const categories={message:'private_messages',call:'calls',follow:'new_followers',appointment:'appointments',activity:'activity_posts',like:'activity_posts',comment:'activity_posts',official:'official_messages',system:'system_messages',support:'system_messages'};
 function target(row){if(['activity','like','comment'].includes(row.notification_type)&&uuid(row.related_id))return 'plaza.html?post='+row.related_id;if(row.notification_type==='support'&&uuid(row.related_id))return 'support.html?ticket='+row.related_id;if(row.notification_type==='appointment')return 'appointments.html';if(uuid(row.related_user_id)){if(row.notification_type==='message')return 'chat.html?host='+row.related_user_id;if(['follow','interest','gift'].includes(row.notification_type))return 'profile.html?id='+row.related_user_id;}return 'notifications.html';}
