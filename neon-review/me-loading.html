@@ -1,0 +1,725 @@
+<!DOCTYPE html><html lang="en"><head><base href="/Mimo/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mimo · Me slow network QA · 示例资料</title>
+
+
+
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f7f7f9;
+  color: #222;
+  padding-bottom: 80px;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+  background: white;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.header-title {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+
+/* =========================
+   PROFILE
+========================= */
+
+.profile-card {
+  background: white;
+  margin: 14px;
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #eee;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.name {
+  font-size: 19px;
+  font-weight: bold;
+}
+
+.username {
+  color: #999;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.edit-btn {
+  border: none;
+  background: #fff0f5;
+  color: #ff4f81;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+
+/* =========================
+   WALLET
+========================= */
+
+.wallet-card {
+  background: linear-gradient(
+    135deg,
+    #ff4f81,
+    #ff7fa3
+  );
+
+  color: white;
+
+  margin: 14px;
+
+  border-radius: 18px;
+
+  padding: 20px;
+}
+
+.wallet-title {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.diamond {
+  font-size: 30px;
+  font-weight: bold;
+  margin: 6px 0 15px;
+}
+
+.wallet-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.wallet-btn {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  background: white;
+  color: #ff4f81;
+  font-weight: bold;
+}
+
+
+/* =========================
+   VIP
+========================= */
+
+.vip-card {
+  background: white;
+  margin: 14px;
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+}
+
+.vip-title {
+  font-weight: bold;
+}
+
+.vip-level {
+  color: #ff4f81;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.vip-btn {
+  border: none;
+  background: #ff4f81;
+  color: white;
+  padding: 9px 13px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+
+/* =========================
+   MENU
+========================= */
+
+.menu {
+  background: white;
+  margin: 14px;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 17px;
+  border-bottom: 1px solid #f1f1f1;
+  cursor: pointer;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-icon {
+  width: 34px;
+  font-size: 20px;
+}
+
+.menu-text {
+  flex: 1;
+  font-size: 15px;
+}
+
+.arrow {
+  color: #aaa;
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+.logout {
+  margin: 14px;
+}
+
+.logout button {
+  width: 100%;
+  border: none;
+  background: white;
+  color: #e33;
+  padding: 15px;
+  border-radius: 14px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+
+/* =========================
+   BOTTOM NAV
+========================= */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 68px;
+  background: white;
+  border-top: 1px solid #eee;
+  display: flex;
+  z-index: 20;
+}
+
+.nav-item {
+  flex: 1;
+  text-align: center;
+  padding-top: 10px;
+  font-size: 12px;
+  color: #888;
+  cursor: pointer;
+}
+
+.nav-icon {
+  font-size: 21px;
+  margin-bottom: 3px;
+}
+
+.nav-item.active {
+  color: #ff4f81;
+  font-weight: bold;
+}
+
+
+/* =========================
+   LOADING
+========================= */
+
+.loading {
+  text-align: center;
+  padding: 80px 20px;
+  color: #999;
+}
+
+</style>
+<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script><script src="./push-client.js?v=20261012-push2"></script><link rel="stylesheet" href="./foreground-notices.css?v=20261012-alert2"><link rel="stylesheet" href="./mimo-replica.css?v=20261013-exact4"><link rel="stylesheet" href="./mimo-neon.css?v=20261016-mefast1"></head>
+
+
+<body data-mimo-page="me" class="mimo-replica mimo-neon">
+
+
+<div id="loading" class="me-status" role="status" aria-live="polite" hidden></div>
+
+
+<div id="content" aria-busy="true">
+
+
+  <!-- HEADER -->
+
+
+
+
+  <!-- PROFILE -->
+
+  <div class="me-live-banner"><div class="mimo-art mimo-city-art" aria-hidden="true"><span></span></div><a class="me-settings" href="settings.html" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 3 1-2h6l1 2 3 2 2 1v6l-2 1-3 2-1 2H9l-1-2-3-2-2-1V6l2-1Zm8 6a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"></path></svg></a><div class="profile-card">
+
+    <img id="avatar" class="avatar" src="assets/neon/avatar-placeholder.svg" alt="">
+
+    <div class="profile-info">
+
+      <div id="displayName" class="name">
+        —
+      </div>
+
+      <div id="username" class="username">
+      </div>
+
+    <button class="edit-btn" onclick="editProfile()">编辑个人资料 ›</button></div>
+
+
+
+  </div>
+
+
+<a class="replica-me-back" href="index.html" aria-label="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 4-8 8 8 8"></path></svg></a><button type="button" class="replica-me-scan" aria-label="扫一扫"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"></path></svg></button></div><div class="me-counts"><button type="button" data-me-count="following"><strong>—</strong><span>关注</span></button><button type="button" data-me-count="followers"><strong>—</strong><span>粉丝</span></button><button type="button" data-me-count="posts"><strong>—</strong><span>动态</span></button><button type="button" data-me-count="likes"><strong>—</strong><span>获赞</span></button></div>
+  <!-- WALLET -->
+
+  <div class="wallet-card">
+
+    <div class="wallet-title">
+      💎 钻石余额
+    </div>
+
+    <div id="diamond" class="diamond">
+      —
+    </div>
+
+    <div class="wallet-buttons">
+
+      <button class="wallet-btn" onclick="recharge()">
+        充值
+      </button>
+
+      <button class="wallet-btn" onclick="openWallet()">
+        Wallet
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- VIP -->
+
+  <div class="vip-card" hidden="">
+
+    <div>
+
+      <div class="vip-title">
+        ⭐ Mimo VIP
+      </div>
+
+      <div id="vipLevel" class="vip-level">
+        VIP —
+      </div>
+
+    </div>
+
+    <button class="vip-btn" onclick="openVIP()">
+      View VIP
+    </button>
+
+  </div>
+
+
+  <!-- MENU -->
+
+  <div class="menu"><a href="neon-feature.html?view=guard" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 4v6c0 6-9 10-9 10S3 18 3 12V6ZM8 12l3 3 5-6"></path></svg>守护天使</a><a href="neon-feature.html?view=vip" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 7 5 4 5-8 5 8 5-4-3 13H5ZM6 23h12"></path></svg>VIP 尊享</a><a href="neon-feature.html?view=shop" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h18v4H3ZM5 12v10h14V12M12 8v14M12 8S3 8 5 3s7 5 7 5Zm0 0s9 0 7-5-7 5-7 5Z"></path></svg>商城</a><a href="neon-feature.html?view=tasks" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v18H6ZM9 1h6v6H9ZM9 12l2 2 4-4"></path></svg>任务记录</a><a href="neon-feature.html?view=referrals" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5ZM20 2v5M18 4h5"></path></svg>推广有奖</a><a href="settings.html" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 3 1-2h6l1 2 3 2 2 1v6l-2 1-3 2-1 2H9l-1-2-3-2-2-1V6l2-1Zm8 6a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"></path></svg>设置</a></div><div class="neon-me-tabs"><a href="account-profile.html">个人资料</a><a href="neon-feature.html?view=comments">评论</a><a href="neon-feature.html?view=voice-history">我的心声记录</a></div>
+
+
+  <!-- LOGOUT -->
+
+  <div class="logout" hidden="">
+
+    <button onclick="logout()">
+      🚪 Logout
+    </button>
+
+  </div>
+
+
+</div>
+
+
+<!-- BOTTOM NAV -->
+
+<nav class="mimo-unified-nav" aria-label="Main navigation"><a class="mimo-tab" href="index.html"><svg class="nav-home-icon" viewBox="-1 -1 30 30" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="nav-home-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffe4be"/><stop offset="1" stop-color="#c78d68"/></linearGradient></defs><path d="m4 12 10-9 10 9v13h-7v-8h-6v8H4Z"/></svg><span>首页</span></a><a class="mimo-tab" href="plaza.html"><svg viewBox="-1 -1 30 30" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="nav-planet" x2=".4" y2="1"><stop stop-color="#ffe2f2"/><stop offset="1" stop-color="#ff64a7"/></linearGradient></defs><circle class="nav-planet-orb" cx="14" cy="13" r="8"/><ellipse class="nav-planet-ring" cx="14" cy="15" rx="14" ry="4" transform="rotate(-28 14 15)"/></svg><span>广场</span></a><a class="mimo-tab" href="messages.html"><svg class="nav-chat-icon" viewBox="-1 -1 30 30" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="nav-chat-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e5d4ff"/><stop offset="1" stop-color="#9a79d6"/></linearGradient></defs><path d="M25 13a11 11 0 0 1-16.3 9.6L3 24l1.5-5.2A11 11 0 1 1 25 13Z"/><circle cx="9" cy="13" r=".9" fill="currentColor" stroke="none"/><circle cx="14" cy="13" r=".9" fill="currentColor" stroke="none"/><circle cx="19" cy="13" r=".9" fill="currentColor" stroke="none"/></svg><span>消息</span></a><a class="mimo-tab active" href="me.html" aria-current="page"><svg class="nav-profile-icon" viewBox="-1 -1 30 30" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="nav-profile-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffd0dc"/><stop offset="1" stop-color="#c4769d"/></linearGradient></defs><circle cx="14" cy="8" r="5"/><path d="M4 25v-2c0-8 20-8 20 0v2Z"/></svg><span>我</span></a></nav>
+
+<script>
+// Read-only synthetic fixture; no backend or credentials.
+const fixtureWait=ms=>new Promise(r=>setTimeout(r,ms));
+window.supabase={createClient:()=>({auth:{getUser:async()=>{await fixtureWait(800);return{data:{user:{id:'fixture-me'}}};},onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},from:table=>({select(fields){this.fields=fields;return this;},eq(){return this;},async maybeSingle(){await fixtureWait(table==='profiles'?4000:10000);return{data:table==='profiles'?{id:'fixture-me',display_name:'示例账号',username:'preview',role:'user'}:{level:0}};},then(resolve){resolve({count:0});}})})};
+window.MimoWallet={balance:async()=>{await fixtureWait(8000);return'125';},format:v=>String(v)};
+</script>
+
+<script>
+
+
+/* =========================
+   SUPABASE
+========================= */
+
+const SUPABASE_URL =
+  "https://zhhgiwqehwuwzxnqbnth.supabase.co";
+
+
+const SUPABASE_KEY =
+  "sb_publishable_sPMtACRDzijX9yeeQ_wUUw_QGuOeryJ";
+
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+/* =========================
+   INIT
+========================= */
+
+let meAlive=true,meEpoch=0,meOwner=null,meObserved;
+function clearProfile(){
+ document.getElementById('displayName').textContent='—';
+ document.getElementById('username').textContent='';
+ document.getElementById('avatar').src='assets/neon/avatar-placeholder.svg';
+ document.getElementById('vipLevel').textContent='VIP —';
+}
+function profileStatus(message){
+ const status=document.getElementById('loading');status.replaceChildren();status.hidden=!message;
+ if(message){status.append(document.createTextNode(message+' '));const retry=document.createElement('button');retry.type='button';retry.textContent='重试';retry.onclick=()=>init();status.append(retry);}
+}
+async function init() {
+ const ticket=++meEpoch;
+ document.getElementById('content').setAttribute('aria-busy','true');profileStatus('');
+ try{
+  const {data,error}=await supabaseClient.auth.getUser();
+  if(!meAlive||ticket!==meEpoch)return;
+  if(error)throw error;
+  const user=data?.user;
+  if(!user){clearProfile();location.replace('login.html');return;}
+  meOwner=user.id;
+  // Render the static page immediately; independent reads never gate one another.
+  await Promise.allSettled([loadProfile(user.id,ticket),loadWallet(user.id),loadVIP(user.id,ticket)]);
+ }catch{
+  if(meAlive&&ticket===meEpoch)profileStatus('暂时无法更新资料，请检查网络。');
+ }finally{
+  if(meAlive&&ticket===meEpoch)document.getElementById('content').setAttribute('aria-busy','false');
+ }
+}
+
+
+/* =========================
+   PROFILE
+========================= */
+
+async function loadProfile(userId,ticket=meEpoch) {
+
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("profiles")
+    .select(`
+      id,
+      username,
+      display_name,
+      avatar_url
+    `)
+    .eq("id", userId)
+    .maybeSingle();
+
+
+  if(!meAlive||ticket!==meEpoch||meOwner!==userId)return;
+
+  if (error) {
+    profileStatus('资料暂时无法更新。');
+
+    console.error(error);
+
+    return;
+
+  }
+
+
+  if (!data) {
+
+    return;
+
+  }
+
+
+  document.getElementById(
+    "displayName"
+  ).textContent =
+    data.display_name ||
+    "Mimo User";
+
+
+  document.getElementById(
+    "username"
+  ).textContent =
+    data.username
+      ? "@" + data.username
+      : "";
+
+
+  if (data.avatar_url) {
+
+    document.getElementById(
+      "avatar"
+    ).src = data.avatar_url;
+
+  }
+
+}
+
+
+/* =========================
+   WALLET
+========================= */
+
+let walletEpoch=0,walletOwner=null;
+async function loadWallet(userId) {
+ walletOwner=userId;const epoch=++walletEpoch,element=document.getElementById('diamond');element.textContent='—';
+ try{const value=await MimoWallet.balance(supabaseClient);const{data,error}=await supabaseClient.auth.getUser();if(epoch!==walletEpoch)return;if(error||data.user?.id!==userId)throw Error('Session changed');element.textContent=MimoWallet.format(value);}catch(error){if(epoch===walletEpoch)element.textContent='Unavailable';}
+}
+const walletAuthSubscription=supabaseClient.auth.onAuthStateChange((event,session)=>{
+ const next=session?.user?.id||null;
+ const changed=event==='SIGNED_OUT'||(meObserved!==undefined&&next!==meObserved)||(event==='SIGNED_IN'&&meObserved===undefined&&!meOwner)||(meOwner&&next!==meOwner)||(walletOwner&&next!==walletOwner);
+ meObserved=next;
+ if(changed){meEpoch++;meOwner=null;walletEpoch++;walletOwner=null;clearProfile();profileStatus('');document.getElementById('diamond').textContent='Unavailable';document.getElementById('content').setAttribute('aria-busy','false');}
+}).data.subscription;
+window.addEventListener('pagehide',()=>{meAlive=false;meEpoch++;clearProfile();walletEpoch++;walletAuthSubscription.unsubscribe();});
+window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
+
+/* =========================
+   VIP
+========================= */
+
+async function loadVIP(userId,ticket=meEpoch) {
+
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("user_vip")
+    .select(`
+      level
+    `)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+
+  if(!meAlive||ticket!==meEpoch||meOwner!==userId)return;
+
+  if (error) {
+
+    console.error(error);
+
+    return;
+
+  }
+
+
+  if (data) {
+
+    document.getElementById(
+      "vipLevel"
+    ).textContent =
+      "VIP " + (data.level || 0);
+
+  }
+
+}
+
+
+/* =========================
+   ACTIONS
+========================= */
+
+function editProfile() {
+
+  alert(
+    "Profile editing will be connected next."
+  );
+
+}
+
+
+function recharge() {
+
+  location.href = "recharge.html";
+
+}
+
+
+function openWallet() {
+
+  location.href = "wallet.html";
+
+}
+
+
+function openVIP() {
+
+  alert(
+    "VIP will be connected next."
+  );
+
+}
+
+
+function openFollowing() {
+
+  alert(
+    "Following will be connected next."
+  );
+
+}
+
+
+function openAppointments() {
+
+  location.href = "appointments.html";
+
+}
+
+
+function openBackpack() {
+
+  alert(
+    "Backpack will be connected next."
+  );
+
+}
+
+
+function openShop() {
+
+  alert(
+    "Shop will be connected next."
+  );
+
+}
+
+
+function openSettings() {
+
+  window.location.href =
+    "settings.html";
+
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+async function logout() {
+  try{await Promise.race([window.MimoPush?.disable(supabaseClient),new Promise((_,reject)=>setTimeout(()=>reject(Error('Push cleanup timeout')),5000))]);}catch{}
+
+
+  await supabaseClient
+    .auth
+    .signOut();
+
+
+  window.location.href =
+    "login.html";
+
+}
+
+
+/* =========================
+   NAVIGATION
+========================= */
+
+function goHome() {
+
+  window.location.href =
+    "index.html";
+
+}
+
+
+function goPlaza() {
+
+  window.location.href =
+    "plaza.html";
+
+}
+
+
+function goMessages() {
+
+  window.location.href =
+    "messages.html";
+
+}
+
+
+function goNotifications() {
+
+  window.location.href =
+    "notifications.html";
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+init();
+
+</script>
+
+
+
+<script src="./replica-ui.js?v=20261013-exact3"></script><script src="./neon-ui.js?v=20261016-mefast1"></script><script src="./neon-navigation.js?v=20261015-navfeel1"></script></body></html>

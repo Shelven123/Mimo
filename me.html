@@ -4,8 +4,8 @@
 
 <title>Mimo - Me</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./wallet.js?v=20261010-wallet1"></script>
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" as="script">
+
 
 <style>
 
@@ -275,18 +275,16 @@ body {
 }
 
 </style>
-<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script><script src="./push-client.js?v=20261012-push2"></script><link rel="stylesheet" href="./foreground-notices.css?v=20261012-alert2"><link rel="stylesheet" href="./mimo-replica.css?v=20261013-exact4"><link rel="stylesheet" href="./mimo-neon.css?v=20261016-navcolor1"></head>
+<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><script src="./mobile-layout.js?v=20261011-fixed1"></script><script src="./push-client.js?v=20261012-push2"></script><link rel="stylesheet" href="./foreground-notices.css?v=20261012-alert2"><link rel="stylesheet" href="./mimo-replica.css?v=20261013-exact4"><link rel="stylesheet" href="./mimo-neon.css?v=20261016-mefast1"></head>
 
 
 <body data-mimo-page="me" class="mimo-replica mimo-neon">
 
 
-<div id="loading" class="loading">
-  Loading your profile...
-</div>
+<div id="loading" class="me-status" role="status" aria-live="polite" hidden></div>
 
 
-<div id="content" style="display:none;">
+<div id="content" aria-busy="true">
 
 
   <!-- HEADER -->
@@ -298,16 +296,15 @@ body {
 
   <div class="me-live-banner"><div class="mimo-art mimo-city-art" aria-hidden="true"><span></span></div><a class="me-settings" href="settings.html" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 3 1-2h6l1 2 3 2 2 1v6l-2 1-3 2-1 2H9l-1-2-3-2-2-1V6l2-1Zm8 6a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"></path></svg></a><div class="profile-card">
 
-    <img id="avatar" class="avatar" src="https://i.pravatar.cc/200?img=12">
+    <img id="avatar" class="avatar" src="assets/neon/avatar-placeholder.svg" alt="">
 
     <div class="profile-info">
 
       <div id="displayName" class="name">
-        User
+        —
       </div>
 
       <div id="username" class="username">
-        @username
       </div>
 
     <button class="edit-btn" onclick="editProfile()">编辑个人资料 ›</button></div>
@@ -320,20 +317,20 @@ body {
 <a class="replica-me-back" href="index.html" aria-label="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 4-8 8 8 8"></path></svg></a><button type="button" class="replica-me-scan" aria-label="扫一扫"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"></path></svg></button></div><div class="me-counts"><button type="button" data-me-count="following"><strong>—</strong><span>关注</span></button><button type="button" data-me-count="followers"><strong>—</strong><span>粉丝</span></button><button type="button" data-me-count="posts"><strong>—</strong><span>动态</span></button><button type="button" data-me-count="likes"><strong>—</strong><span>获赞</span></button></div>
   <!-- WALLET -->
 
-  <div class="wallet-card" hidden="">
+  <div class="wallet-card">
 
     <div class="wallet-title">
-      💎 My Diamonds
+      💎 钻石余额
     </div>
 
     <div id="diamond" class="diamond">
-      0
+      —
     </div>
 
     <div class="wallet-buttons">
 
       <button class="wallet-btn" onclick="recharge()">
-        + Recharge
+        充值
       </button>
 
       <button class="wallet-btn" onclick="openWallet()">
@@ -356,7 +353,7 @@ body {
       </div>
 
       <div id="vipLevel" class="vip-level">
-        VIP 0
+        VIP —
       </div>
 
     </div>
@@ -370,7 +367,7 @@ body {
 
   <!-- MENU -->
 
-  <div class="menu"><a href="wallet.html" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h17v15H3ZM3 5V2h13v3M14 10h7v6h-7ZM17 13h.1"></path></svg><span>我的钱包</span><span class="chevron">›</span></a><a href="wallet.html" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 4v6c0 6-9 10-9 10S3 18 3 12V6ZM8 12l3 3 5-6"></path></svg><span>我的订阅</span><span class="chevron">›</span></a><a href="plaza.html?tab=saved" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1Z"></path></svg><span>我的收藏</span><span class="chevron">›</span></a><button type="button" data-replica-pending="观看历史" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10a9 9 0 1 1 0 5M3 3v7h7M12 7v6l4 2"></path></svg><span>观看历史</span><span class="chevron">›</span></button><a href="plaza.html?mine=1" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v14H3ZM2 3h20v4H2ZM9 11h6"></path></svg><span>我的动态</span><span class="chevron">›</span></a><a href="settings.html" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 3 1-2h6l1 2 3 2 2 1v6l-2 1-3 2-1 2H9l-1-2-3-2-2-1V6l2-1Zm8 6a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"></path></svg><span>设置</span><span class="chevron">›</span></a></div>
+  <div class="menu"><a href="neon-feature.html?view=guard" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 4v6c0 6-9 10-9 10S3 18 3 12V6ZM8 12l3 3 5-6"></path></svg>守护天使</a><a href="neon-feature.html?view=vip" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 7 5 4 5-8 5 8 5-4-3 13H5ZM6 23h12"></path></svg>VIP 尊享</a><a href="neon-feature.html?view=shop" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h18v4H3ZM5 12v10h14V12M12 8v14M12 8S3 8 5 3s7 5 7 5Zm0 0s9 0 7-5-7 5-7 5Z"></path></svg>商城</a><a href="neon-feature.html?view=tasks" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v18H6ZM9 1h6v6H9ZM9 12l2 2 4-4"></path></svg>任务记录</a><a href="neon-feature.html?view=referrals" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5ZM20 2v5M18 4h5"></path></svg>推广有奖</a><a href="settings.html" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 3 1-2h6l1 2 3 2 2 1v6l-2 1-3 2-1 2H9l-1-2-3-2-2-1V6l2-1Zm8 6a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"></path></svg>设置</a></div><div class="neon-me-tabs"><a href="account-profile.html">个人资料</a><a href="neon-feature.html?view=comments">评论</a><a href="neon-feature.html?view=voice-history">我的心声记录</a></div>
 
 
   <!-- LOGOUT -->
@@ -391,6 +388,8 @@ body {
 
 <nav class="mimo-unified-nav" aria-label="Main navigation"><a class="mimo-tab" href="index.html"><svg class="nav-home-icon" viewBox="-1 -1 30 30" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="nav-home-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffe4be"/><stop offset="1" stop-color="#c78d68"/></linearGradient></defs><path d="m4 12 10-9 10 9v13h-7v-8h-6v8H4Z"/></svg><span>首页</span></a><a class="mimo-tab" href="plaza.html"><svg viewBox="-1 -1 30 30" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="nav-planet" x2=".4" y2="1"><stop stop-color="#ffe2f2"/><stop offset="1" stop-color="#ff64a7"/></linearGradient></defs><circle class="nav-planet-orb" cx="14" cy="13" r="8"/><ellipse class="nav-planet-ring" cx="14" cy="15" rx="14" ry="4" transform="rotate(-28 14 15)"/></svg><span>广场</span></a><a class="mimo-tab" href="messages.html"><svg class="nav-chat-icon" viewBox="-1 -1 30 30" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="nav-chat-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e5d4ff"/><stop offset="1" stop-color="#9a79d6"/></linearGradient></defs><path d="M25 13a11 11 0 0 1-16.3 9.6L3 24l1.5-5.2A11 11 0 1 1 25 13Z"/><circle cx="9" cy="13" r=".9" fill="currentColor" stroke="none"/><circle cx="14" cy="13" r=".9" fill="currentColor" stroke="none"/><circle cx="19" cy="13" r=".9" fill="currentColor" stroke="none"/></svg><span>消息</span></a><a class="mimo-tab active" href="me.html" aria-current="page"><svg class="nav-profile-icon" viewBox="-1 -1 30 30" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="nav-profile-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffd0dc"/><stop offset="1" stop-color="#c4769d"/></linearGradient></defs><circle cx="14" cy="8" r="5"/><path d="M4 25v-2c0-8 20-8 20 0v2Z"/></svg><span>我</span></a></nav>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./wallet.js?v=20261010-wallet1"></script>
 <script>
 
 
@@ -417,42 +416,34 @@ const supabaseClient =
    INIT
 ========================= */
 
+let meAlive=true,meEpoch=0,meOwner=null,meObserved;
+function clearProfile(){
+ document.getElementById('displayName').textContent='—';
+ document.getElementById('username').textContent='';
+ document.getElementById('avatar').src='assets/neon/avatar-placeholder.svg';
+ document.getElementById('vipLevel').textContent='VIP —';
+}
+function profileStatus(message){
+ const status=document.getElementById('loading');status.replaceChildren();status.hidden=!message;
+ if(message){status.append(document.createTextNode(message+' '));const retry=document.createElement('button');retry.type='button';retry.textContent='重试';retry.onclick=()=>init();status.append(retry);}
+}
 async function init() {
-
-
-  const {
-    data: { user }
-  } = await supabaseClient
-    .auth
-    .getUser();
-
-
-  if (!user) {
-
-    window.location.href =
-      "login.html";
-
-    return;
-
-  }
-
-
-  await loadProfile(user.id);
-
-  await loadWallet(user.id);
-
-  await loadVIP(user.id);
-
-
-  document.getElementById(
-    "loading"
-  ).style.display = "none";
-
-
-  document.getElementById(
-    "content"
-  ).style.display = "block";
-
+ const ticket=++meEpoch;
+ document.getElementById('content').setAttribute('aria-busy','true');profileStatus('');
+ try{
+  const {data,error}=await supabaseClient.auth.getUser();
+  if(!meAlive||ticket!==meEpoch)return;
+  if(error)throw error;
+  const user=data?.user;
+  if(!user){clearProfile();location.replace('login.html');return;}
+  meOwner=user.id;
+  // Render the static page immediately; independent reads never gate one another.
+  await Promise.allSettled([loadProfile(user.id,ticket),loadWallet(user.id),loadVIP(user.id,ticket)]);
+ }catch{
+  if(meAlive&&ticket===meEpoch)profileStatus('暂时无法更新资料，请检查网络。');
+ }finally{
+  if(meAlive&&ticket===meEpoch)document.getElementById('content').setAttribute('aria-busy','false');
+ }
 }
 
 
@@ -460,7 +451,7 @@ async function init() {
    PROFILE
 ========================= */
 
-async function loadProfile(userId) {
+async function loadProfile(userId,ticket=meEpoch) {
 
 
   const {
@@ -478,7 +469,10 @@ async function loadProfile(userId) {
     .maybeSingle();
 
 
+  if(!meAlive||ticket!==meEpoch||meOwner!==userId)return;
+
   if (error) {
+    profileStatus('资料暂时无法更新。');
 
     console.error(error);
 
@@ -526,18 +520,23 @@ async function loadProfile(userId) {
 
 let walletEpoch=0,walletOwner=null;
 async function loadWallet(userId) {
- walletOwner=userId;const epoch=++walletEpoch,element=document.getElementById('diamond');element.textContent='Loading…';
+ walletOwner=userId;const epoch=++walletEpoch,element=document.getElementById('diamond');element.textContent='—';
  try{const value=await MimoWallet.balance(supabaseClient);const{data,error}=await supabaseClient.auth.getUser();if(epoch!==walletEpoch)return;if(error||data.user?.id!==userId)throw Error('Session changed');element.textContent=MimoWallet.format(value);}catch(error){if(epoch===walletEpoch)element.textContent='Unavailable';}
 }
-const walletAuthSubscription=supabaseClient.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||(walletOwner&&session&&session.user.id!==walletOwner)){walletEpoch++;walletOwner=null;document.getElementById('diamond').textContent='Unavailable';}}).data.subscription;
-window.addEventListener('pagehide',()=>{walletEpoch++;walletAuthSubscription.unsubscribe();});
+const walletAuthSubscription=supabaseClient.auth.onAuthStateChange((event,session)=>{
+ const next=session?.user?.id||null;
+ const changed=event==='SIGNED_OUT'||(meObserved!==undefined&&next!==meObserved)||(event==='SIGNED_IN'&&meObserved===undefined&&!meOwner)||(meOwner&&next!==meOwner)||(walletOwner&&next!==walletOwner);
+ meObserved=next;
+ if(changed){meEpoch++;meOwner=null;walletEpoch++;walletOwner=null;clearProfile();profileStatus('');document.getElementById('diamond').textContent='Unavailable';document.getElementById('content').setAttribute('aria-busy','false');}
+}).data.subscription;
+window.addEventListener('pagehide',()=>{meAlive=false;meEpoch++;clearProfile();walletEpoch++;walletAuthSubscription.unsubscribe();});
 window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
 
 /* =========================
    VIP
 ========================= */
 
-async function loadVIP(userId) {
+async function loadVIP(userId,ticket=meEpoch) {
 
 
   const {
@@ -551,6 +550,8 @@ async function loadVIP(userId) {
     .eq("user_id", userId)
     .maybeSingle();
 
+
+  if(!meAlive||ticket!==meEpoch||meOwner!==userId)return;
 
   if (error) {
 
@@ -716,4 +717,4 @@ init();
 
 <script src="./foreground-notices.js?v=20261012-alert2"></script>
 
-<script src="./replica-ui.js?v=20261013-exact3"></script><script src="./neon-ui.js?v=20261015-nav1"></script><script src="./neon-navigation.js?v=20261015-navfeel1"></script></body></html>
+<script src="./replica-ui.js?v=20261013-exact3"></script><script src="./neon-ui.js?v=20261016-mefast1"></script><script src="./neon-navigation.js?v=20261015-navfeel1"></script></body></html>
