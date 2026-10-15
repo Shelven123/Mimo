@@ -573,3 +573,9 @@ Owner rejects the blurred low-resolution Home shortcut/discovery crops and suppl
 
 ## 2026-10-15 — Remove obstructing Home shield shortcut
 Owner requests fixing the oversized top-right shield that covers the banner. Remove only the extra Home support link added by the theme adapter; keep existing search and notifications. Settings → Help & Customer Service remains available. Refresh Home adapter cache. No other layout, call or backend changes.
+
+
+## 2026-10-15 — Reference-based native Help & Support redesign
+Owner requests replacing the plain support page with the supplied three-screen dark pink/purple reference. Add a native dashboard (supplied decorative headset portrait, three routes, searchable FAQ), native category/form view, real-ticket status filters and styled ticket details/replies. Preserve all existing form/controller IDs, authenticated support RPCs, photo limit, idempotent retry and admin scope/status/priority controls. Original inline support controller remains byte-identical.
+
+No fake ticket IDs, amounts, online staffing or service hours are shown on real accounts. Contact routes to asynchronous tickets; status filters use actual open/in_progress/resolved/closed values rather than pretending resolved means replied. Existing single-photo/4000-character limits remain. No backend, payment, customer-data or call changes. Browser and automated checks accompany release; original reference acceptance does not establish signed-in native phone acceptance.
