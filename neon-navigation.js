@@ -10,4 +10,5 @@ function show(){if(!alive)return;const messages=nav.querySelector('a[href="messa
 async function refresh(ticket){try{const result=await client.auth.getUser();if(!alive||ticket!==epoch||result.error||!result.data?.user){if(ticket===epoch)hide();return;}const id=result.data.user.id;const row=await client.from('profiles').select('id,role').eq('id',id).maybeSingle();if(!alive||ticket!==epoch)return;if(!row.error&&row.data?.id===id&&row.data.role==='host')show();else hide();}catch{if(alive&&ticket===epoch)hide();}}
 hide();if(client?.auth?.getUser&&client?.from){subscription=client.auth.onAuthStateChange((event,session)=>{const next=session?.user?.id||null;if(event==='SIGNED_OUT'||next!==observed){observed=next;const ticket=++epoch;hide();if(next)setTimeout(()=>{if(alive&&ticket===epoch)refresh(ticket);},0);}}).data.subscription;refresh(epoch);}
 window.addEventListener('pagehide',()=>{alive=false;epoch++;hide();subscription?.unsubscribe();},{once:true});
+if(['index','settings'].includes(d.body.dataset.mimoPage))window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
 })();
