@@ -565,3 +565,7 @@ Automated: 311 regression tests passed before final CSS specificity/placement co
 
 ## 2026-10-15 — Owner-supplied HD ranking banner
 Replace only the Home ranking artwork with the owner-supplied 1986×792 image, encoded as full-resolution quality-95 WebP for transfer. Preserve the entire composition and native aspect ratio without cropping or stretching; keep the existing ranking link. Home stylesheet cache refreshed. No controller/media/backend changes. Source upload remains untouched.
+
+
+## 2026-10-15 — HD Home shortcut and discovery cards
+Owner rejects the blurred low-resolution Home shortcut/discovery crops and supplies a new HD six-card board. Replace the four shortcut assets and two discovery-entry assets with individually extracted high-resolution cards from that supplied board, preserving embedded lettering and native proportions. Existing links unchanged; no new functional/backend changes. Refresh Home CSS/adapter versions. Source upload untouched.
