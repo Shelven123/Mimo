@@ -2,4 +2,4 @@
 var sb={auth:{getUser:async()=>({data:{user:{id:'fixture-tabs'}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})}};
 document.body.dataset.instance=String(Math.random());document.body.dataset.loads='1';
 setTimeout(()=>{document.getElementById('phase').textContent='此页面已准备好 · 切换不会重建';for(let i=1;i<=15;i++){const row=document.createElement('article');row.textContent='主页 · 示例内容 '+i;document.getElementById('rows').append(row);}window.MimoPageDataReady=true;window.dispatchEvent(new Event('mimo:page-ready'));},900);
-</script><script src="../../mimo-tabs.js?v=20261016-tabs1"></script></body></html>
+</script><script src="../../mimo-tabs.js?v=20261016-tabs2"></script></body></html>
