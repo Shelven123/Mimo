@@ -28,7 +28,7 @@ if(page==='messages'){
  const title=d.querySelector('h1');title.classList.add('neon-inbox-tabs');title.append(node('small','','通讯录'));
  const tiles=node('div','neon-message-tiles');for(const [label,href,kind]of [['新的关注','notifications.html','user'],['谁看过我','neon-feature.html?view=visitors','eye'],['动态通知','notifications.html','bell'],['预约通知','appointments.html','heart'],['官方消息','notifications.html','crown'],['系统消息','notifications.html','shield'],['这些人想认识你','neon-feature.html?view=interest','user']])tiles.append(link(label,href,kind));d.querySelector('main').prepend(tiles);
 }
-if(page==='me'){
+if(page==='me'&&!d.querySelector('.neon-me-tabs')){
  const wallet=d.querySelector('.wallet-card');wallet.hidden=false;d.querySelector('.wallet-title').textContent='💎 钻石余额';const recharge=wallet.querySelector('.wallet-btn');recharge.textContent='充值';
  const menu=d.querySelector('.menu');menu.replaceChildren();for(const [label,href,kind]of [['守护天使','neon-feature.html?view=guard','shield'],['VIP 尊享','neon-feature.html?view=vip','crown'],['商城','neon-feature.html?view=shop','gift'],['任务记录','neon-feature.html?view=tasks','task'],['推广有奖','neon-feature.html?view=referrals','effects'],['设置','settings.html','settings']]){const a=link(label,href,kind);a.className='settings-row';menu.append(a);}
  const tabs=node('div','neon-me-tabs');tabs.append(link('个人资料','account-profile.html'),link('评论','neon-feature.html?view=comments'),link('我的心声记录','neon-feature.html?view=voice-history'));menu.after(tabs);
