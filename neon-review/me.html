@@ -1,0 +1,394 @@
+<!DOCTYPE html><html lang="en"><head><base href="/Mimo/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mimo Native QA · me · 示例资料</title>
+
+
+
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f7f7f9;
+  color: #222;
+  padding-bottom: 80px;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+  background: white;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.header-title {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+
+/* =========================
+   PROFILE
+========================= */
+
+.profile-card {
+  background: white;
+  margin: 14px;
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #eee;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.name {
+  font-size: 19px;
+  font-weight: bold;
+}
+
+.username {
+  color: #999;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.edit-btn {
+  border: none;
+  background: #fff0f5;
+  color: #ff4f81;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+
+/* =========================
+   WALLET
+========================= */
+
+.wallet-card {
+  background: linear-gradient(
+    135deg,
+    #ff4f81,
+    #ff7fa3
+  );
+
+  color: white;
+
+  margin: 14px;
+
+  border-radius: 18px;
+
+  padding: 20px;
+}
+
+.wallet-title {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.diamond {
+  font-size: 30px;
+  font-weight: bold;
+  margin: 6px 0 15px;
+}
+
+.wallet-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.wallet-btn {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  background: white;
+  color: #ff4f81;
+  font-weight: bold;
+}
+
+
+/* =========================
+   VIP
+========================= */
+
+.vip-card {
+  background: white;
+  margin: 14px;
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+}
+
+.vip-title {
+  font-weight: bold;
+}
+
+.vip-level {
+  color: #ff4f81;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.vip-btn {
+  border: none;
+  background: #ff4f81;
+  color: white;
+  padding: 9px 13px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+
+/* =========================
+   MENU
+========================= */
+
+.menu {
+  background: white;
+  margin: 14px;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 17px;
+  border-bottom: 1px solid #f1f1f1;
+  cursor: pointer;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-icon {
+  width: 34px;
+  font-size: 20px;
+}
+
+.menu-text {
+  flex: 1;
+  font-size: 15px;
+}
+
+.arrow {
+  color: #aaa;
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+.logout {
+  margin: 14px;
+}
+
+.logout button {
+  width: 100%;
+  border: none;
+  background: white;
+  color: #e33;
+  padding: 15px;
+  border-radius: 14px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+
+/* =========================
+   BOTTOM NAV
+========================= */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 68px;
+  background: white;
+  border-top: 1px solid #eee;
+  display: flex;
+  z-index: 20;
+}
+
+.nav-item {
+  flex: 1;
+  text-align: center;
+  padding-top: 10px;
+  font-size: 12px;
+  color: #888;
+  cursor: pointer;
+}
+
+.nav-icon {
+  font-size: 21px;
+  margin-bottom: 3px;
+}
+
+.nav-item.active {
+  color: #ff4f81;
+  font-weight: bold;
+}
+
+
+/* =========================
+   LOADING
+========================= */
+
+.loading {
+  text-align: center;
+  padding: 80px 20px;
+  color: #999;
+}
+
+</style>
+<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><link rel="stylesheet" href="./foreground-notices.css?v=20261012-alert2"><link rel="stylesheet" href="./mimo-replica.css?v=20261013-exact4"><link rel="stylesheet" href="mimo-neon.css?v=20261015-live1"></head>
+
+
+<body data-mimo-page="me" class="mimo-replica mimo-neon">
+
+
+<div id="loading" class="loading" hidden="">
+  Loading your profile...
+</div>
+
+
+<div id="content" style="display: block;">
+
+
+  <!-- HEADER -->
+
+
+
+
+  <!-- PROFILE -->
+
+  <div class="me-live-banner"><div class="mimo-art mimo-city-art" aria-hidden="true"><span></span></div><a class="me-settings" href="../settings.html" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 3 1-2h6l1 2 3 2 2 1v6l-2 1-3 2-1 2H9l-1-2-3-2-2-1V6l2-1Zm8 6a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"></path></svg></a><div class="profile-card">
+
+    <div role="img" aria-label="参考照片" class="photo avatar" style="--src:url('/Mimo/design-review-v2/assets/me.png');--sw:266;--sh:319;--cx:23;--cy:64;--cw:36;--ch:36" id="avatar"><i class="photo-art"></i></div>
+
+    <div class="profile-info">
+
+      <div id="displayName" class="name">Vincent <span class="vip-badge">♛ VIP</span></div>
+
+      <div id="username" class="username">ID: 1001001</div>
+
+    <button class="edit-btn">编辑个人资料 ›</button></div>
+
+
+
+  </div>
+
+
+<a class="replica-me-back" href="../index.html" aria-label="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 4-8 8 8 8"></path></svg></a><button type="button" class="replica-me-scan" aria-label="扫一扫"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"></path></svg></button></div><div class="me-counts"><button type="button" data-me-count="following"><strong>12</strong><span>关注</span></button><button type="button" data-me-count="followers"><strong>8</strong><span>粉丝</span></button><button type="button" data-me-count="posts"><strong>56</strong><span>动态</span></button><button type="button" data-me-count="likes"><strong>120</strong><span>获赞</span></button></div>
+  <!-- WALLET -->
+
+  <div class="wallet-card" hidden="">
+
+    <div class="wallet-title">
+      💎 My Diamonds
+    </div>
+
+    <div id="diamond" class="diamond">
+      0
+    </div>
+
+    <div class="wallet-buttons">
+
+      <button class="wallet-btn">
+        + Recharge
+      </button>
+
+      <button class="wallet-btn">
+        Wallet
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- VIP -->
+
+  <div class="vip-card" hidden="">
+
+    <div>
+
+      <div class="vip-title">
+        ⭐ Mimo VIP
+      </div>
+
+      <div id="vipLevel" class="vip-level">
+        VIP 0
+      </div>
+
+    </div>
+
+    <button class="vip-btn">
+      View VIP
+    </button>
+
+  </div>
+
+
+  <!-- MENU -->
+
+  <div class="menu"><a href="../wallet.html" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h17v15H3ZM3 5V2h13v3M14 10h7v6h-7ZM17 13h.1"></path></svg><span>我的钱包</span><span class="chevron">›</span></a><a href="../wallet.html" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 4v6c0 6-9 10-9 10S3 18 3 12V6ZM8 12l3 3 5-6"></path></svg><span>我的订阅</span><span class="chevron">›</span></a><a href="../plaza.html?tab=saved" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1Z"></path></svg><span>我的收藏</span><span class="chevron">›</span></a><button type="button" data-replica-pending="观看历史" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10a9 9 0 1 1 0 5M3 3v7h7M12 7v6l4 2"></path></svg><span>观看历史</span><span class="chevron">›</span></button><a href="../plaza.html?mine=1" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v14H3ZM2 3h20v4H2ZM9 11h6"></path></svg><span>我的动态</span><span class="chevron">›</span></a><a href="../settings.html" class="settings-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 3 1-2h6l1 2 3 2 2 1v6l-2 1-3 2-1 2H9l-1-2-3-2-2-1V6l2-1Zm8 6a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"></path></svg><span>设置</span><span class="chevron">›</span></a></div>
+
+
+  <!-- LOGOUT -->
+
+  <div class="logout" hidden="">
+
+    <button>
+      🚪 Logout
+    </button>
+
+  </div>
+
+
+</div>
+
+
+<!-- BOTTOM NAV -->
+
+<nav class="mimo-unified-nav" aria-label="Main navigation"><a class="mimo-tab" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v11h-6v-7H9v7H3Z"></path></svg><span>首页</span></a><a class="mimo-tab" href="plaza.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 1-9-8M15 3l2 3 4-2M10 11l3 2 3-5"></path></svg><span>广场</span></a><a class="mimo-tab" href="messages.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3h16v14H9l-5 4ZM8 9h.1M12 9h.1M16 9h.1"></path></svg><span>消息</span></a><a class="mimo-tab active" href="me.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 7a5 5 0 1 1-10 0 5 5 0 0 1 10 0ZM3 22v-2a9 9 0 0 1 18 0v2"></path></svg><span>我的</span></a></nav>
+
+
+
+
+
+<script src="replica-ui.js?v=20261013-exact3"></script><script src="neon-ui.js?v=20261015-live1"></script></body></html>

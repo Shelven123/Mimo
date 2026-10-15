@@ -1,0 +1,344 @@
+<!DOCTYPE html><html lang="en"><head><base href="/Mimo/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mimo Native QA · call · 示例资料</title>
+
+  
+  
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+      background:
+        linear-gradient(
+          160deg,
+          #ffeff5 0%,
+          #f8eefe 45%,
+          #eef4ff 100%
+        );
+      color: #222;
+      overflow: hidden;
+    }
+
+    .call-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 20px 35px;
+    }
+
+    .top-bar {
+      width: 100%;
+      pointer-events: auto;
+      max-width: 500px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .back {
+      width: 42px;
+      height: 42px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,.75);
+      font-size: 21px;
+      cursor: pointer;
+    }
+
+    .brand {
+      color: #ff4f81;
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .spacer {
+      width: 42px;
+    }
+
+    .profile {
+      margin-top: 55px;
+      text-align: center;
+    }
+
+    .avatar-wrap {
+      width: 150px;
+      height: 150px;
+      margin: auto;
+      padding: 5px;
+      border-radius: 50%;
+      background: linear-gradient(
+        135deg,
+        #ff4f81,
+        #ff91b1,
+        #a779ff
+      );
+      box-shadow:
+        0 15px 40px rgba(255,79,129,.22);
+    }
+
+    .avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 5px solid white;
+      display: block;
+    }
+
+    .name {
+      font-size: 28px;
+      font-weight: 800;
+      margin-top: 22px;
+    }
+
+    .status {
+      color: #777;
+      margin-top: 9px;
+      font-size: 15px;
+    }
+
+    .timer {
+      margin-top: 8px;
+      font-size: 17px;
+      font-weight: bold;
+      color: #555;
+      min-height: 21px;
+    }
+
+    .wave {
+      height: 70px;
+      margin-top: 28px;
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+      align-items: center;
+      opacity: .55;
+    }
+
+    .wave span {
+      width: 5px;
+      height: 18px;
+      background: #ff4f81;
+      border-radius: 10px;
+    }
+
+    .wave.active span {
+      animation: wave 1s infinite ease-in-out;
+    }
+
+    .wave.active span:nth-child(2) {
+      animation-delay: .1s;
+    }
+
+    .wave.active span:nth-child(3) {
+      animation-delay: .2s;
+    }
+
+    .wave.active span:nth-child(4) {
+      animation-delay: .3s;
+    }
+
+    .wave.active span:nth-child(5) {
+      animation-delay: .4s;
+    }
+
+    @keyframes wave {
+      0%,100% {
+        height: 15px;
+      }
+
+      50% {
+        height: 48px;
+      }
+    }
+
+    .controls {
+      margin-top: auto;
+      pointer-events: auto;
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      justify-content: center;
+      gap: 35px;
+    }
+
+    .controls.video-controls { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+
+    .control {
+      text-align: center;
+      color: #555;
+      font-size: 12px;
+    }
+
+    .circle {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,.85);
+      box-shadow: 0 7px 25px rgba(0,0,0,.08);
+      font-size: 23px;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+
+    .circle.active {
+      background: #333;
+      color: white;
+    }
+
+    .end {
+      background: #ff3b57;
+      color: white;
+      transform: rotate(135deg);
+    }
+
+    .error {
+      margin-top: 18px;
+      color: #d93025;
+      font-size: 13px;
+      max-width: 330px;
+      text-align: center;
+      line-height: 1.45;
+    }
+
+    audio {
+      display: none;
+    }
+  </style>
+
+
+<link rel="stylesheet" href="./mimo-replica.css?v=20261013-exact4"><link rel="stylesheet" href="mimo-neon.css?v=20261015-live1"></head>
+
+<body data-mimo-page="call" class="mimo-replica mimo-neon">
+
+<div class="call-page">
+
+  <div class="top-bar">
+
+    <button class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 4-8 8 8 8"></path></svg></button>
+
+    <div id="timer" class="timer">01:07</div>
+
+    <button class="replica-call-sound" type="button" aria-label="切换通话声音"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3ZM16 8a6 6 0 0 1 0 8M19 5a10 10 0 0 1 0 14"></path></svg></button>
+
+  </div>
+
+
+  <div class="profile">
+
+    <div class="avatar-wrap">
+      <div role="img" aria-label="参考照片" class="photo " style="--src:url('/Mimo/design-review-v2/assets/call.png');--sw:336;--sh:313;--cx:172;--cy:54;--cw:104;--ch:140" id="avatar"><i class="photo-art"></i></div>
+    </div>
+
+    <div id="name" class="name">Amy · 语音通话中</div>
+
+    <div id="status" class="status"></div>
+
+
+
+    <div id="wave" class="wave">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <div id="errorText" class="error"></div>
+
+  </div>
+
+
+  <div class="controls video-controls">
+
+    <div class="control">
+
+      <button id="muteButton" class="circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5a3 3 0 0 1 6 0v7a3 3 0 0 1-6 0ZM5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"></path></svg></button>
+
+      <div id="muteText">麦克风</div>
+
+    </div>
+
+
+    <div class="control">
+
+      <button class="circle end"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 16c-1-9 19-9 18 0l-5 1-1-4H9l-1 4Z"></path></svg></button>
+
+      <div>结束</div>
+
+    </div>
+
+
+    <div class="control">
+
+      <button id="speakerButton" class="circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3ZM16 8a6 6 0 0 1 0 8M19 5a10 10 0 0 1 0 14"></path></svg></button>
+
+      <div id="speakerText">扬声器</div>
+
+    </div>
+
+    <div id="cameraControl" class="control" style="display:none">
+
+      <button id="cameraButton" class="circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h12v12H3ZM15 10l6-4v12l-6-4"></path></svg></button>
+
+      <div id="cameraText">
+        Camera
+      </div>
+
+    </div>
+
+    <div id="beautyControl" class="control" style="display:none">
+      <button id="beautyButton" class="circle" aria-controls="callBeautyPanel" aria-expanded="false">✨</button>
+      <div id="beautyText">Beauty Off</div>
+      <button type="button" style="border:0;background:transparent;color:inherit;text-decoration:underline">Adjust</button>
+    </div>
+
+    <div id="flipControl" class="control" style="display:none">
+
+      <button class="circle">
+        🔄
+      </button>
+
+      <div>
+        Flip
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<audio id="remoteAudio" autoplay="" playsinline=""></audio>
+
+<div id="videoStage" style="display:none;position:fixed;inset:0;background:#111;z-index:2;pointer-events:auto;">
+  <video id="remoteVideo" autoplay="" playsinline="" style="width:100%;height:100%;object-fit:cover;background:#111;"></video>
+  <video id="localVideo" autoplay="" muted="" playsinline="" style="position:absolute;right:16px;top:24px;width:110px;height:155px;object-fit:cover;border-radius:16px;background:#222;box-shadow:0 4px 20px rgba(0,0,0,.35);z-index:5;cursor:pointer;"></video>
+</div>
+
+
+<section id="callBeautyPanel" hidden="" style="position:fixed;left:12px;right:12px;bottom:12px;max-height:48dvh;overflow-y:auto;z-index:30;padding:16px;border-radius:16px;background:#17171f;color:white;box-shadow:0 4px 20px #0008">
+  <div style="display:flex;justify-content:space-between;align-items:center"><b>Beauty · this call</b><button type="button">Close</button></div>
+  <p id="callBeautyStatus" style="font-size:12px;line-height:1.5" role="status"></p>
+  <label><input id="callBeautyEnabled" type="checkbox"> Beauty On</label>
+  <div id="callBeautySliders"></div>
+  <label><input id="callMakeup" type="checkbox"> Makeup</label>
+  <p style="font-size:12px">Changes apply immediately to this call. Save defaults on the Beauty page.</p>
+</section>
+
+
+
+
+
+<script>var ended=false,callRecord={call_type:'video'},targetProfile=null;</script><script src="replica-ui.js?v=20261013-exact3"></script><script src="neon-ui.js?v=20261015-live1"></script></body></html>

@@ -1,0 +1,616 @@
+<!DOCTYPE html><html lang="en"><head><base href="/Mimo/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mimo Native QA · Home · 示例资料</title>
+
+  
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+
+    body {
+      position: fixed;
+      inset: 0;
+      height: 100%;
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      overflow: hidden;
+      overscroll-behavior: none;
+      font-family: Arial, sans-serif;
+      background: #f8f8fb;
+      color: #222;
+      padding-bottom: 0;
+    }
+
+    button, input {
+      font: inherit;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+    }
+
+    /* HEADER */
+
+    header {
+      height: calc(64px + env(safe-area-inset-top));
+      background: rgba(255,255,255,.96);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: env(safe-area-inset-top) 18px 0;
+      border-bottom: 1px solid #f0f0f0;
+      position: relative;
+      z-index: 30;
+    }
+
+    .logo {
+      color: #ff4f81;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .diamond {
+      background: #fff0f5;
+      color: #ff4f81;
+      padding: 9px 13px;
+      border-radius: 22px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1050px;
+      margin: 0 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+      scroll-padding-block: 16px;
+      padding: 18px 16px 25px;
+    }
+
+    /* GREETING */
+
+    .hello {
+      margin-bottom: 16px;
+    }
+
+    .hello-small {
+      color: #999;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .hello-title {
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    /* SEARCH */
+
+    .search-box {
+      position: relative;
+      margin-bottom: 22px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 17px;
+    }
+
+    .search {
+      width: 100%;
+      border: 1px solid #eee;
+      background: white;
+      padding: 14px 16px 14px 45px;
+      border-radius: 16px;
+      outline: none;
+      font-size: 15px;
+      box-shadow: 0 3px 14px rgba(0,0,0,.035);
+    }
+
+    /* SECTION */
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 13px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .section-link {
+      color: #ff4f81;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* STORIES */
+
+    .story-section {
+      margin-bottom: 24px;
+    }
+
+    .stories {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      padding: 3px 1px 7px;
+      scrollbar-width: none;
+    }
+
+    .stories::-webkit-scrollbar {
+      display: none;
+    }
+
+    .story {
+      min-width: 68px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .story-ring {
+      width: 65px;
+      height: 65px;
+      margin: auto;
+      padding: 3px;
+      border-radius: 50%;
+      background: linear-gradient(135deg,#ff4f81,#ff9d5c);
+      position: relative;
+    }
+
+    .story-ring img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid white;
+      display: block;
+    }
+
+    .story-name {
+      font-size: 12px;
+      margin-top: 6px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .add-story-ring {
+      background: #f0f0f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .add-story-circle {
+      width: 59px;
+      height: 59px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 27px;
+      color: #ff4f81;
+    }
+
+    /* FILTERS */
+
+    .filters {
+      display: flex;
+      gap: 9px;
+      overflow-x: auto;
+      margin-bottom: 24px;
+      scrollbar-width: none;
+    }
+
+    .filters::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter {
+      white-space: nowrap;
+      padding: 10px 15px;
+      border-radius: 22px;
+      background: white;
+      color: #777;
+      border: 1px solid #eee;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .filter.active {
+      background: #ff4f81;
+      color: white;
+      border-color: #ff4f81;
+    }
+
+    /* HOST GRID */
+
+    .hosts {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 17px;
+    }
+
+    .host-card {
+      position: relative;
+      background: white;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 5px 20px rgba(0,0,0,.07);
+      cursor: pointer;
+    }
+
+    .photo-wrap {
+      position: relative;
+      aspect-ratio: 4 / 5;
+      background: #eee;
+      overflow: hidden;
+    }
+
+    .host-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .3s ease;
+    }
+
+    .host-card:hover .host-image {
+      transform: scale(1.025);
+    }
+
+    .photo-gradient {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 48%;
+      background: linear-gradient(
+        transparent,
+        rgba(0,0,0,.67)
+      );
+      pointer-events: none;
+    }
+
+    .status {
+      position: absolute;
+      top: 13px;
+      left: 13px;
+      background: rgba(255,255,255,.93);
+      border-radius: 20px;
+      padding: 6px 9px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .status.online {
+      color: #13a866;
+    }
+
+    .status.offline {
+      color: #777;
+    }
+
+    .photo-info {
+      position: absolute;
+      left: 15px;
+      right: 15px;
+      bottom: 14px;
+      color: white;
+    }
+
+    .host-name {
+      font-size: 21px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .host-bio {
+      font-size: 12px;
+      opacity: .92;
+      line-height: 1.35;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    /* ACTIONS */
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 4px;
+      padding: 11px 7px 12px;
+    }
+
+    .action {
+      background: transparent;
+      padding: 4px 2px;
+      min-width: 0;
+      color: #777;
+    }
+
+    .action-icon {
+      width: 39px;
+      height: 39px;
+      margin: auto;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background: #f6f6f8;
+    }
+
+    .action-text {
+      display: block;
+      margin-top: 5px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .chat-action .action-icon {
+      background: #fff0f5;
+      color: #ff4f81;
+    }
+
+    .call-action .action-icon {
+      background: #f0f8ff;
+    }
+
+    .video-action .action-icon {
+      background: #f3f0ff;
+    }
+
+    .follow-action .action-icon {
+      background: #fff0f5;
+      color: #ff4f81;
+    }
+
+    .follow-action.following .action-icon {
+      background: #ff4f81;
+      color: white;
+    }
+
+    .follow-action.following {
+      color: #ff4f81;
+    }
+
+    .action:disabled {
+      opacity: .6;
+      cursor: default;
+    }
+
+    /* EMPTY */
+
+    .empty,
+    .loading {
+      grid-column: 1 / -1;
+      background: white;
+      padding: 40px 20px;
+      border-radius: 18px;
+      color: #999;
+      text-align: center;
+    }
+
+    /* NAV */
+
+    .bottom-nav {
+      position: relative;
+      height: calc(70px + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background: rgba(255,255,255,.97);
+      border-top: 1px solid #eee;
+      z-index: 50;
+      display: flex;
+      justify-content: center;
+    }
+
+    .nav-inner {
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+    }
+
+    .nav-item {
+      color: #999;
+      font-size: 11px;
+      text-align: center;
+      cursor: pointer;
+      min-width: 55px;
+    }
+
+    .nav-icon {
+      display: block;
+      font-size: 21px;
+      margin-bottom: 3px;
+    }
+
+    .nav-item.active {
+      color: #ff4f81;
+      font-weight: 800;
+    }
+
+    @media (max-width: 800px) {
+      .hosts {
+        grid-template-columns: repeat(2,1fr);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .container {
+        padding: 16px 11px 22px;
+      }
+
+      .hosts {
+        gap: 11px;
+      }
+
+      .host-card {
+        border-radius: 18px;
+      }
+
+      .photo-wrap {
+        aspect-ratio: 3 / 4;
+      }
+
+      .host-name {
+        font-size: 18px;
+      }
+
+      .actions {
+        padding-left: 3px;
+        padding-right: 3px;
+      }
+
+      .action-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 16px;
+      }
+
+      .action-text {
+        font-size: 9px;
+      }
+    }
+  
+    .incoming-call {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(30,20,35,.62);
+      display: none; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .incoming-call.show { display: flex; }
+    .incoming-card {
+      width: min(92vw, 360px); background: white; border-radius: 28px;
+      padding: 28px 22px 24px; text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,.22);
+    }
+    .incoming-avatar {
+      width: 96px; height: 96px; border-radius: 50%;
+      object-fit: cover; background: #fff0f5;
+    }
+    .incoming-name { margin-top: 14px; font-size: 23px; font-weight: 800; }
+    .incoming-label { margin-top: 6px; color: #777; }
+    .incoming-actions { display: flex; gap: 28px; justify-content: center; margin-top: 24px; }
+    .incoming-btn {
+      width: 64px; height: 64px; border: 0; border-radius: 50%;
+      color: white; font-size: 25px; cursor: pointer;
+    }
+    .incoming-decline { background: #ff3b57; }
+    .incoming-accept { background: #28c76f; }
+
+</style>
+
+<link rel="stylesheet" href="./mobile-layout.css?v=20261011-fixed1"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./mimo-app-icon-192.png"><link rel="stylesheet" href="./foreground-notices.css?v=20261012-alert2"><link rel="stylesheet" href="./host-experience.css?v=20261012-host1"><link rel="stylesheet" href="./mimo-replica.css?v=20261015-logo1"><link rel="stylesheet" href="./mimo-neon.css?v=20261015-live1"></head>
+
+<body data-mimo-page="index" class="mimo-replica mimo-neon">
+
+<header>
+  <svg class="mimo-logo-filter" width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute;pointer-events:none"><defs><filter id="mimo-title-clear" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0.2126 0.7152 0.0722 0 0"></feColorMatrix><feComponentTransfer><feFuncA type="linear" slope="3" intercept="-0.65"></feFuncA></feComponentTransfer></filter></defs></svg>
+  <div class="mimo-art mimo-logo-art" aria-label="Mimo"><span></span></div>
+  <div class="reference-header-actions"><button type="button" aria-label="Search hosts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10" cy="10" r="7"></circle><path d="m15 15 6 6"></path></svg></button><a href="notifications.html" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5Zm5 3h4"></path></svg></a></div>
+</header>
+
+<main class="container">
+
+  <div class="hello mimo-art mimo-hero-art" aria-label="Find someone who understands"><span></span><img id="mimoHeroPhoto" hidden="" alt="Featured Host"></div>
+
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+
+    <input id="searchInput" class="search" type="text" placeholder="Find your favourite Host…">
+  </div>
+
+
+  <!-- FILTER -->
+
+  <div class="filters"><button class="filter active"><span class="rail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21S2 15 2 8a5 5 0 0 1 10-2 5 5 0 0 1 10 2c0 7-10 13-10 13Z"></path></svg></span><span>推荐</span></button><button class="filter "><span class="rail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21S2 15 2 8a5 5 0 0 1 10-2 5 5 0 0 1 10 2c0 7-10 13-10 13Z"></path></svg></span><span>在线</span></button><button class="filter "><span class="rail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8ZM1 21v-3a7 7 0 0 1 14 0v3M18 3a4 4 0 0 1 0 8M18 14a6 6 0 0 1 5 6"></path></svg></span><span>新人</span></button><button class="filter "><span class="rail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1 7-5 7-3 13-5-1-4-5-4-5C0 20 8 24 15 21c8-4 5-13 1-15 0 6-4 6-4-4Z"></path></svg></span><span>人气</span></button><button class="filter" aria-label="Search hosts"><span class="rail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3h6v6H3ZM15 3h6v6h-6ZM3 15h6v6H3ZM15 15h6v6h-6Z"></path></svg></span><span>分类</span></button></div>
+
+
+  <!-- STORIES -->
+
+  <section class="story-section" hidden="">
+
+    <div class="section-head">
+      <div class="section-title">推荐主播</div>
+      <div class="section-link">See all</div>
+    </div>
+
+    <div id="storyList" class="stories">
+
+      <div class="story">
+        <div class="story-ring add-story-ring">
+          <div class="add-story-circle">＋</div>
+        </div>
+        <div class="story-name">Your Story</div>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <div class="section-head">
+    <div class="section-title">热门主播</div><a class="section-link" href="plaza.html">查看更多 ›</a>
+  </div>
+
+  <div id="hostList" class="hosts"><article class="host-card"><div class="photo-wrap"><img class="host-image" src="/Mimo/design-review-v2/assets/host.png" alt="示例肖像"><div class="photo-gradient"></div><span class="status online">● 在线</span><div class="photo-info"><div class="host-name">示例主播</div><div class="host-bio">仅用于界面对照</div></div></div><div class="actions"><button class="action call-action"><span class="action-icon"></span></button><button class="action video-action"><span class="action-icon"></span></button><button class="action follow-action"><span class="action-icon">♡</span></button></div></article><article class="host-card"><div class="photo-wrap"><img class="host-image" src="/Mimo/design-review-v2/assets/host.png" alt="示例肖像"><div class="photo-gradient"></div><span class="status online">● 在线</span><div class="photo-info"><div class="host-name">示例主播</div><div class="host-bio">仅用于界面对照</div></div></div><div class="actions"><button class="action call-action"><span class="action-icon"></span></button><button class="action video-action"><span class="action-icon"></span></button><button class="action follow-action"><span class="action-icon">♡</span></button></div></article></div>
+
+<a class="reference-gift-banner" href="wallet.html"><span class="reference-gift-art" aria-hidden="true"></span><span>送出礼物<br>遇见更特别的她 ♡</span><b>立即前往 →</b></a><div class="section-head reference-hot-heading"><div class="section-title">♨ 热门推荐</div><button type="button">换一批 ↻</button></div><div id="referenceHotHosts" class="reference-hot-hosts"></div>
+</main>
+
+
+<!-- BOTTOM NAV -->
+
+<nav class="mimo-unified-nav" aria-label="Main navigation"><a class="mimo-tab active" href="index.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v11h-6v-7H9v7H3Z"></path></svg><span>首页</span></a><a class="mimo-tab" href="plaza.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 1-9-8M15 3l2 3 4-2M10 11l3 2 3-5"></path></svg><span>广场</span></a><a class="mimo-tab" href="messages.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3h16v14H9l-5 4ZM8 9h.1M12 9h.1M16 9h.1"></path></svg><span>消息</span></a><a class="mimo-tab" href="me.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 7a5 5 0 1 1-10 0 5 5 0 0 1 10 0ZM3 22v-2a9 9 0 0 1 18 0v2"></path></svg><span>我的</span></a></nav>
+
+
+
+<div id="incomingCall" class="incoming-call">
+  <div class="incoming-card">
+    <img id="incomingAvatar" class="incoming-avatar" alt="Caller">
+    <div id="incomingName" class="incoming-name">Incoming call</div>
+    <div class="incoming-label">📞 Voice Call</div>
+    <div class="incoming-actions">
+      <button class="incoming-btn incoming-decline">📞</button>
+      <button class="incoming-btn incoming-accept">📞</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<script src="replica-ui.js?v=20261013-exact3"></script><script src="neon-ui.js?v=20261015-live1"></script></body></html>
