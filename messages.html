@@ -29,7 +29,8 @@ async function load(extra=false){
 }
 function renderView(){if(disposed||!userId)return;const search=document.getElementById('inboxSearch').value,UI=window.MimoMessagingUI,rows=UI?UI.filter(loadedRows,search,inboxMode):loadedRows;list.replaceChildren(MimoMessages.renderInbox(document,rows));if(UI)document.getElementById('quickChats').replaceChildren(UI.quick(document,loadedRows));document.getElementById('quickLabel').hidden=!loadedRows.length;document.getElementById('searchNote').hidden=!search.trim();status.className='notice';status.textContent=rows.length?'':search.trim()?'No matching loaded conversations.':inboxMode==='unread'?'You’re all caught up.':'No conversations yet. Choose a contact to start chatting.';}
 window.MimoMessagingUI?.hydrate(document);document.getElementById('inboxSearch').oninput=renderView;for(const filter of document.querySelectorAll('[data-inbox-filter]'))filter.onclick=()=>{inboxMode=filter.dataset.inboxFilter;for(const node of document.querySelectorAll('[data-inbox-filter]')){node.classList.toggle('active',node===filter);node.setAttribute('aria-pressed',String(node===filter));}renderView();};
-function schedule(){if(disposed||document.visibilityState==='hidden')return;clearTimeout(debounce);debounce=setTimeout(()=>load(),400);}
+window.addEventListener('mimo:tab-visibility',()=>{if(window.MimoTabVisible!==false)schedule();});
+function schedule(){if(disposed||window.MimoTabVisible===false||document.visibilityState==='hidden')return;clearTimeout(debounce);debounce=setTimeout(()=>load(),400);}
 function cleanup(){disposed=true;userId=null;loadedRows=[];list.replaceChildren();more.hidden=true;refresh.disabled=true;document.getElementById('inboxSearch').value='';document.getElementById('quickChats').replaceChildren();document.getElementById('quickLabel').hidden=true;document.getElementById('searchNote').hidden=true;clearInterval(poll);clearTimeout(debounce);if(channel)sb.removeChannel(channel);if(authSubscription)authSubscription.unsubscribe();}
 async function init(){
   try{
@@ -41,8 +42,8 @@ async function init(){
     if(disposed)return;
     channel=sb.channel('mimo-inbox-'+userId).on('postgres_changes',{event:'*',schema:'public',table:'messages'},schedule).on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations'},schedule).subscribe();
     poll=setInterval(schedule,15000);
-  }catch(error){status.textContent='Unable to check your login. Reload to retry.';}
+  }catch(error){status.textContent='Unable to check your login. Reload to retry.';}finally{window.MimoPageDataReady=true;window.dispatchEvent(new Event('mimo:page-ready'));}
 }
 refresh.onclick=()=>load();more.onclick=()=>load(true);document.addEventListener('visibilitychange',schedule);window.addEventListener('pagehide',cleanup);window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});init();
-</script><script src="./foreground-notices.js?v=20261012-alert2"></script>
-<script src="./replica-ui.js?v=20261013-exact3"></script><script src="./neon-ui.js?v=20261015-nav1"></script><script src="./neon-navigation.js?v=20261015-navfeel1"></script></body></html>
+</script><script src="./foreground-notices.js?v=20261016-tabs1"></script>
+<script src="./replica-ui.js?v=20261013-exact3"></script><script src="./neon-ui.js?v=20261015-nav1"></script><script src="./neon-navigation.js?v=20261015-navfeel1"></script><script src="./mimo-tabs.js?v=20261016-tabs1"></script></body></html>
