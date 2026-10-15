@@ -50,8 +50,8 @@ if(page==='me'||page==='settings'){
    by('replicaSettingsName').textContent=result.data.display_name||result.data.username||'Mimo User';by('replicaSettingsId').textContent=result.data.username?'ID: '+result.data.username:'';
    try{const url=new URL(result.data.avatar_url);if(url.protocol==='https:'&&!url.username&&!url.password){const img=d.createElement('img');img.src=url.href;img.alt='';img.onerror=()=>img.remove();d.querySelector('.replica-settings-avatar').append(img);}}catch{}
   }else{
-   const specs=[['following','follows','follower_id'],['followers','follows','following_id'],['posts','posts','author_id']];
-   await Promise.allSettled(specs.map(async([key,table,field])=>{const result=await client.from(table).select(field,{count:'exact',head:true}).eq(field,requested);if(!alive||userId!==requested)return;if(!result.error&&Number.isSafeInteger(result.count)){const target=d.querySelector('[data-me-count='+key+']');target.querySelector('strong').textContent=String(result.count);target.title='当前账号可见统计';}}));
+   const specs=[['following','follows','follower_id'],['followers','follows','following_id'],['posts','posts','author_id'],['likes','post_likes','posts.author_id']];
+   await Promise.allSettled(specs.map(async([key,table,field])=>{const result=await client.from(table).select(table==='post_likes'?'post_id,posts!inner(author_id)':field,{count:'exact',head:true}).eq(field,requested);if(!alive||userId!==requested)return;if(!result.error&&Number.isSafeInteger(result.count)){const target=d.querySelector('[data-me-count='+key+']');target.querySelector('strong').textContent=String(result.count);target.title='当前账号可见统计';}}));
   }
  }catch{clearAccount();}}
  identity();window.addEventListener('pagehide',()=>{subscription?.unsubscribe();userId=null;},{once:true});
