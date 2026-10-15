@@ -3,7 +3,7 @@
 const d=document,nav=d.querySelector('.mimo-unified-nav');if(!nav)return;
 const client=typeof sb!=='undefined'?sb:typeof supabaseClient!=='undefined'?supabaseClient:null;
 let alive=true,epoch=0,observed,subscription=null;
-const publish=d.createElement('a');publish.className='neon-nav-publish';publish.href='plaza.html?compose=1';publish.setAttribute('aria-label','发布动态');publish.innerHTML='<span aria-hidden="true">＋</span>';
+const publish=d.createElement('a');publish.className='neon-nav-publish';publish.href='plaza.html?compose=1';publish.setAttribute('aria-label','发布动态');publish.innerHTML='<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" aria-hidden="true"><path d="M14 5v18M5 14h18"/></svg>';
 publish.addEventListener('click',event=>{if(d.body.dataset.mimoPage==='plaza'){event.preventDefault();window.MimoPlazaDesign?.openComposer();}});
 function hide(){publish.remove();nav.classList.remove('neon-nav-host');}
 function show(){if(!alive)return;const messages=nav.querySelector('a[href="messages.html"]');messages.before(publish);nav.classList.add('neon-nav-host');d.dispatchEvent(new CustomEvent('mimo:host-navigation'));}

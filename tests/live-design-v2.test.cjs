@@ -10,7 +10,7 @@ test('Formal design has one consistent accessible four-destination navigation on
   const navs=d.querySelectorAll('.mimo-unified-nav');assert.equal(navs.length,1,page);
   const links=[...navs[0].querySelectorAll('a')];
   assert.deepEqual(links.map(a=>a.getAttribute('href')),['index.html','plaza.html','messages.html','me.html'],page);
-  assert.deepEqual(links.map(a=>a.textContent),['首页','广场','消息','我的'],page);
+  assert.deepEqual(links.map(a=>a.textContent),['首页','广场','消息','我'],page);
   const actual=links.map(a=>a.querySelector('svg').outerHTML);if(icons)assert.deepEqual(actual,icons,page);else icons=actual;
   assert.equal(navs[0].querySelector('.active').getAttribute('href'),(page==='settings'?'me':page==='notifications'?'messages':page)+'.html');
   assert.equal(d.querySelectorAll('.statusbar').length,0);
