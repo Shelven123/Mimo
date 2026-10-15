@@ -583,3 +583,7 @@ No fake ticket IDs, amounts, online staffing or service hours are shown on real 
 
 ## 2026-10-15 — Home header spacing, country pill and centered MiMo
 Owner requests more space above Home content, a flag/country pill matching reference 2, and a centered handwritten glowing MiMo mark similar to reference 3. Increase header from 43px to 78px; retain all lower content and control callbacks. Replace platform-dependent emoji with a vector Malaysia flag and add a transparent vector wordmark. Native SVG assets remain sharp and contain no background rectangle. Existing region explanation, search and notification routes unchanged; no other page/controller/backend changes.
+
+
+## 2026-10-15 — Restore Settings logout control
+Owner reports the logout button missing below the settings menu. Restore a visible 登出 button at that location, wired directly to the existing logout() function (push cleanup → Supabase signOut → login redirect). No auth/controller logic changes. Add matching nonfunctional control to the labeled visual fixture. No actual customer session signed out during verification.
