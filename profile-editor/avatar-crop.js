@@ -1,0 +1,14 @@
+(function(root){'use strict';
+// Position is in canvas pixels; clamp in the rotated image's own coordinate space.
+function fit(image,size,state){const a=state.angle*Math.PI/180,c=Math.cos(a),s=Math.sin(a),scale=Math.max(size/image.width,size/image.height)*state.zoom;
+ const limitX=(Math.abs(c)*image.width+Math.abs(s)*image.height)*scale/2+size/2-8,limitY=(Math.abs(s)*image.width+Math.abs(c)*image.height)*scale/2+size/2-8;state.x=Math.max(-limitX,Math.min(limitX,state.x));state.y=Math.max(-limitY,Math.min(limitY,state.y));return{scale,angle:a};}
+function draw(canvas,image,state){const size=canvas.width,{scale,angle}=fit(image,size,state),ctx=canvas.getContext('2d');ctx.clearRect(0,0,size,size);ctx.fillStyle='#160d20';ctx.fillRect(0,0,size,size);ctx.save();ctx.translate(size/2+state.x,size/2+state.y);ctx.rotate(angle);ctx.scale(scale,scale);ctx.drawImage(image,-image.width/2,-image.height/2,image.width,image.height);ctx.restore();}
+function mount(canvas,image,onChange){const state={zoom:1,angle:0,x:0,y:0};const update=()=>{draw(canvas,image,state);onChange?.(state);};const pointers=new Map();let pinch=null;
+ canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});pinch=null;});
+ canvas.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;const prev=pointers.get(e.pointerId),ratio=canvas.width/canvas.getBoundingClientRect().width;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2){const [a,b]=[...pointers.values()],distance=Math.hypot(a.x-b.x,a.y-b.y);if(pinch)state.zoom=Math.max(.1,Math.min(3,state.zoom*distance/pinch));pinch=distance;}else{state.x+=(e.clientX-prev.x)*ratio;state.y+=(e.clientY-prev.y)*ratio;}update();});
+ for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,e=>{pointers.delete(e.pointerId);pinch=null;});
+ canvas.addEventListener('keydown',e=>{const moves={ArrowLeft:[-8,0],ArrowRight:[8,0],ArrowUp:[0,-8],ArrowDown:[0,8]};if(moves[e.key]){e.preventDefault();state.x+=moves[e.key][0];state.y+=moves[e.key][1];update();}});
+ update();return{state,update,contain(){Object.assign(state,{zoom:Math.min(canvas.width/image.width,canvas.height/image.height)/Math.max(canvas.width/image.width,canvas.height/image.height),angle:0,x:0,y:0});update();},reset(){Object.assign(state,{zoom:1,angle:0,x:0,y:0});update();},export(){const output=document.createElement('canvas');output.width=output.height=640;const ratio=640/canvas.width;draw(output,image,{...state,x:state.x*ratio,y:state.y*ratio});return output.toDataURL('image/jpeg',.94);}};
+}
+const api={fit,draw,mount};if(typeof module==='object'&&module.exports)module.exports=api;else root.MimoAvatarCrop=api;
+})(typeof window!=='undefined'?window:globalThis);
