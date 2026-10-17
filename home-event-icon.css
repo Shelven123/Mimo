@@ -1,0 +1,5 @@
+/* Original card stays underneath; only its flattened old foreground is covered. */
+.neon-shortcuts .neon-event-shortcut{position:relative;isolation:isolate;aspect-ratio:1}
+.neon-shortcuts .neon-event-shortcut>img:first-child{width:100%;height:100%;object-fit:fill}
+.neon-shortcuts .neon-event-shortcut .neon-event-clean{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent),linear-gradient(transparent,#000 8%,#000 92%,transparent);mask-composite:intersect;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent),linear-gradient(transparent,#000 8%,#000 92%,transparent);-webkit-mask-composite:source-in}
+.neon-shortcuts .neon-event-shortcut .neon-event-art{position:absolute;inset:3%;width:94%;height:94%;object-fit:contain;pointer-events:none}

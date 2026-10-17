@@ -1,0 +1,38 @@
+/* Isolated owner-reference review. Existing bottom-navigation rules are retained. */
+body.mimo-neon[data-mimo-page=plaza]{background:#0a0a14!important;color:#f6edf2}
+body.mimo-neon[data-mimo-page=plaza]::before{content:'';position:absolute;z-index:0;inset:0 0 auto;height:100px;background:url('assets/neon/plaza-ribbon.svg') center top/100% 100% no-repeat;pointer-events:none}
+body.mimo-neon[data-mimo-page=plaza] .neon-plaza-header{height:58px;min-height:58px;padding:5px 13px;z-index:2}
+body.mimo-neon[data-mimo-page=plaza] .neon-plaza-brand{width:105px;height:47px;object-fit:contain}
+body.mimo-neon[data-mimo-page=plaza] .neon-plaza-header-actions{right:20px;gap:19px}
+body.mimo-neon[data-mimo-page=plaza] .neon-plaza-header-actions>a,body.mimo-neon[data-mimo-page=plaza] .neon-plaza-header-actions>button{color:#ffd4b7;width:20px;height:25px}
+body.mimo-neon[data-mimo-page=plaza] main{position:relative;z-index:1;flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;padding:0!important;margin:0 auto;width:100%;max-width:none;background:transparent!important;scrollbar-width:none}
+body.mimo-neon[data-mimo-page=plaza] main::-webkit-scrollbar{display:none}
+body.mimo-neon[data-mimo-page=plaza] .tabs{display:flex;align-items:center;justify-content:center;height:32px;min-height:32px;gap:37px;padding:0;margin:0 0 1px;border:0;background:transparent;border-radius:0}
+body.mimo-neon[data-mimo-page=plaza] .tabs>button{position:relative;color:#c6a2c0;font-size:15px!important;font-weight:500;padding:0 0 9px;min-height:30px;background:none!important;border:0!important;box-shadow:none!important;border-radius:0;line-height:21px}
+body.mimo-neon[data-mimo-page=plaza] .tabs>button.active{color:#fff2f7;text-shadow:0 0 11px #fc54bb;font-weight:650}
+body.mimo-neon[data-mimo-page=plaza] .tabs>button.active::after{content:'';position:absolute;height:2px;left:0;right:0;bottom:2px;border-radius:4px;background:#ffc9c0;box-shadow:0 0 6px 2px #ff4caa}
+body.mimo-neon[data-mimo-page=plaza] .tabs>[data-sort],body.mimo-neon[data-mimo-page=plaza] .media-tabs,body.mimo-neon[data-mimo-page=plaza] #referenceStories,body.mimo-neon[data-mimo-page=plaza] #viewAll{display:none!important}
+body.mimo-neon[data-mimo-page=plaza] .neon-plaza-searchbox{margin:0 12px 7px;background:#171220;border:1px solid #ba7d9b60;border-radius:11px;padding:0 7px}
+body.mimo-neon[data-mimo-page=plaza] .neon-plaza-searchbox[hidden]{display:none!important}
+body.mimo-neon[data-mimo-page=plaza] #feed{display:block;padding:0 11px 20px;margin:0;columns:auto;background:transparent}
+body.mimo-neon[data-mimo-page=plaza] #feed .post{display:block;padding:0;margin:0 0 9px;border:1px solid #e8a7b3b0;border-radius:14px;overflow:hidden;background:radial-gradient(ellipse at 1% 0,#8d3c6b32,transparent 32%),radial-gradient(ellipse at 99% 95%,#7a2b6330,transparent 30%),linear-gradient(115deg,#10101c,#100e19 75%,#18101e);box-shadow:inset 0 0 1px 1px #ffcebb3b,0 0 6px #eb73a51c;color:#fff4f8;break-inside:avoid}
+body.mimo-neon[data-mimo-page=plaza] #feed .post[hidden]{display:none}
+body.mimo-neon[data-mimo-page=plaza] #feed .post-head{display:flex;align-items:center;padding:6px 11px 0;gap:8px;background:none;margin:0}
+body.mimo-neon[data-mimo-page=plaza] #feed .avatar{height:39px;width:39px;flex:0 0 39px;border:1px solid #ffd2b3;border-radius:50%;box-shadow:0 0 6px #f575ae64;overflow:hidden}
+body.mimo-neon[data-mimo-page=plaza] #feed .author-info{flex:1;font-size:12px;line-height:17px;color:#ffe6ba;font-weight:500;text-align:left}
+body.mimo-neon[data-mimo-page=plaza] #feed .author-info b{color:#ffb2ce;font-weight:400}
+body.mimo-neon[data-mimo-page=plaza] #feed time{display:block;margin:2px 0 0;color:#a89bb0;font-size:10px;font-weight:400;line-height:14px;letter-spacing:.15px}
+body.mimo-neon[data-mimo-page=plaza] #feed .post-head>.more{align-self:flex-start;color:#ffd0bc;padding:3px 0 0;background:none;width:21px;height:22px}
+body.mimo-neon[data-mimo-page=plaza] #feed .post-head>.more svg{width:20px;height:20px;stroke-width:3}
+body.mimo-neon[data-mimo-page=plaza] #feed .post>p{margin:6px 11px 5px;padding:0;font-size:12px;font-weight:400;line-height:1.45;color:#fff4f7;white-space:normal}
+body.mimo-neon[data-mimo-page=plaza] #feed .post-media{display:grid;grid-template-columns:1fr;margin:0 11px;padding:0;gap:3px;background:none}
+body.mimo-neon[data-mimo-page=plaza] #feed .post-media.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+body.mimo-neon[data-mimo-page=plaza] #feed .actions{display:grid;grid-template-columns:1fr 1.5fr auto auto;align-items:center;gap:11px;margin:0;padding:8px 12px 9px;border:0;background:none;min-height:34px}
+body.mimo-neon[data-mimo-page=plaza] #feed .actions button{display:flex;align-items:center;justify-content:flex-start;gap:5px;margin:0;padding:0;min-width:0;width:auto;height:18px;background:none;border:0;color:#d7b4cf;font-size:10px;line-height:1}
+body.mimo-neon[data-mimo-page=plaza] #feed .actions svg{width:18px;height:18px;stroke:#efb4d9;stroke-width:1.7;fill:none}
+body.mimo-neon[data-mimo-page=plaza] #feed .actions .like{color:#ff49b1}
+body.mimo-neon[data-mimo-page=plaza] #feed .actions .like svg{width:20px;height:20px}
+body.mimo-neon[data-mimo-page=plaza] #feed .actions .like[aria-pressed=true] svg{fill:#fb4bab;stroke:#ff94d3;filter:drop-shadow(0 0 3px #fb4bab55)}
+body.mimo-neon[data-mimo-page=plaza] #feed .actions .post-bottom-more svg{stroke:#ffd0bc;stroke-width:3}
+body.mimo-neon[data-mimo-page=plaza] #feed .author-name{font-size:12px;color:#ffe6ba}body.mimo-neon[data-mimo-page=plaza] #feed .owner-feed-meta{display:block;font-size:10px;line-height:1.4;color:#a89bb0;margin-top:3px}body.mimo-neon[data-mimo-page=plaza] #feed .last-seen{display:none}body.mimo-neon[data-mimo-page=plaza] #feed .post-date{display:none}body.mimo-neon[data-mimo-page=plaza] #feed .post-media{position:relative;border-radius:7px;overflow:hidden}body.mimo-neon[data-mimo-page=plaza] #feed .post-media>img{width:100%;height:auto!important;max-height:none;min-width:0;object-fit:cover;border-radius:6px}body.mimo-neon[data-mimo-page=plaza] #feed .post-media[data-many=true]{grid-template-columns:repeat(3,minmax(0,1fr))}body.mimo-neon[data-mimo-page=plaza] #feed .post-media[data-many=true]>img{aspect-ratio:1;object-fit:cover}body.mimo-neon[data-mimo-page=plaza] #feed .post-media>video{width:100%;height:auto!important;max-height:65dvh;aspect-ratio:9/12;object-fit:contain;background:#08070e}body.mimo-neon[data-mimo-page=plaza] #feed .actions{grid-template-columns:1fr 1fr auto auto auto}body.mimo-neon[data-mimo-page=plaza] #feed .actions .is-on{color:#ff49b1}body.mimo-neon[data-mimo-page=plaza] #feed .actions .is-on svg{fill:#fb4bab}body.mimo-neon[data-mimo-page=plaza] #feed .post-body{white-space:pre-wrap}body.mimo-neon[data-mimo-page=plaza] #feed .owner-post-more{color:#ffd0bc}body.mimo-neon[data-mimo-page=plaza] #status,body.mimo-neon[data-mimo-page=plaza] #empty{color:#b6a2bb;text-align:center;margin:10px}body.mimo-neon[data-mimo-page=plaza] #more{display:block;margin:12px auto;color:#efc4df;background:#342036}
+body.mimo-neon[data-mimo-page=plaza] .tabs>button{flex:none}
