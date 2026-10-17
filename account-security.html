@@ -39,4 +39,4 @@ async function init(){const{data:{user}}=await sb.auth.getUser();if(!user){locat
 function show(t){document.getElementById("status").textContent=t}
 async function saveProfile(){if(!currentUser)return;const btn=document.getElementById("saveBtn");btn.disabled=true;show("Saving...");const payload={};ids.forEach(k=>payload[k]=document.getElementById(k).value.trim()||null);payload.username=payload.username?payload.username.replace(/^@/,""):null;payload.mbti=payload.mbti?payload.mbti.toUpperCase():null;payload.topics=split(document.getElementById("topics").value);payload.interests=split(document.getElementById("interests").value);const{error}=await sb.from("profiles").update(payload).eq("id",currentUser.id);btn.disabled=false;if(error){show("Could not save: "+error.message);return}show("✓ Profile saved successfully")}
 init();
-</script><script src="./foreground-notices.js?v=20261012-alert2"></script><script src="./neon-ui.js?v=20261015-live1"></script></body></html>
+</script><script src="./foreground-notices.js?v=20261012-alert2"></script><script src="./neon-ui.js?v=20261017-approved1"></script></body></html>

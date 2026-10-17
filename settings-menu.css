@@ -1,0 +1,10 @@
+/* Settings-only sections; preserve the existing identity, rows and shared navigation. */
+body[data-mimo-page="settings"] .settings-section-title{margin:24px 25px 10px;color:#c6a3b7;font-size:12px;font-weight:600;letter-spacing:.08em}
+body[data-mimo-page="settings"] .settings-vip .settings-row>svg{color:#e5bf94}
+body[data-mimo-page="settings"] .settings-vip .right{display:flex;align-items:center;gap:9px;color:#d1af8f}
+body[data-mimo-page="settings"] .settings-vip-badge{padding:2px 6px;border-radius:5px;border:1px solid #bd91674a;background:#ba8b4b16;font-size:9px;letter-spacing:.08em}
+body[data-mimo-page="settings"] .settings-row .settings-lock{width:14px;height:14px;flex:none;color:#c6a288}
+.settings-feature-dialog{box-sizing:border-box;width:calc(100% - 40px);max-width:360px;max-height:calc(100dvh - 48px);overflow:auto;margin:auto;padding:25px 23px;border:1px solid #b57f9b66;border-radius:21px;background:linear-gradient(145deg,#282032,#17131f);color:#eee1ee;box-shadow:0 20px 70px #0008;font-family:inherit;text-align:left}
+.settings-feature-dialog::backdrop{background:#07070dc7;backdrop-filter:blur(5px)}
+.settings-feature-dialog h2{margin:0 0 13px;font-size:19px;color:#f5d6e7}.settings-feature-dialog p{margin:12px 0;color:#c4b4c8;font-size:13px;line-height:1.8}.settings-feature-dialog .settings-feature-state{display:inline-block;margin:2px 0 0;padding:4px 10px;border:1px solid #c0997655;border-radius:18px;color:#e8c8a4;font-size:11px;background:#d1a06b0c}
+.settings-feature-dialog .settings-feature-action,.settings-feature-dialog .settings-feature-close{display:block;width:100%;margin-top:18px;padding:11px 12px;border:1px solid #ba7b9d55;border-radius:12px;font:inherit;font-size:13px;text-align:center;text-decoration:none;cursor:pointer}.settings-feature-dialog .settings-feature-action{background:linear-gradient(120deg,#59304c,#34253f);color:#ffdbec}.settings-feature-dialog .settings-feature-close{margin-top:9px;background:transparent;color:#cfb6ce}

@@ -222,7 +222,7 @@
   </style>
 <script src="./contact-permissions.js?v=20261010-contact1"></script>
 <script src="./call-preferences.js?v=20261010-prefs1"></script>
-<link rel="stylesheet" href="./mimo-replica.css?v=20261013-exact4"><link rel="stylesheet" href="./mimo-neon.css?v=20261015-live2"><script src="./plaza-social.js?v=20261010-social1"></script><script src="./support-center.js?v=20261015-neon1"></script></head>
+<link rel="stylesheet" href="./mimo-replica.css?v=20261013-exact4"><link rel="stylesheet" href="./mimo-neon.css?v=20261015-live2"><script src="./plaza-social.js?v=20261010-social1"></script><script src="./support-center.js?v=20261015-neon1"></script><link rel="stylesheet" href="call-live.css?v=20261017-release1"></head>
 
 <body data-mimo-page="call" class="mimo-replica mimo-neon">
 
@@ -835,6 +835,8 @@ async function loadExistingCall() {
 ========================= */
 
 async function prepareMedia() {
+  document.body.dataset.callType=callRecord?.call_type||requestedCallType;
+  window.dispatchEvent(new Event("mimo:call-state"));
 
   if (
     !navigator.mediaDevices ||
@@ -1698,7 +1700,7 @@ async function checkRemoteCallStatus() {
     cleanupCall();
     setStatus("Call ended");
     setTimeout(function () {
-      window.location.replace("index.html");
+      window.location.replace(callReturnDestination());
     }, 350);
   }
 }
@@ -1814,7 +1816,7 @@ async function setupRealtime() {
               cleanupCall();
               setStatus("Call ended");
               setTimeout(() => {
-                window.location.replace("index.html");
+                window.location.replace(callReturnDestination());
               }, 500);
             }
 
@@ -1838,6 +1840,8 @@ async function setConnected() {
 
   connectedAt =
     new Date();
+  document.body.dataset.callPhase="connected";
+  window.dispatchEvent(new Event("mimo:call-state"));
 
 
   setStatus(
@@ -2049,7 +2053,7 @@ function paintCallMediaControls(){
 async function endCall() {
 
   if (ended) {
-    window.location.replace("index.html");
+    window.location.replace(callReturnDestination());
     return;
   }
 
@@ -2115,7 +2119,7 @@ async function endCall() {
 
   setTimeout(
     () => {
-      window.location.replace("index.html");
+      window.location.replace(callReturnDestination());
     },
     700
   );
@@ -2205,12 +2209,20 @@ function leavePage() {
 
   } else {
 
-    window.location.replace("index.html");
+    window.location.replace(callReturnDestination());
 
   }
 
 }
 
+
+function callReturnDestination(){
+  for(const value of [new URLSearchParams(location.search).get('returnTo'),document.referrer]){
+    if(!value)continue;
+    try{const u=new URL(value,location.href);if(u.origin===location.origin&&!u.username&&!u.password&&/\/(index|me|profile|chat|messages|contacts)\.html$/.test(u.pathname))return u.href;}catch{}
+  }
+  return 'index.html';
+}
 
 function setStatus(text) {
 
@@ -2269,4 +2281,4 @@ init();
 
 
 
-<script src="./replica-ui.js?v=20261013-exact3"></script><script src="./neon-ui.js?v=20261015-live1"></script></body></html>
+<script src="./replica-ui.js?v=20261017-approved1"></script><script src="./neon-ui.js?v=20261017-approved1"></script><script src="call-live.js?v=20261017-release1"></script></body></html>
